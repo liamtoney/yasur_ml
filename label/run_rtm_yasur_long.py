@@ -3,9 +3,8 @@ from waveform_collection import gather_waveforms
 from rtm import define_grid, produce_dem, process_waveforms, calculate_time_buffer, grid_search
 from rtm import (plot_time_slice, get_peak_coordinates)
 
-SVDIR = '/Users/dfee/Documents/rtm/figs/'
-EXTERNAL_FILE = '/Users/dfee/Documents/vanuatu/DEM/DEM_Union_UAV_161116_sm101.tif'
-DATADIR='/Users/dfee/Documents/vanuatu/data/converted/'
+# curl -O https://cloud.sdsc.edu/v1/AUTH_opentopography/hosted_data/OTDS.072019.4326.1/raster/DEM_WGS84.tif
+EXTERNAL_FILE = 'label/DEM_WGS84.tif'
 
 FREQ_MIN = .2          # [Hz] Lower bandpass corner
 FREQ_MAX = 4            # [Hz] Upper bandpass corner
@@ -41,7 +40,7 @@ STACK_METHOD = 'sum'  # Choose either 'sum' or 'product'
 TIME_METHOD1 = 'celerity'  # Choose either 'celerity' or 'fdtd'
 TIME_METHOD2 = 'fdtd'  # Choose either 'celerity' or 'fdtd'
 FILENAME_ROOT = 'yasur_rtm_DH2'    #output filename root prefix
-FDTD_DIR='/Users/dfee/code//infraFDTD_new/'+FILENAME_ROOT+'/'    # directory for FDTD input files
+FDTD_DIR = '/Users/ldtoney/work/yasur_ml/label/fdtd/'  # Where travel time lookup table is located
 
 XY_GRID = 350
 CONT_INT = 5
