@@ -1,4 +1,5 @@
 .idea/
+figures/
 *.nc
 *.pkl
 *.tif
