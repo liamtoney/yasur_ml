@@ -4,13 +4,12 @@ from rtm import (calculate_time_buffer, define_grid, get_peak_coordinates,
 from waveform_collection import gather_waveforms
 
 # curl -O https://cloud.sdsc.edu/v1/AUTH_opentopography/hosted_data/OTDS.072019.4326.1/raster/DEM_WGS84.tif
-EXTERNAL_FILE = 'label/DEM_WGS84.tif'
+EXTERNAL_FILE = '/Users/ldtoney/work/yasur_ml/label/DEM_WGS84.tif'
 
 FREQ_MIN = 0.2  # [Hz] Lower bandpass corner
 FREQ_MAX = 4  # [Hz] Upper bandpass corner
 
-DECIMATION_RATE = 40  # [Hz] New sampling rate to use for decimation
-SMOOTH_WIN = None  # [s] Smoothing window duration
+DECIMATION_RATE = 20  # [Hz] New sampling rate to use for decimation
 DH = 4
 AGC_PARAMS = dict(win_sec=120, method='walker')
 
@@ -34,7 +33,6 @@ SEARCH_Y = 350
 DH_SEARCH = DH
 
 MAX_STATION_DIST = 0.8  # [km] Max. dist. from grid center to station (approx.)
-CEL = 343.48
 
 STACK_METHOD = 'sum'  # Choose either 'sum' or 'product'
 TIME_METHOD1 = 'celerity'  # Choose either 'celerity' or 'fdtd'
@@ -45,7 +43,6 @@ FDTD_DIR = '/Users/ldtoney/work/yasur_ml/label/fdtd/'  # Where travel time looku
 XY_GRID = 350
 CONT_INT = 5
 ANNOT_INT = 50
-
 
 #%% Create grids
 
@@ -77,38 +74,34 @@ st = gather_waveforms(
     time_buffer=time_buffer,
 )
 
-st_proc_semb = process_waveforms(
+st_proc = process_waveforms(
     st,
     freqmin=FREQ_MIN,
     freqmax=FREQ_MAX,
-    envelope=False,
-    smooth_win=SMOOTH_WIN,
+    envelope=True,
     decimation_rate=DECIMATION_RATE,
     agc_params=AGC_PARAMS,
     normalize=True,
-    plot_steps=False,
 )
 
 #%% process grid
 
-time_kwargs_fdtd = {"FILENAME_ROOT": FILENAME_ROOT, "FDTD_DIR": FDTD_DIR}
-S_fdtd_semb = grid_search(
-    processed_st=st_proc_semb,
+S_fdtd = grid_search(
+    processed_st=st_proc,
     grid=search_grid,
     time_method=TIME_METHOD2,
     starttime=STARTTIME,
     endtime=ENDTIME,
-    window=5,
-    overlap=0.5,
-    stack_method='semblance',
-    **time_kwargs_fdtd
+    stack_method='sum',
+    FILENAME_ROOT=FILENAME_ROOT,
+    FDTD_DIR=FDTD_DIR,
 )
 
 #%% plot
 
-fig_slice_semb = plot_time_slice(
-    S_fdtd_semb,
-    st_proc_semb,
+fig_slice = plot_time_slice(
+    S_fdtd,
+    st_proc,
     time_slice=None,
     label_stations=True,
     dem=search_dem,
@@ -118,6 +111,51 @@ fig_slice_semb = plot_time_slice(
     annot_int=ANNOT_INT,
 )
 
-time_max_semb, y_max_semb, x_max_semb, _, _ = get_peak_coordinates(
-    S_fdtd_semb, global_max=True, height=0.6, min_time=2, unproject=False
+time_max, y_max, x_max, *_ = get_peak_coordinates(
+    S_fdtd, global_max=False, height=4.5, min_time=30, unproject=False
 )
+
+#%% Plot the maxes identified to figure out which vent
+
+for tmax in time_max:
+
+    plot_time_slice(
+        S_fdtd,
+        st_proc,
+        time_slice=tmax,
+        label_stations=True,
+        dem=search_dem,
+        xy_grid=XY_GRID,
+        cont_int=CONT_INT,
+        annot_int=ANNOT_INT,
+    )
+
+# Manually determined vent locations
+vents = ['A', 'A', 'A', 'C']
+
+#%% Window these times and label using
+
+import matplotlib.pyplot as plt
+
+DUR = 30  # [s] Time window for signal
+
+fig = plt.figure(figsize=(12, 8))
+stp = st.copy().remove_response()
+stp.filter('bandpass', freqmin=FREQ_MIN, freqmax=FREQ_MAX)
+stp.taper(0.05)
+stp.plot(fig=fig, equal_scale=False)
+
+for ax in fig.axes:
+    for tmax, vent in zip(time_max, vents):
+        if vent == 'A':
+            color = 'red'
+        else:  # vent == 'C'
+            color = 'green'
+        ax.axvspan(
+            tmax.matplotlib_date,
+            (tmax + DUR).matplotlib_date,
+            alpha=0.2,
+            color=color,
+            linewidth=0,
+        )
+fig.show()
