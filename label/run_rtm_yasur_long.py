@@ -1,6 +1,13 @@
 from obspy import UTCDateTime
-from rtm import (calculate_time_buffer, define_grid, get_peak_coordinates,
-                 grid_search, plot_time_slice, process_waveforms, produce_dem)
+from rtm import (
+    calculate_time_buffer,
+    define_grid,
+    get_peak_coordinates,
+    grid_search,
+    plot_time_slice,
+    process_waveforms,
+    produce_dem,
+)
 from waveform_collection import gather_waveforms
 
 # curl -O https://cloud.sdsc.edu/v1/AUTH_opentopography/hosted_data/OTDS.072019.4326.1/raster/DEM_WGS84.tif
