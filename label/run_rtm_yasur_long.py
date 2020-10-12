@@ -17,7 +17,7 @@ FREQ_MIN = 0.2  # [Hz] Lower bandpass corner
 FREQ_MAX = 4  # [Hz] Upper bandpass corner
 
 DECIMATION_RATE = 20  # [Hz] New sampling rate to use for decimation
-DH = 4
+DH = 10
 AGC_PARAMS = dict(win_sec=120, method='walker')
 
 # data params
