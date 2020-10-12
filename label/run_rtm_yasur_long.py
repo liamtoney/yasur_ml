@@ -138,7 +138,7 @@ for tmax in time_max:
 # Manually determined vent locations
 vents = ['A', 'A', 'A', 'C']
 
-#%% Window these times and label using
+#%% Window these times and label using manually defined vents
 
 import matplotlib.pyplot as plt
 
