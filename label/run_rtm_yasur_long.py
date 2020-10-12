@@ -42,8 +42,6 @@ DH_SEARCH = DH
 MAX_STATION_DIST = 0.8  # [km] Max. dist. from grid center to station (approx.)
 
 STACK_METHOD = 'sum'  # Choose either 'sum' or 'product'
-TIME_METHOD1 = 'celerity'  # Choose either 'celerity' or 'fdtd'
-TIME_METHOD2 = 'fdtd'  # Choose either 'celerity' or 'fdtd'
 FILENAME_ROOT = 'yasur_rtm_DH2'  # output filename root prefix
 FDTD_DIR = '/Users/ldtoney/work/yasur_ml/label/fdtd/'  # Where travel time lookup table is located
 
@@ -93,10 +91,10 @@ st_proc = process_waveforms(
 
 #%% process grid
 
-S_fdtd = grid_search(
+S = grid_search(
     processed_st=st_proc,
     grid=search_grid,
-    time_method=TIME_METHOD2,
+    time_method='fdtd',
     starttime=STARTTIME,
     endtime=ENDTIME,
     stack_method='sum',
@@ -107,7 +105,7 @@ S_fdtd = grid_search(
 #%% plot
 
 fig_slice = plot_time_slice(
-    S_fdtd,
+    S,
     st_proc,
     time_slice=None,
     label_stations=True,
@@ -119,7 +117,7 @@ fig_slice = plot_time_slice(
 )
 
 time_max, y_max, x_max, *_ = get_peak_coordinates(
-    S_fdtd, global_max=False, height=4.5, min_time=30, unproject=False
+    S, global_max=False, height=4.5, min_time=30, unproject=False
 )
 
 #%% Plot the maxes identified to figure out which vent
@@ -127,7 +125,7 @@ time_max, y_max, x_max, *_ = get_peak_coordinates(
 for tmax in time_max:
 
     plot_time_slice(
-        S_fdtd,
+        S,
         st_proc,
         time_slice=tmax,
         label_stations=True,
