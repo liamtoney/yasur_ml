@@ -102,7 +102,7 @@ S = grid_search(
     FDTD_DIR=FDTD_DIR,
 )
 
-#%% plot
+#%% Plot maximum slice
 
 fig_slice = plot_time_slice(
     S,
@@ -116,24 +116,22 @@ fig_slice = plot_time_slice(
     annot_int=ANNOT_INT,
 )
 
+#%% Plot the maxes identified to figure out which vent
+
+import matplotlib.pyplot as plt
+
 time_max, y_max, x_max, *_ = get_peak_coordinates(
     S, global_max=False, height=4.5, min_time=30, unproject=False
 )
 
-#%% Plot the maxes identified to figure out which vent
+fig, ax = plt.subplots()
 
-for tmax in time_max:
+search_dem.plot.contour(ax=ax, levels=20, colors='black', linewidths=0.5)
+ax.set_aspect('equal')
 
-    plot_time_slice(
-        S,
-        st_proc,
-        time_slice=tmax,
-        label_stations=True,
-        dem=search_dem,
-        xy_grid=XY_GRID,
-        cont_int=CONT_INT,
-        annot_int=ANNOT_INT,
-    )
+for i, (xmax, ymax, tmax) in enumerate(zip(x_max, y_max, time_max)):
+    ax.scatter(xmax, ymax, edgecolors='black', facecolors='orange')
+    ax.text(xmax, ymax, f'{i}')  # Label with index
 
 # Manually determined vent locations
 vents = ['A', 'A', 'A', 'C']
