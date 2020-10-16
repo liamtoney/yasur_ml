@@ -28,7 +28,7 @@ print(
     f'Downloading {(earliest_stop - latest_start) / (60 * 60):.1f} h of data for {len(net.stations)} channels'
 )
 
-# Download
+# Download (this will take a while!)
 st = client.get_waveforms(
     network='3E',
     station=STATION,
