@@ -12,7 +12,7 @@ import numpy as np
 import xarray as xr
 
 WORKING_DIR = Path.home() / 'work' / 'yasur_ml'
-DEM_FILE = WORKING_DIR / 'label' / 'DEM_WGS84.tif'
+DEM_FILE = WORKING_DIR / 'data' / 'DEM_WGS84.tif'
 
 # Read in DEM
 dem = xr.open_rasterio(DEM_FILE).squeeze()

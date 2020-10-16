@@ -16,8 +16,8 @@ from rtm import (
 )
 from waveform_collection import gather_waveforms
 
-# curl -O https://cloud.sdsc.edu/v1/AUTH_opentopography/hosted_data/OTDS.072019.4326.1/raster/DEM_WGS84.tif
-EXTERNAL_FILE = '/Users/ldtoney/work/yasur_ml/label/DEM_WGS84.tif'
+# Info here: https://portal.opentopography.org/dataspace/dataset?opentopoID=OTDS.072019.4326.1
+EXTERNAL_FILE = '/Users/ldtoney/work/yasur_ml/data/DEM_WGS84.tif'
 
 # Load vent midpoint
 with open('/Users/ldtoney/work/yasur_ml/label/yasur_vent_locs.json') as f:
