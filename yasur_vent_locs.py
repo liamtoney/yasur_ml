@@ -11,8 +11,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 import xarray as xr
 
-WORKING_DIR = Path.home() / 'work' / 'yasur_ml' / 'label'
-DEM_FILE = WORKING_DIR / 'DEM_WGS84.tif'
+WORKING_DIR = Path.home() / 'work' / 'yasur_ml'
+DEM_FILE = WORKING_DIR / 'label' / 'DEM_WGS84.tif'
 
 # Read in DEM
 dem = xr.open_rasterio(DEM_FILE).squeeze()
