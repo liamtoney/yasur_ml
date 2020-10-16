@@ -36,7 +36,7 @@ ENDTIME = STARTTIME + 30 * 60
 
 SOURCE = 'IRIS'  # local, IRIS
 NETWORK = '3E'  # YS, 3E
-STATION = 'YIF?'
+STATION = 'YIF1,YIF2,YIF3,YIF4,YIF5'
 LOCATION = '*'
 CHANNEL = '*'
 
@@ -52,7 +52,7 @@ DH_SEARCH = DH
 MAX_STATION_DIST = 0.8  # [km] Max. dist. from grid center to station (approx.)
 
 STACK_METHOD = 'sum'  # Choose either 'sum' or 'product'
-FILENAME_ROOT = 'yasur_rtm_DH2'  # output filename root prefix
+FILENAME_ROOT = 'yasur_rtm_DH2_no_YIF6'  # output filename root prefix
 FDTD_DIR = '/Users/ldtoney/work/yasur_ml/label/fdtd/'  # Where travel time lookup table is located
 
 XY_GRID = 350
@@ -125,6 +125,7 @@ fig_slice = plot_time_slice(
     cont_int=CONT_INT,
     annot_int=ANNOT_INT,
 )
+fig_slice.axes[1].set_ylim(top=st_proc.count())
 
 #%% Automatically determine vent locations (DRAFT)
 
