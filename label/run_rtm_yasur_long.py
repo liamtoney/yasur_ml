@@ -31,8 +31,8 @@ DH = 10
 AGC_PARAMS = dict(win_sec=120, method='walker')
 
 # data params
-STARTTIME = UTCDateTime("2016-07-29T03:00")
-ENDTIME = STARTTIME + 10 * 60
+STARTTIME = UTCDateTime('2016-07-29T02:00')
+ENDTIME = STARTTIME + 30 * 60
 
 SOURCE = 'IRIS'  # local, IRIS
 NETWORK = '3E'  # YS, 3E
@@ -95,7 +95,7 @@ st_proc = process_waveforms(
     freqmax=FREQ_MAX,
     envelope=True,
     decimation_rate=DECIMATION_RATE,
-    agc_params=AGC_PARAMS,
+    agc_params=None,
     normalize=True,
 )
 
@@ -126,18 +126,29 @@ fig_slice = plot_time_slice(
     annot_int=ANNOT_INT,
 )
 
-#%% Plot the maxes identified to figure out which vent
+#%% Automatically determine vent locations (DRAFT)
 
 import matplotlib.pyplot as plt
 
 time_max, y_max, x_max, *_ = get_peak_coordinates(
-    S, global_max=False, height=4.5, min_time=30, unproject=False
+    S, global_max=False, height=3, min_time=10, unproject=False
 )
 
 fig, ax = plt.subplots()
 
 search_dem.plot.contour(ax=ax, levels=20, colors='black', linewidths=0.5)
 ax.set_aspect('equal')
+
+# Tick formatting
+RADIUS = 300
+INC = 100
+x_0, y_0, *_ = utm.from_latlon(SEARCH_LAT_0, SEARCH_LON_0)
+for axis, ref_coord in zip([ax.xaxis, ax.yaxis], [x_0, y_0]):
+    fmt = axis.get_major_formatter()
+    fmt.set_useOffset(ref_coord)
+    axis.set_major_formatter(fmt)
+    plt.setp(axis.get_offset_text(), visible=False)
+    axis.set_ticks(np.arange(-RADIUS, RADIUS + INC, INC) + ref_coord)
 
 # Convert vent locs to UTM
 vent_locs_utm = {}
@@ -164,8 +175,7 @@ def color_code(vent_loc):
     return color
 
 
-# Automatically determine vent locations (DRAFT)
-MAX_RADIUS = 40  # [m] Radius of circle around each vent
+MAX_RADIUS = 50  # [m] Radius of circle around each vent
 
 vent_locs = []
 for xmax, ymax in zip(x_max, y_max):
@@ -185,19 +195,23 @@ print(vent_locs)
 for i, (xmax, ymax, vent) in enumerate(zip(x_max, y_max, vent_locs)):
     ax.scatter(xmax, ymax, edgecolors='black', facecolors=color_code(vent))
 
+ax.set_title(f'MAX_RADIUS = {MAX_RADIUS} m')
+ax.set_xlabel('Easting (m)')
+ax.set_ylabel('Northing (m)')
+
 fig.show()
 
 #%% Window these times and label using manually defined vents
 
 import matplotlib.pyplot as plt
 
-DUR = 30  # [s] Time window for signal
+DUR = 30  # [s] Time window for signal, probably should be less than the min_time above
 
 fig = plt.figure(figsize=(12, 8))
 stp = st.copy().remove_response()
 stp.filter('bandpass', freqmin=FREQ_MIN, freqmax=FREQ_MAX)
 stp.taper(0.05)
-stp.plot(fig=fig, equal_scale=False)
+stp.plot(fig=fig, equal_scale=True, method='full')
 
 for ax in fig.axes:
     for tmax, vent in zip(time_max, vent_locs):
