@@ -1,3 +1,9 @@
+# isort: skip_file
+
+import json
+
+import numpy as np
+import utm
 from obspy import UTCDateTime
 from rtm import (
     calculate_time_buffer,
@@ -12,6 +18,10 @@ from waveform_collection import gather_waveforms
 
 # curl -O https://cloud.sdsc.edu/v1/AUTH_opentopography/hosted_data/OTDS.072019.4326.1/raster/DEM_WGS84.tif
 EXTERNAL_FILE = '/Users/ldtoney/work/yasur_ml/label/DEM_WGS84.tif'
+
+# Load vent midpoint
+with open('/Users/ldtoney/work/yasur_ml/label/yasur_vent_locs.json') as f:
+    VENT_LOCS = json.load(f)
 
 FREQ_MIN = 0.2  # [Hz] Lower bandpass corner
 FREQ_MAX = 4  # [Hz] Upper bandpass corner
@@ -32,8 +42,8 @@ CHANNEL = '*'
 
 # grid params
 # vent mid
-SEARCH_LON_0 = 169.44804400000001
-SEARCH_LAT_0 = -19.528539500000001
+SEARCH_LON_0 = VENT_LOCS['midpoint'][0]
+SEARCH_LAT_0 = VENT_LOCS['midpoint'][1]
 
 SEARCH_X = 350
 SEARCH_Y = 350
@@ -60,7 +70,7 @@ search_grid = define_grid(
     projected=True,
 )
 
-search_dem = produce_dem(search_grid, external_file=EXTERNAL_FILE, plot_output=True)
+search_dem = produce_dem(search_grid, external_file=EXTERNAL_FILE, plot_output=False)
 
 
 #%% read in data
@@ -129,12 +139,53 @@ fig, ax = plt.subplots()
 search_dem.plot.contour(ax=ax, levels=20, colors='black', linewidths=0.5)
 ax.set_aspect('equal')
 
-for i, (xmax, ymax, tmax) in enumerate(zip(x_max, y_max, time_max)):
-    ax.scatter(xmax, ymax, edgecolors='black', facecolors='orange')
-    ax.text(xmax, ymax, f'{i}')  # Label with index
+# Convert vent locs to UTM
+vent_locs_utm = {}
+for vent, loc in {k: VENT_LOCS[k] for k in VENT_LOCS if k != 'midpoint'}.items():
+    utm_x, utm_y, *_ = utm.from_latlon(*loc[::-1])
+    vent_locs_utm[vent] = [utm_x, utm_y]
 
-# Manually determined vent locations
-vents = ['A', 'A', 'A', 'C']
+# Plot vents
+for vent, loc in vent_locs_utm.items():
+    ax.scatter(*loc, marker='^', color='green', edgecolors='black')
+
+
+def within_radius(true_loc, est_loc, radius):
+    return np.linalg.norm(np.array(true_loc) - np.array(est_loc)) < radius
+
+
+def color_code(vent_loc):
+    if vent_loc == 'A':
+        color = 'blue'
+    elif vent_loc == 'C':
+        color = 'red'
+    else:  # vent is None
+        color = 'black'
+    return color
+
+
+# Automatically determine vent locations (DRAFT)
+MAX_RADIUS = 40  # [m] Radius of circle around each vent
+
+vent_locs = []
+for xmax, ymax in zip(x_max, y_max):
+
+    at_A = within_radius(vent_locs_utm['A'], (xmax, ymax), MAX_RADIUS)
+    at_C = within_radius(vent_locs_utm['C'], (xmax, ymax), MAX_RADIUS)
+
+    if at_A and not at_C:
+        vent_locs.append('A')
+    elif at_C and not at_A:
+        vent_locs.append('C')
+    else:  # Either not located or doubly-located
+        vent_locs.append(None)
+
+print(vent_locs)
+
+for i, (xmax, ymax, vent) in enumerate(zip(x_max, y_max, vent_locs)):
+    ax.scatter(xmax, ymax, edgecolors='black', facecolors=color_code(vent))
+
+fig.show()
 
 #%% Window these times and label using manually defined vents
 
@@ -149,16 +200,12 @@ stp.taper(0.05)
 stp.plot(fig=fig, equal_scale=False)
 
 for ax in fig.axes:
-    for tmax, vent in zip(time_max, vents):
-        if vent == 'A':
-            color = 'red'
-        else:  # vent == 'C'
-            color = 'green'
+    for tmax, vent in zip(time_max, vent_locs):
         ax.axvspan(
             tmax.matplotlib_date,
             (tmax + DUR).matplotlib_date,
             alpha=0.2,
-            color=color,
+            color=color_code(vent),
             linewidth=0,
         )
 fig.show()
