@@ -1,5 +1,5 @@
 """
-Download 3E data and save to pickle file(s).
+Download 3E data, downsample, and save to a pickle file.
 """
 
 from pathlib import Path
@@ -13,6 +13,9 @@ STATION = 'YIF1,YIF2,YIF3,YIF4,YIF5'
 
 # Duration of data chunks (for piecewise downloading)
 CHUNK_DURATION = 0.5  # [h]
+
+# New sampling rate to downsample to
+SAMPLING_RATE = 50  # [Hz]
 
 client = Client('IRIS')
 
@@ -31,7 +34,7 @@ print(
     f'Downloading {(earliest_stop - latest_start) / (60 * 60):.1f} h of data for {len(net.stations)} channels'
 )
 
-# Download in chunks (this will take a while!)
+# Download in chunks (takes a while!)
 st = Stream()
 starttime = latest_start
 chunk_duration_sec = CHUNK_DURATION * 60 * 60  # [s]
@@ -58,5 +61,10 @@ while True:
     print(f'{num_hours_downloaded:g} hrs downloaded')
     starttime += chunk_duration_sec
 
-# Save (might need to downsample first? also might need to break into smaller files)
-# st.write(Path.home() / 'work' / 'yasur_ml' / 'data' / '3E_YIF1-5.pkl', format='PICKLE')
+# Downsample, and then merge (opposite order hangs)
+st.interpolate(sampling_rate=SAMPLING_RATE, method='lanczos', a=20)
+st.merge(method=1, fill_value='interpolate')  # Avoids creating a masked array
+
+# Save
+filename = f'3E_YIF1-5_{SAMPLING_RATE}hz.pkl'
+st.write(str(Path.home() / 'work' / 'yasur_ml' / 'data' / filename), format='PICKLE')
