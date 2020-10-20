@@ -1,5 +1,5 @@
 """
-Download 3E data, downsample, and save to a pickle file.
+Download 3E data, downsample, add coordinates, and save to a pickle file.
 """
 
 from pathlib import Path
@@ -24,6 +24,7 @@ net = client.get_stations(
     station=STATION,
     starttime=UTCDateTime(2016, 1, 1),
     endtime=UTCDateTime(2016, 12, 31),
+    level='channel',
 )[0]
 
 # Find bounds of the time period where all stations were present
@@ -64,6 +65,14 @@ while True:
 # Downsample, and then merge (opposite order hangs)
 st.interpolate(sampling_rate=SAMPLING_RATE, method='lanczos', a=20)
 st.merge(method=1, fill_value='interpolate')  # Avoids creating a masked array
+
+# Add coordinates
+for tr in st:
+    coords = net.get_coordinates(tr.id, datetime=latest_start)
+    print(coords)
+    tr.stats.latitude = coords['latitude']
+    tr.stats.longitude = coords['longitude']
+    tr.stats.elevation = coords['elevation']
 
 # Save
 filename = f'3E_YIF1-5_{SAMPLING_RATE}hz.pkl'
