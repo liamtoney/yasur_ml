@@ -69,7 +69,6 @@ st.merge(method=1, fill_value='interpolate')  # Avoids creating a masked array
 # Add coordinates
 for tr in st:
     coords = net.get_coordinates(tr.id, datetime=latest_start)
-    print(coords)
     tr.stats.latitude = coords['latitude']
     tr.stats.longitude = coords['longitude']
     tr.stats.elevation = coords['elevation']
