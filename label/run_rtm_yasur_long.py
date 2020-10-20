@@ -8,7 +8,6 @@ import numpy as np
 import utm
 from obspy import UTCDateTime, read
 from rtm import (
-    calculate_time_buffer,
     define_grid,
     get_peak_coordinates,
     grid_search,
@@ -74,11 +73,8 @@ search_dem = produce_dem(search_grid, external_file=EXTERNAL_FILE, plot_output=F
 
 #%% read in data
 
-# Automatically determine appropriate time buffer in s
-time_buffer = calculate_time_buffer(search_grid, MAX_STATION_DIST)
-
 # Trim to what we want
-st = st_full.copy().trim(starttime=STARTTIME, endtime=ENDTIME + time_buffer)
+st = st_full.copy().trim(starttime=STARTTIME, endtime=ENDTIME)
 
 st_proc = process_waveforms(
     st,
@@ -96,8 +92,6 @@ S = grid_search(
     processed_st=st_proc,
     grid=search_grid,
     time_method='fdtd',
-    starttime=STARTTIME,
-    endtime=ENDTIME,
     stack_method='sum',
     FILENAME_ROOT=FILENAME_ROOT,
     FDTD_DIR=FDTD_DIR,
