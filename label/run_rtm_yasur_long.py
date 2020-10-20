@@ -19,8 +19,8 @@ from waveform_collection import gather_waveforms
 # Info here: https://portal.opentopography.org/dataspace/dataset?opentopoID=OTDS.072019.4326.1
 EXTERNAL_FILE = '/Users/ldtoney/work/yasur_ml/data/DEM_WGS84.tif'
 
-# Load vent midpoint
-with open('/Users/ldtoney/work/yasur_ml/label/yasur_vent_locs.json') as f:
+# Load vent locs
+with open('/Users/ldtoney/work/yasur_ml/yasur_vent_locs.json') as f:
     VENT_LOCS = json.load(f)
 
 FREQ_MIN = 0.2  # [Hz] Lower bandpass corner
