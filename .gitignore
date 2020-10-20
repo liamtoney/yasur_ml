@@ -3,3 +3,4 @@ figures/
 *.nc
 *.pkl
 *.tif
+.DS_Store
