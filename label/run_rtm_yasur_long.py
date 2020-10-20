@@ -1,10 +1,12 @@
+#%% IMPORT PACKAGES AND LOAD FULL DATASET
+
 # isort: skip_file
 
 import json
 
 import numpy as np
 import utm
-from obspy import UTCDateTime
+from obspy import UTCDateTime, read
 from rtm import (
     calculate_time_buffer,
     define_grid,
@@ -14,7 +16,11 @@ from rtm import (
     process_waveforms,
     produce_dem,
 )
-from waveform_collection import gather_waveforms
+
+# Load in full dataset
+st_full = read('data/3E_YIF1-5_50hz.pkl')
+
+#%% SET PARAMETERS
 
 # Info here: https://portal.opentopography.org/dataspace/dataset?opentopoID=OTDS.072019.4326.1
 EXTERNAL_FILE = '/Users/ldtoney/work/yasur_ml/data/DEM_WGS84.tif'
@@ -33,12 +39,6 @@ AGC_PARAMS = dict(win_sec=120, method='walker')
 # data params
 STARTTIME = UTCDateTime('2016-07-29T02:00')
 ENDTIME = STARTTIME + 30 * 60
-
-SOURCE = 'IRIS'  # local, IRIS
-NETWORK = '3E'  # YS, 3E
-STATION = 'YIF1,YIF2,YIF3,YIF4,YIF5'
-LOCATION = '*'
-CHANNEL = '*'
 
 # grid params
 # vent mid
@@ -72,22 +72,13 @@ search_grid = define_grid(
 
 search_dem = produce_dem(search_grid, external_file=EXTERNAL_FILE, plot_output=False)
 
-
 #%% read in data
 
 # Automatically determine appropriate time buffer in s
 time_buffer = calculate_time_buffer(search_grid, MAX_STATION_DIST)
 
-st = gather_waveforms(
-    source=SOURCE,
-    network=NETWORK,
-    station=STATION,
-    location=LOCATION,
-    channel=CHANNEL,
-    starttime=STARTTIME,
-    endtime=ENDTIME,
-    time_buffer=time_buffer,
-)
+# Trim to what we want
+st = st_full.copy().trim(starttime=STARTTIME, endtime=ENDTIME + time_buffer)
 
 st_proc = process_waveforms(
     st,
