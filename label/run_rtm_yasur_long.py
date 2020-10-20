@@ -122,6 +122,8 @@ fig_slice.axes[1].set_ylim(top=st_proc.count())
 
 import matplotlib.pyplot as plt
 
+MAX_RADIUS = 50  # [m] Radius of circle around each vent
+
 time_max, y_max, x_max, *_ = get_peak_coordinates(
     S, global_max=False, height=3, min_time=10, unproject=False
 )
@@ -148,9 +150,10 @@ for vent, loc in {k: VENT_LOCS[k] for k in VENT_LOCS if k != 'midpoint'}.items()
     utm_x, utm_y, *_ = utm.from_latlon(*loc[::-1])
     vent_locs_utm[vent] = [utm_x, utm_y]
 
-# Plot vents
+# Plot vents and associated radii thresholds
 for vent, loc in vent_locs_utm.items():
     ax.scatter(*loc, marker='^', color='green', edgecolors='black')
+    ax.add_artist(plt.Circle(loc, MAX_RADIUS, color='lightgrey', zorder=-100))
 
 
 def within_radius(true_loc, est_loc, radius):
@@ -166,8 +169,6 @@ def color_code(vent_loc):
         color = 'black'
     return color
 
-
-MAX_RADIUS = 50  # [m] Radius of circle around each vent
 
 vent_locs = []
 for xmax, ymax in zip(x_max, y_max):
