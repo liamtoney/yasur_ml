@@ -4,9 +4,12 @@
 
 import json
 
+import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
 import utm
-from obspy import UTCDateTime, read
+from matplotlib.ticker import MultipleLocator
+from obspy import Stream, UTCDateTime, read
 from rtm import (
     define_grid,
     get_peak_coordinates,
@@ -109,8 +112,6 @@ fig_slice.axes[1].set_ylim(top=st_proc.count())
 
 #%% Automatically determine vent locations (DRAFT)
 
-import matplotlib.pyplot as plt
-
 MAX_RADIUS = 50  # [m] Radius of circle around each vent
 
 time_max, y_max, x_max, *_ = get_peak_coordinates(
@@ -154,7 +155,7 @@ def color_code(vent_loc):
         color = 'blue'
     elif vent_loc == 'C':
         color = 'red'
-    else:  # vent is None
+    else:  # vent is None, NaN, etc.
         color = 'black'
     return color
 
@@ -185,8 +186,6 @@ fig.show()
 
 #%% Window these times and label using manually defined vents
 
-import matplotlib.pyplot as plt
-
 DUR = 30  # [s] Time window for signal, probably should be less than the min_time above
 
 fig = plt.figure(figsize=(12, 8))
@@ -208,7 +207,54 @@ fig.show()
 
 #%% Export CSV
 
-import pandas as pd
-
 df = pd.DataFrame(dict(x=x_max, y=y_max, t=time_max, vent=vent_locs))
 df.to_csv('label/catalog.csv', index=False)
+
+#%% Import CSV and extract waveforms
+
+df = pd.read_csv('label/catalog.csv')
+df.t = [UTCDateTime(t) for t in df.t]
+
+DUR = 10  # [s]
+
+fs = st_full[0].stats.sampling_rate  # [Hz]
+
+length_samples = int(DUR * fs)  # [samples]
+
+PLOT = True
+
+st_label = Stream()
+for x, y, t, vent in zip(df.x, df.y, df.t, df.vent):
+    st = st_full.copy().trim(t, t + DUR)
+    for tr in st:
+        tr.stats.vent = vent
+        tr.stats.event_info = dict(utm_x=x, utm_y=y, otime=t)
+        tr.data = tr.data[:length_samples]
+
+    # Plot
+    if PLOT:
+        fig = plt.figure(figsize=(5, 6))
+        stp = (
+            st.copy()
+            .remove_response()
+            .taper(0.01)
+            .filter('bandpass', freqmin=FREQ_MIN, freqmax=FREQ_MAX)
+        )
+        stp.plot(fig=fig, type='relative')
+        fig.suptitle(f'Vent {vent}' if not pd.isnull(vent) else 'Bad location', y=1)
+        fig.axes[-1].set_xlabel('Time (s)')
+        fig.axes[2].set_ylabel('Pressure (Pa)')
+        fig.axes[-1].set_xlim(0, DUR)
+        fig.axes[-1].xaxis.set_major_locator(MultipleLocator(1))
+        fig.tight_layout(pad=0.2)
+        fig.show()
+
+    st_label += st
+
+if PLOT:
+    fig, ax = plt.subplots()
+    shift = 0
+    for tr in st_label.copy().remove_response().taper(0.01).normalize():
+        ax.plot(tr.data - shift, color=color_code(tr.stats.vent))
+        shift += 2
+    fig.show()
