@@ -4,6 +4,7 @@
 
 import json
 
+import colorcet as cc
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -221,7 +222,7 @@ fs = st_full[0].stats.sampling_rate  # [Hz]
 
 length_samples = int(DUR * fs)  # [samples]
 
-PLOT = True
+PLOT = False
 
 st_label = Stream()
 for x, y, t, vent in zip(df.x, df.y, df.t, df.vent):
@@ -252,9 +253,35 @@ for x, y, t, vent in zip(df.x, df.y, df.t, df.vent):
     st_label += st
 
 if PLOT:
+
+    # Line plot
     fig, ax = plt.subplots()
     shift = 0
     for tr in st_label.copy().remove_response().taper(0.01).normalize():
         ax.plot(tr.data - shift, color=color_code(tr.stats.vent))
         shift += 2
+    fig.show()
+
+    # Image plot
+    fig, (cax, ax) = plt.subplots(
+        nrows=2, gridspec_kw=dict(height_ratios=[0.025, 1]), figsize=(5, 9)
+    )
+    st_mat = st_label.copy().remove_response().taper(0.01)
+    mat = st_mat[0].data
+    for tr in st_mat[1:]:
+        if tr.stats.station != 'YIF1':  # Skip YIF1
+            mat = np.vstack((mat, tr.data))
+    sm = ax.pcolormesh(
+        st_mat[0].times(),
+        range(mat.shape[0]),
+        mat,
+        cmap=cc.m_CET_D1A,
+        vmin=-600,
+        vmax=600,
+    )
+    ax.set_xlim(0, DUR)
+    ax.set_xlabel('Time (s)')
+    ax.set_yticks([])
+    fig.colorbar(sm, cax=cax, label='Pressure (Pa)', orientation='horizontal')
+    fig.tight_layout()
     fig.show()
