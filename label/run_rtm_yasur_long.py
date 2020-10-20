@@ -95,7 +95,7 @@ S = grid_search(
     FDTD_DIR=FDTD_DIR,
 )
 
-#%% Plot maximum slice
+#%% Plot maximum slice (OPTIONAL)
 
 fig_slice = plot_time_slice(
     S,
@@ -192,7 +192,7 @@ fig = plt.figure(figsize=(12, 8))
 stp = st.copy().remove_response()
 stp.filter('bandpass', freqmin=FREQ_MIN, freqmax=FREQ_MAX)
 stp.taper(0.05)
-stp.plot(fig=fig, equal_scale=True, method='full')
+stp.plot(fig=fig, equal_scale=True)
 
 for ax in fig.axes:
     for t, vent in zip(time_max, vent_locs):
