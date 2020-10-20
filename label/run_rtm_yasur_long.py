@@ -1,4 +1,4 @@
-#%% IMPORT PACKAGES AND LOAD FULL DATASET
+#%% Import packages and load full dataset
 
 # isort: skip_file
 
@@ -19,7 +19,7 @@ from rtm import (
 # Load in full dataset
 st_full = read('data/3E_YIF1-5_50hz.pkl')
 
-#%% SET PARAMETERS
+#%% Set parameters
 
 # Info here: https://portal.opentopography.org/dataspace/dataset?opentopoID=OTDS.072019.4326.1
 EXTERNAL_FILE = '/Users/ldtoney/work/yasur_ml/data/DEM_WGS84.tif'
@@ -32,23 +32,18 @@ FREQ_MIN = 0.2  # [Hz] Lower bandpass corner
 FREQ_MAX = 4  # [Hz] Upper bandpass corner
 
 DECIMATION_RATE = 20  # [Hz] New sampling rate to use for decimation
-DH = 10
 AGC_PARAMS = dict(win_sec=120, method='walker')
 
-# data params
+# Data window
 STARTTIME = UTCDateTime('2016-07-29T02:00')
 ENDTIME = STARTTIME + 30 * 60
 
-# grid params
-# vent mid
+# Grid params
+GRID_SPACING = 10  # [m]
 SEARCH_LON_0 = VENT_LOCS['midpoint'][0]
 SEARCH_LAT_0 = VENT_LOCS['midpoint'][1]
-
 SEARCH_X = 350
 SEARCH_Y = 350
-DH_SEARCH = DH
-
-MAX_STATION_DIST = 0.8  # [km] Max. dist. from grid center to station (approx.)
 
 STACK_METHOD = 'sum'  # Choose either 'sum' or 'product'
 FILENAME_ROOT = 'yasur_rtm_DH2_no_YIF6'  # output filename root prefix
@@ -60,16 +55,16 @@ ANNOT_INT = 50
 
 #%% Create grids
 
-search_grid = define_grid(
+grid = define_grid(
     lon_0=SEARCH_LON_0,
     lat_0=SEARCH_LAT_0,
     x_radius=SEARCH_X,
     y_radius=SEARCH_Y,
-    spacing=DH_SEARCH,
+    spacing=GRID_SPACING,
     projected=True,
 )
 
-search_dem = produce_dem(search_grid, external_file=EXTERNAL_FILE, plot_output=False)
+dem = produce_dem(grid, external_file=EXTERNAL_FILE, plot_output=False)
 
 #%% read in data
 
@@ -90,7 +85,7 @@ st_proc = process_waveforms(
 
 S = grid_search(
     processed_st=st_proc,
-    grid=search_grid,
+    grid=grid,
     time_method='fdtd',
     stack_method='sum',
     FILENAME_ROOT=FILENAME_ROOT,
@@ -104,7 +99,7 @@ fig_slice = plot_time_slice(
     st_proc,
     time_slice=None,
     label_stations=True,
-    dem=search_dem,
+    dem=dem,
     plot_peak=True,
     xy_grid=XY_GRID,
     cont_int=CONT_INT,
@@ -124,7 +119,7 @@ time_max, y_max, x_max, *_ = get_peak_coordinates(
 
 fig, ax = plt.subplots()
 
-search_dem.plot.contour(ax=ax, levels=20, colors='black', linewidths=0.5)
+dem.plot.contour(ax=ax, levels=20, colors='black', linewidths=0.5)
 ax.set_aspect('equal')
 
 # Tick formatting
@@ -165,10 +160,10 @@ def color_code(vent_loc):
 
 
 vent_locs = []
-for xmax, ymax in zip(x_max, y_max):
+for x, y in zip(x_max, y_max):
 
-    at_A = within_radius(vent_locs_utm['A'], (xmax, ymax), MAX_RADIUS)
-    at_C = within_radius(vent_locs_utm['C'], (xmax, ymax), MAX_RADIUS)
+    at_A = within_radius(vent_locs_utm['A'], (x, y), MAX_RADIUS)
+    at_C = within_radius(vent_locs_utm['C'], (x, y), MAX_RADIUS)
 
     if at_A and not at_C:
         vent_locs.append('A')
@@ -179,8 +174,8 @@ for xmax, ymax in zip(x_max, y_max):
 
 print(vent_locs)
 
-for i, (xmax, ymax, vent) in enumerate(zip(x_max, y_max, vent_locs)):
-    ax.scatter(xmax, ymax, edgecolors='black', facecolors=color_code(vent))
+for i, (x, y, vent) in enumerate(zip(x_max, y_max, vent_locs)):
+    ax.scatter(x, y, edgecolors='black', facecolors=color_code(vent))
 
 ax.set_title(f'MAX_RADIUS = {MAX_RADIUS} m')
 ax.set_xlabel('Easting (m)')
@@ -201,12 +196,19 @@ stp.taper(0.05)
 stp.plot(fig=fig, equal_scale=True, method='full')
 
 for ax in fig.axes:
-    for tmax, vent in zip(time_max, vent_locs):
+    for t, vent in zip(time_max, vent_locs):
         ax.axvspan(
-            tmax.matplotlib_date,
-            (tmax + DUR).matplotlib_date,
+            t.matplotlib_date,
+            (t + DUR).matplotlib_date,
             alpha=0.2,
             color=color_code(vent),
             linewidth=0,
         )
 fig.show()
+
+#%% Export CSV
+
+import pandas as pd
+
+df = pd.DataFrame(dict(x=x_max, y=y_max, t=time_max, vent=vent_locs))
+df.to_csv('label/catalog.csv', index=False)
