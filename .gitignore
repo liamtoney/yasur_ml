@@ -3,4 +3,6 @@ figures/
 *.nc
 *.pkl
 *.tif
+*.gsheet
+*.gdoc
 .DS_Store
