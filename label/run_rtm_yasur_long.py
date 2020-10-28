@@ -115,10 +115,16 @@ fig_slice.axes[1].set_ylim(top=st_proc.count())
 
 #%% Automatically determine vent locations (DRAFT)
 
-MAX_RADIUS = 50  # [m] Radius of circle around each vent
+MAX_RADIUS = 30  # [m] Radius of circle around each vent
+HEIGHT_THRESHOLD = 4  # Minimum stack function value required
+MIN_TIME_SPACING = 30  # [s] Minimum time between adjacent peaks
 
 time_max, y_max, x_max, *_ = get_peak_coordinates(
-    S, global_max=False, height=3, min_time=10, unproject=False
+    S,
+    global_max=False,
+    height=HEIGHT_THRESHOLD,
+    min_time=MIN_TIME_SPACING,
+    unproject=False,
 )
 
 fig, ax = plt.subplots()
@@ -190,6 +196,8 @@ fig.show()
 #%% Window these times and label using manually defined vents
 
 DUR = 30  # [s] Time window for signal, probably should be less than the min_time above
+if DUR > MIN_TIME_SPACING:
+    raise ValueError('Duration of waveform window must be shorter than peak spacing')
 
 fig = plt.figure(figsize=(12, 8))
 stp = st.copy().remove_response()
