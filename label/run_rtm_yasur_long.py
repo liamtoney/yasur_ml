@@ -79,10 +79,12 @@ st_proc = process_waveforms(
     st,
     freqmin=FREQ_MIN,
     freqmax=FREQ_MAX,
+    taper_length=30,
     envelope=True,
     decimation_rate=DECIMATION_RATE,
     agc_params=dict(win_sec=120, method='walker'),
     normalize=True,
+    plot_steps=False,
 )
 
 #%% process grid
