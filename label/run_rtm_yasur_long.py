@@ -36,7 +36,6 @@ FREQ_MIN = 0.2  # [Hz] Lower bandpass corner
 FREQ_MAX = 4  # [Hz] Upper bandpass corner
 
 DECIMATION_RATE = 20  # [Hz] New sampling rate to use for decimation
-AGC_PARAMS = dict(win_sec=120, method='walker')
 
 # Data window
 STARTTIME = UTCDateTime('2016-07-29T02:00')
@@ -49,10 +48,11 @@ SEARCH_LAT_0 = VENT_LOCS['midpoint'][1]
 SEARCH_X = 350
 SEARCH_Y = 350
 
-STACK_METHOD = 'sum'  # Choose either 'sum' or 'product'
+# FDTD grid info
 FILENAME_ROOT = 'yasur_rtm_DH2_no_YIF6'  # output filename root prefix
 FDTD_DIR = '/Users/ldtoney/work/yasur_ml/label/fdtd/'  # Where travel time lookup table is located
 
+# Plotting params
 XY_GRID = 350
 CONT_INT = 5
 ANNOT_INT = 50
@@ -81,7 +81,7 @@ st_proc = process_waveforms(
     freqmax=FREQ_MAX,
     envelope=True,
     decimation_rate=DECIMATION_RATE,
-    agc_params=None,
+    agc_params=dict(win_sec=120, method='walker'),
     normalize=True,
 )
 
