@@ -38,7 +38,7 @@ FREQ_MAX = 4
 DECIMATION_RATE = 20  # [Hz] New sampling rate to use for decimation
 
 # [s] AGC window (David's local RTM paper uses 120 s)
-AGC_WINDOW = 120
+AGC_WINDOW = 60
 
 # Detection params
 HEIGHT_THRESHOLD = 4  # Minimum stack function value required
