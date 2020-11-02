@@ -1,5 +1,6 @@
 .idea/
 figures/
+label/catalogs/
 *.nc
 *.pkl
 *.tif
