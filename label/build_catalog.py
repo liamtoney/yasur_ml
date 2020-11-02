@@ -1,4 +1,7 @@
-#%% Import packages and load full dataset
+"""
+Run RTM on chunks of data to assemble a catalog of (x, y, t) stored as a series of CSV
+files. x and y are in meters in UTM zone 59S. t is in UTC.
+"""
 
 # isort: skip_file
 
