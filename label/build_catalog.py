@@ -4,6 +4,7 @@
 
 import json
 from datetime import datetime
+from pathlib import Path
 
 import pandas as pd
 from obspy import read
@@ -15,16 +16,16 @@ from rtm import (
     produce_dem,
 )
 
+# Define project directory
+WORKING_DIR = Path.home() / 'work' / 'yasur_ml'
+
 # Load in full dataset
-st_full = read('data/3E_YIF1-5_50hz.pkl')
+st_full = read(str(WORKING_DIR / 'data' / '3E_YIF1-5_50hz.pkl'))
 
 #%% Set parameters
 
-# Info here: https://portal.opentopography.org/dataspace/dataset?opentopoID=OTDS.072019.4326.1
-EXTERNAL_FILE = '/Users/ldtoney/work/yasur_ml/data/DEM_WGS84.tif'
-
 # Load vent locs
-with open('/Users/ldtoney/work/yasur_ml/yasur_vent_locs.json') as f:
+with open(WORKING_DIR / 'yasur_vent_locs.json') as f:
     VENT_LOCS = json.load(f)
 
 FREQ_MIN = 0.2  # [Hz] Lower bandpass corner
@@ -32,8 +33,9 @@ FREQ_MAX = 4  # [Hz] Upper bandpass corner
 
 DECIMATION_RATE = 20  # [Hz] New sampling rate to use for decimation
 
+AGC_WINDOW = 120  # [s] AGC window
+
 # Detection params
-MAX_RADIUS = 30  # [m] Radius of circle around each vent
 HEIGHT_THRESHOLD = 4  # Minimum stack function value required
 MIN_TIME_SPACING = 30  # [s] Minimum time between adjacent peaks
 
@@ -49,7 +51,17 @@ SEARCH_Y = 350
 
 # FDTD grid info
 FILENAME_ROOT = 'yasur_rtm_DH2_no_YIF6'  # output filename root prefix
-FDTD_DIR = '/Users/ldtoney/work/yasur_ml/label/fdtd/'  # Where travel time lookup table is located
+FDTD_DIR = WORKING_DIR / 'label' / 'fdtd'  # Where travel time lookup table is located
+
+# Make catalog dir
+catalog_dir = (
+    WORKING_DIR
+    / 'label'
+    / 'catalogs'
+    / f'height_{HEIGHT_THRESHOLD}_spacing_{MIN_TIME_SPACING}_agc_{AGC_WINDOW}'
+)
+if not catalog_dir.exists():
+    catalog_dir.mkdir()
 
 #%% Create grids
 
@@ -62,7 +74,10 @@ grid = define_grid(
     projected=True,
 )
 
-dem = produce_dem(grid, external_file=EXTERNAL_FILE, plot_output=False)
+# DEM info here: https://portal.opentopography.org/dataspace/dataset?opentopoID=OTDS.072019.4326.1
+dem = produce_dem(
+    grid, external_file=str(WORKING_DIR / 'data' / 'DEM_WGS84.tif'), plot_output=False
+)
 
 #%% Run in chunks
 
@@ -97,7 +112,7 @@ while True:
         taper_length=30,
         envelope=True,
         decimation_rate=DECIMATION_RATE,
-        agc_params=dict(win_sec=120, method='walker'),
+        agc_params=dict(win_sec=AGC_WINDOW, method='walker'),
         normalize=True,
     )
 
@@ -108,7 +123,7 @@ while True:
         time_method='fdtd',
         stack_method='sum',
         FILENAME_ROOT=FILENAME_ROOT,
-        FDTD_DIR=FDTD_DIR,
+        FDTD_DIR=str(FDTD_DIR) + '/',  # Hacky :(
     )
 
     # Automatically determine vent locations
@@ -122,7 +137,7 @@ while True:
 
     # Export to CSV
     df = pd.DataFrame(dict(x=x_max, y=y_max, t=time_max))
-    df.to_csv(f'label/catalog/catalog_{n:02}.csv', index=False)
+    df.to_csv(catalog_dir / f'catalog_{n:02}.csv', index=False)
 
     # END-OF-LOOP STUFF
     if leave:
