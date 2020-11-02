@@ -28,12 +28,14 @@ st_full = read(str(WORKING_DIR / 'data' / '3E_YIF1-5_50hz.pkl'))
 with open(WORKING_DIR / 'yasur_vent_locs.json') as f:
     VENT_LOCS = json.load(f)
 
-FREQ_MIN = 0.2  # [Hz] Lower bandpass corner
-FREQ_MAX = 4  # [Hz] Upper bandpass corner
+# [Hz] Bandpass corners (David's local RTM paper uses 0.2–4 Hz)
+FREQ_MIN = 0.2
+FREQ_MAX = 4
 
 DECIMATION_RATE = 20  # [Hz] New sampling rate to use for decimation
 
-AGC_WINDOW = 120  # [s] AGC window
+# [s] AGC window (David's local RTM paper uses 120 s)
+AGC_WINDOW = 120
 
 # Detection params
 HEIGHT_THRESHOLD = 4  # Minimum stack function value required
@@ -109,7 +111,7 @@ while True:
         st,
         freqmin=FREQ_MIN,
         freqmax=FREQ_MAX,
-        taper_length=30,
+        taper_length=30,  # [s]
         envelope=True,
         decimation_rate=DECIMATION_RATE,
         agc_params=dict(win_sec=AGC_WINDOW, method='walker'),
@@ -147,4 +149,6 @@ while True:
     starttime += chunk_duration_sec
     n += 1
 
+# Display total run time
+print('Elapsed time:')
 print(datetime.now() - t0)
