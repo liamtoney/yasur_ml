@@ -1,4 +1,6 @@
-#%% Import packages and load full dataset
+"""
+Sandbox for exploring how best to label waveforms using RTM.
+"""
 
 # isort: skip_file
 
