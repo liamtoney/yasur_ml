@@ -5,6 +5,7 @@ import numpy as np
 import pandas as pd
 from obspy import read
 from scipy import stats
+from scipy.signal import welch
 
 # Define project directory
 WORKING_DIR = Path.home() / 'work' / 'yasur_ml'
@@ -14,10 +15,14 @@ labeled_wf_dir = WORKING_DIR / 'data' / 'labeled'
 
 #%% Extract features for a single station
 
+FFT_WIN_DUR = 10  # [s]
+
 STATION = 'YIF2'  # Station to extract features for
 
 # Initiate DataFrame of extracted features
-features = pd.DataFrame(columns=['label', 'td_std', 'td_skewness', 'td_kurtosis'])
+features = pd.DataFrame(
+    columns=['label', 'td_std', 'td_skewness', 'td_kurtosis', 'fd_peak']
+)
 
 # Iterate over all labeled waveform files
 for file in sorted(labeled_wf_dir.glob('label_???.pkl')):
@@ -34,27 +39,38 @@ for file in sorted(labeled_wf_dir.glob('label_???.pkl')):
 
     # Calculate features, append to DataFrame
     for tr in st:
+
+        # Transform to frequency domain
+        fs = tr.stats.sampling_rate
+        nperseg = int(FFT_WIN_DUR * fs)  # Samples
+        nfft = np.power(2, int(np.ceil(np.log2(nperseg))) + 1)  # Pad FFT
+        f, pxx = welch(tr.data, fs, nperseg=nperseg, nfft=nfft)
+
         info = dict(
             label=tr.stats.vent,
             td_std=np.std(tr.data),
             td_skewness=stats.skew(tr.data),
             td_kurtosis=stats.kurtosis(tr.data),
+            fd_peak=f[np.argmax(pxx)],  # [Hz]
         )
         features = features.append(info, ignore_index=True)
 
 #%% Plot features
 
+X_AXIS_FEATURE = 'td_skewness'
+Y_AXIS_FEATURE = 'td_kurtosis'
+
 colors = ['blue' if label == 'A' else 'red' for label in features['label']]
 
 fig, ax = plt.subplots()
 ax.scatter(
-    features['td_skewness'],
-    features['td_kurtosis'],
+    features[X_AXIS_FEATURE],
+    features[Y_AXIS_FEATURE],
     edgecolors=colors,
     facecolors='none',
 )
-ax.set_xlabel('T.D. skewness')
-ax.set_ylabel('T.D. kurtosis')
+ax.set_xlabel(X_AXIS_FEATURE)
+ax.set_ylabel(Y_AXIS_FEATURE)
 ax.set_title(f'{STATION}, {features.shape[0]} waveforms')
 
 # Add legend
