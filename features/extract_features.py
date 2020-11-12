@@ -17,7 +17,7 @@ labeled_wf_dir = WORKING_DIR / 'data' / 'labeled'
 STATION = 'YIF2'  # Station to extract features for
 
 # Initiate DataFrame of extracted features
-features = pd.DataFrame(columns=['label', 'std', 'skewness', 'kurtosis'])
+features = pd.DataFrame(columns=['label', 'td_std', 'td_skewness', 'td_kurtosis'])
 
 # Iterate over all labeled waveform files
 for file in sorted(labeled_wf_dir.glob('label_???.pkl')):
@@ -36,9 +36,9 @@ for file in sorted(labeled_wf_dir.glob('label_???.pkl')):
     for tr in st:
         info = dict(
             label=tr.stats.vent,
-            std=np.std(tr.data),
-            skewness=stats.skew(tr.data),
-            kurtosis=stats.kurtosis(tr.data),
+            td_std=np.std(tr.data),
+            td_skewness=stats.skew(tr.data),
+            td_kurtosis=stats.kurtosis(tr.data),
         )
         features = features.append(info, ignore_index=True)
 
@@ -48,10 +48,13 @@ colors = ['blue' if label == 'A' else 'red' for label in features['label']]
 
 fig, ax = plt.subplots()
 ax.scatter(
-    features['skewness'], features['kurtosis'], edgecolors=colors, facecolors='none',
+    features['td_skewness'],
+    features['td_kurtosis'],
+    edgecolors=colors,
+    facecolors='none',
 )
-ax.set_xlabel('Skewness')
-ax.set_ylabel('Kurtosis')
+ax.set_xlabel('T.D. skewness')
+ax.set_ylabel('T.D. kurtosis')
 ax.set_title(f'{STATION}, {features.shape[0]} waveforms')
 
 # Add legend
