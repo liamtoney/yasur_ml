@@ -34,7 +34,7 @@ for file in sorted(labeled_wf_dir.glob('label_???.pkl')):
     # Process
     st.remove_response()
     st.taper(0.01)
-    st.filter('bandpass', freqmin=0.2, freqmax=4, zerophase=True)
+    # st.filter('bandpass', freqmin=0.2, freqmax=4, zerophase=True)
     st.normalize()
 
     # Calculate features, append to DataFrame
@@ -44,18 +44,18 @@ for file in sorted(labeled_wf_dir.glob('label_???.pkl')):
         fs = tr.stats.sampling_rate
         nperseg = int(FFT_WIN_DUR * fs)  # Samples
         nfft = np.power(2, int(np.ceil(np.log2(nperseg))) + 1)  # Pad FFT
-        f, pxx = welch(tr.data, fs, nperseg=nperseg, nfft=nfft)
+        f, psd = welch(tr.data, fs, nperseg=nperseg, nfft=nfft)
 
         info = dict(
             label=tr.stats.vent,
             td_std=np.std(tr.data),
             td_skewness=stats.skew(tr.data),
             td_kurtosis=stats.kurtosis(tr.data),
-            fd_peak=f[np.argmax(pxx)],  # [Hz]
+            fd_peak=f[np.argmax(psd)],  # [Hz]
         )
         features = features.append(info, ignore_index=True)
 
-#%% Plot features
+#%% Plot two features against each other as a scatter plot
 
 X_AXIS_FEATURE = 'td_skewness'
 Y_AXIS_FEATURE = 'td_kurtosis'
@@ -78,4 +78,25 @@ ax.scatter([], [], edgecolors='blue', facecolors='none', label='Vent A')
 ax.scatter([], [], edgecolors='red', facecolors='none', label='Vent C')
 ax.legend()
 
+fig.show()
+
+#%% Histograms of each feature
+
+feature_names = features.columns[1:]  # Skip first column since it's the label
+
+NCOLS = 3  # Number of subplot columns
+
+fig, axes = plt.subplots(nrows=int(np.ceil(len(feature_names) / NCOLS)), ncols=NCOLS)
+
+for ax, feature in zip(axes.flatten(), feature_names):
+    ax.hist(features[feature], bins=50)
+    ax.set_title(feature)
+
+# Remove empty subplots, if any
+for ax in axes.flatten():
+    if not ax.has_data():
+        fig.delaxes(ax)
+
+fig.suptitle(f'{features.shape[0]} waveforms')
+fig.tight_layout()
 fig.show()
