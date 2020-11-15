@@ -97,6 +97,6 @@ for ax in axes.flatten():
     if not ax.has_data():
         fig.delaxes(ax)
 
-fig.suptitle(f'{features.shape[0]} waveforms')
+fig.suptitle(f'{STATION}, {features.shape[0]} waveforms')
 fig.tight_layout()
 fig.show()
