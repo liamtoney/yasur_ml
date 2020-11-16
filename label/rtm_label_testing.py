@@ -5,7 +5,7 @@ Sandbox for exploring how best to label waveforms using RTM.
 # isort: skip_file
 
 import json
-
+import os
 import colorcet as cc
 import matplotlib.pyplot as plt
 import numpy as np
@@ -163,11 +163,11 @@ def within_radius(true_loc, est_loc, radius):
 
 def color_code(vent_loc):
     if vent_loc == 'A':
-        color = 'blue'
+        color = os.environ['VENT_A']
     elif vent_loc == 'C':
-        color = 'red'
+        color = os.environ['VENT_C']
     else:  # vent is None, NaN, etc.
-        color = 'black'
+        color = 'grey'
     return color
 
 
@@ -212,7 +212,7 @@ for ax in fig.axes:
         ax.axvspan(
             t.matplotlib_date,
             (t + DUR).matplotlib_date,
-            alpha=0.2,
+            alpha=0.4,
             color=color_code(vent),
             linewidth=0,
         )

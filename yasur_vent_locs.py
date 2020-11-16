@@ -5,6 +5,7 @@ Locations are WGS84 (longitude, latitude).
 """
 
 import json
+import os
 from pathlib import Path
 
 import matplotlib.pyplot as plt
@@ -60,7 +61,11 @@ locations['midpoint'] = [x_mid, y_mid]
 
 # Plot points
 for label, loc in locations.items():
-    ax.scatter(loc[0], loc[1], label=label)
+    try:
+        color = os.environ[f'VENT_{label}']
+    except KeyError:  # For midpoint
+        color = 'white'
+    ax.scatter(loc[0], loc[1], s=70, label=label, color=color, edgecolors='black')
 ax.legend()
 
 # Show figure

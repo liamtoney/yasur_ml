@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 
 import matplotlib.pyplot as plt
@@ -89,7 +90,7 @@ for file in sorted(labeled_wf_dir.glob('label_???.pkl')):
 X_AXIS_FEATURE = 'td_skewness'
 Y_AXIS_FEATURE = 'td_kurtosis'
 
-colors = ['blue' if label == 'A' else 'red' for label in features['label']]
+colors = [os.environ[f'VENT_{label}'] for label in features.label]
 
 fig, ax = plt.subplots()
 ax.scatter(
@@ -103,8 +104,8 @@ ax.set_ylabel(Y_AXIS_FEATURE)
 ax.set_title(f'{STATION}, {features.shape[0]} waveforms')
 
 # Add legend
-ax.scatter([], [], edgecolors='blue', facecolors='none', label='Vent A')
-ax.scatter([], [], edgecolors='red', facecolors='none', label='Vent C')
+ax.scatter([], [], edgecolors=os.environ['VENT_A'], facecolors='none', label='Vent A')
+ax.scatter([], [], edgecolors=os.environ['VENT_C'], facecolors='none', label='Vent C')
 ax.legend()
 
 fig.show()
@@ -124,8 +125,16 @@ fig, axes = plt.subplots(
 
 for ax, feature in zip(axes.flatten(), feature_names):
     if SPLIT_BY_LABEL:
-        ax.hist(features[features.label == 'A'][feature], bins=NBINS, color='blue')
-        ax.hist(features[features.label == 'C'][feature], bins=NBINS, color='red')
+        ax.hist(
+            features[features.label == 'A'][feature],
+            bins=NBINS,
+            color=os.environ['VENT_A'],
+        )
+        ax.hist(
+            features[features.label == 'C'][feature],
+            bins=NBINS,
+            color=os.environ['VENT_C'],
+        )
     else:
         ax.hist(features[feature], bins=NBINS, color='grey')
     ax.set_title(feature)

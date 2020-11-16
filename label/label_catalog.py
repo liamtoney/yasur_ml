@@ -4,6 +4,7 @@ each vent, and label events based upon proximity to these peaks.
 """
 
 import json
+import os
 from pathlib import Path
 
 import colorcet as cc
@@ -167,7 +168,12 @@ axes[0].set_ylabel('Pressure (Pa)')
 
 # Subplot 2: Stacked area plot
 t_vec_mpl = [t.matplotlib_date for t in t_vec]
-axes[1].stackplot(t_vec_mpl, fraction_A, fraction_C, colors=['blue', 'red'])
+axes[1].stackplot(
+    t_vec_mpl,
+    fraction_A,
+    fraction_C,
+    colors=(os.environ['VENT_A'], os.environ['VENT_C']),
+)
 if FRACTION:
     axes[1].yaxis.set_major_formatter(PercentFormatter(1))
 else:
