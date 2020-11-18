@@ -190,12 +190,10 @@ fig.show()
 #%% Load in full dataset
 
 print('Reading in full dataset...')
-st_full = read('data/3E_YIF1-5_50hz.pkl').interpolate(
-    sampling_rate=20, method='lanczos', a=20
-)
+st_full = read('data/3E_YIF1-5_50hz.pkl')
 print('Done')
 
-WAVEFORM_DUR = 10  # [s] Duration of labeled waveform snippets
+WAVEFORM_DUR = 5  # [s] Duration of labeled waveform snippets
 
 fs = st_full[0].stats.sampling_rate  # [Hz]
 
