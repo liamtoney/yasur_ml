@@ -16,7 +16,7 @@ labeled_wf_dir = WORKING_DIR / 'data' / 'labeled'
 
 #%% Extract features for a single station
 
-FFT_WIN_DUR = 10  # [s]
+FFT_WIN_DUR = 5  # [s]
 
 STATION = 'YIF2'  # Station to extract features for
 
@@ -56,7 +56,7 @@ for file in sorted(labeled_wf_dir.glob('label_???.pkl')):
         # Transform to frequency domain
         fs = tr.stats.sampling_rate
         nperseg = int(FFT_WIN_DUR * fs)  # Samples
-        nfft = np.power(2, int(np.ceil(np.log2(nperseg))) + 1)  # Pad FFT
+        nfft = np.power(2, int(np.ceil(np.log2(nperseg))) + 3)  # Pad FFT
         f, psd = welch(tr.data, fs, nperseg=nperseg, nfft=nfft)
 
         # Get CSD, normalize
