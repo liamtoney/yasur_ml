@@ -115,6 +115,7 @@ fig.show()
 feature_names = features.columns[1:]  # Skip first column since it's the label
 
 SPLIT_BY_LABEL = True
+MANUAL_BIN_RANGE = True
 
 NCOLS = 3  # Number of subplot columns
 NBINS = 50  # Number of histogram bins
@@ -124,19 +125,35 @@ fig, axes = plt.subplots(
 )
 
 for ax, feature in zip(axes.flatten(), feature_names):
+    range = None
+    if MANUAL_BIN_RANGE:
+        if feature == 'fd_peak':
+            range = (0, 6)
+        elif feature == 'fd_q1':
+            range = (0, 5)
+        elif feature == 'fd_q2':
+            range = (0, 8)
+        elif feature == 'fd_q3':
+            range = (0, 12)
+        elif feature == 'td_kurtosis':
+            range = (-5, 40)
+        elif feature == 'td_skewness':
+            range = (-2, 5)
     if SPLIT_BY_LABEL:
         ax.hist(
             features[features.label == 'A'][feature],
             bins=NBINS,
+            range=range,
             color=os.environ['VENT_A'],
         )
         ax.hist(
             features[features.label == 'C'][feature],
+            range=range,
             bins=NBINS,
             color=os.environ['VENT_C'],
         )
     else:
-        ax.hist(features[feature], bins=NBINS, color='grey')
+        ax.hist(features[feature], bins=NBINS, range=range, color='grey')
     ax.set_title(feature)
 
 # Remove empty subplots, if any
