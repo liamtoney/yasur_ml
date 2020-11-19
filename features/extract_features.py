@@ -145,12 +145,14 @@ for ax, feature in zip(axes.flatten(), feature_names):
             bins=NBINS,
             range=range,
             color=os.environ['VENT_A'],
+            label='Vent A',
         )
         ax.hist(
             features[features.label == 'C'][feature],
             range=range,
             bins=NBINS,
             color=os.environ['VENT_C'],
+            label='Vent C',
         )
     else:
         ax.hist(features[feature], bins=NBINS, range=range, color='grey')
@@ -163,6 +165,12 @@ for ax in axes.flatten():
 
 fig.suptitle(f'{STATION}, {features.shape[0]} waveforms')
 fig.tight_layout()
+
+# Add legend
+if SPLIT_BY_LABEL:
+    last_ax = axes.flatten()[len(feature_names) - 1]
+    last_ax.legend(bbox_to_anchor=(1.25, 1), loc='upper left', frameon=False)
+
 fig.show()
 
 #%% (OPTIONAL) Example plot of frequency domain features
