@@ -173,6 +173,7 @@ axes[1].stackplot(
     fraction_A,
     fraction_C,
     colors=(os.environ['VENT_A'], os.environ['VENT_C']),
+    labels=('Vent A', 'Vent C'),
 )
 if FRACTION:
     axes[1].yaxis.set_major_formatter(PercentFormatter(1))
@@ -184,6 +185,9 @@ axes[1].autoscale(enable=True, axis='y', tight=True)
 axes[-1].set_xlim(t_start.matplotlib_date, (t_end - WINDOW).matplotlib_date)
 loc = axes[-1].xaxis.set_major_locator(mdates.AutoDateLocator())
 axes[-1].xaxis.set_major_formatter(mdates.ConciseDateFormatter(loc))
+
+# Add legend
+axes[-1].legend(loc='lower right')
 
 fig.show()
 
