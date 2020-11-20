@@ -40,15 +40,7 @@ fig.coast(
     frame='af',
     resolution='f',
 )
-# fig.plot(*YASUR_COORDS, style='t0.3c', color='red', pen=True)
-verts = [
-    (MAIN_REGION[0], MAIN_REGION[2]),
-    (MAIN_REGION[0], MAIN_REGION[3]),
-    (MAIN_REGION[1], MAIN_REGION[3]),
-    (MAIN_REGION[1], MAIN_REGION[2]),
-    (MAIN_REGION[0], MAIN_REGION[2]),
-]
-fig.plot(data=np.array(verts), straight_line='p', pen='1p,red')
+fig.plot(*YASUR_COORDS, style='t0.3c', color='red', pen=True)
 
 # Globe inset
 fig.shift_origin(xshift='1.6i', yshift='4i')
