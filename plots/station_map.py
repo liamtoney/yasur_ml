@@ -1,5 +1,16 @@
+import json
+import os
+from pathlib import Path
+
 import numpy as np
 import pygmt
+
+# Define project directory
+WORKING_DIR = Path.home() / 'work' / 'yasur_ml'
+
+# Load vent locs
+with open(WORKING_DIR / 'yasur_vent_locs.json') as f:
+    VENT_LOCS = json.load(f)
 
 # From GVP (https://volcano.si.edu/volcano.cfm?vn=257100)
 YASUR_COORDS = (169.447, -19.532)
@@ -9,7 +20,13 @@ PAD = 0.14
 VANUATU_REGION = (166.525 - PAD, 170.235 + PAD, -20.2489 - PAD, -13.0734 + PAD)
 
 # Main map extent
-MAIN_REGION = (169.4, 169.5, -19.6, -19.5)
+RADIUS = 0.01  # deg
+MAIN_REGION = (
+    VENT_LOCS['midpoint'][0] - RADIUS,
+    VENT_LOCS['midpoint'][0] + RADIUS,
+    VENT_LOCS['midpoint'][1] - RADIUS,
+    VENT_LOCS['midpoint'][1] + RADIUS,
+)
 
 pygmt.config(FORMAT_GEO_MAP='D')
 
@@ -21,11 +38,25 @@ fig.grdimage(
     region=MAIN_REGION,
     projection='M6i',
     shading=True,
-    frame='a0.02f0.01',
+    frame='a0.005',
 )
-# fig.plot(*YASUR_COORDS, style='t0.3c', color='red', pen=True)
-scale_loc = (169.485, -19.594)
-fig.basemap(map_scale='g{0}/{1}+c{0}/{1}+w2+f+lkm'.format(*scale_loc))
+fig.plot(
+    *VENT_LOCS['A'],
+    style='c0.4c',
+    pen=True,
+    color=os.environ['VENT_A'],
+    label='"Vent A"'
+)
+fig.plot(
+    *VENT_LOCS['C'],
+    style='c0.4c',
+    pen=True,
+    color=os.environ['VENT_C'],
+    label='"Vent C"'
+)
+scale_loc = VENT_LOCS['midpoint']
+fig.basemap(map_scale='jBR+c{0}/{1}+w200e+o0.3i/0.4i'.format(*scale_loc))
+fig.legend()
 
 # Vanuatu inset
 fig.shift_origin(xshift='7.5i', yshift='0.5i')
