@@ -7,3 +7,4 @@ label/catalogs/
 *.gsheet
 *.gdoc
 .DS_Store
+sklearn_sandbox.ipynb
