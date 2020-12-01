@@ -1,5 +1,6 @@
 .idea/
 figures/
+videos/
 label/catalogs/
 *.nc
 *.pkl
