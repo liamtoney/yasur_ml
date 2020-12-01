@@ -85,6 +85,9 @@ for file in sorted(labeled_wf_dir.glob('label_???.pkl')):
         )
         features = features.append(info, ignore_index=True)
 
+# Save as CSV
+features.to_csv(WORKING_DIR / 'features' / f'{STATION}_features.csv', index=False)
+
 #%% Plot two features against each other as a scatter plot
 
 X_AXIS_FEATURE = 'td_skewness'
