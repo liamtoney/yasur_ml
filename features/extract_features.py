@@ -18,7 +18,7 @@ labeled_wf_dir = WORKING_DIR / 'data' / 'labeled'
 
 FFT_WIN_DUR = 5  # [s]
 
-STATION = 'YIF2'  # Station to extract features for
+STATION = 'YIF2'  # Station to extract features for, use None for all stations
 
 # Initiate DataFrame of extracted features
 features = pd.DataFrame(
@@ -42,7 +42,10 @@ for file in sorted(labeled_wf_dir.glob('label_???.pkl')):
 
     # Read in
     print(f'Reading {file}')
-    st = read(str(file)).select(station=STATION)
+    if STATION:
+        st = read(str(file)).select(station=STATION)  # Use only STATION
+    else:
+        st = read(str(file))  # Use all stations
 
     # Process
     st.remove_response()
@@ -86,7 +89,11 @@ for file in sorted(labeled_wf_dir.glob('label_???.pkl')):
         features = features.append(info, ignore_index=True)
 
 # Save as CSV
-features.to_csv(WORKING_DIR / 'features' / f'{STATION}_features.csv', index=False)
+if STATION:
+    filename = f'{STATION}_features.csv'
+else:
+    filename = 'features.csv'
+features.to_csv(WORKING_DIR / 'features' / filename, index=False)
 
 #%% Plot two features against each other as a scatter plot
 
@@ -104,7 +111,10 @@ ax.scatter(
 )
 ax.set_xlabel(X_AXIS_FEATURE)
 ax.set_ylabel(Y_AXIS_FEATURE)
-ax.set_title(f'{STATION}, {features.shape[0]} waveforms')
+if STATION:
+    ax.set_title(f'{STATION}, {features.shape[0]} waveforms')
+else:
+    ax.set_title(f'{features.shape[0]} waveforms')
 
 # Add legend
 ax.scatter([], [], edgecolors=os.environ['VENT_A'], facecolors='none', label='Vent A')
@@ -162,7 +172,10 @@ for ax in axes.flatten():
     if not ax.has_data():
         fig.delaxes(ax)
 
-fig.suptitle(f'{STATION}, {features.shape[0]} waveforms')
+if STATION:
+    fig.suptitle(f'{STATION}, {features.shape[0]} waveforms')
+else:
+    fig.suptitle(f'{features.shape[0]} waveforms')
 fig.tight_layout()
 
 # Add legend
