@@ -2,6 +2,7 @@ from pathlib import Path
 
 import pandas as pd
 from sklearn import preprocessing, svm
+from sklearn.metrics import plot_confusion_matrix
 from sklearn.model_selection import train_test_split
 from sklearn.utils import resample
 
@@ -60,4 +61,23 @@ clf.fit(X_train, y_train)
 
 # Test SVC
 score = clf.score(X_test, y_test)
-print(f'\nAccuracy is {score * 100:.1f}%')
+print(f'\nAccuracy is {score:.0%}')
+
+# Plot
+cm = plot_confusion_matrix(
+    clf,
+    X_test,
+    y_test,
+    display_labels=['A', 'C'],  # Since 0 = vent A; 1 = vent C
+    cmap='Greys',
+    normalize='true',  # 'true' means the diagonal contains the TPR and TNR
+    values_format='.0%',  # Format as integer percent
+)
+fig = cm.figure_
+ax = fig.axes[0]
+ax.set_xlabel(ax.get_xlabel().replace('label', 'vent'))
+ax.set_ylabel(ax.get_ylabel().replace('label', 'vent'))
+ax.set_title(f'{y_test.size:,} test waveforms')
+fig.axes[1].remove()  # Remove colorbar
+fig.tight_layout()
+fig.show()
