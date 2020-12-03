@@ -18,6 +18,8 @@ labeled_wf_dir = WORKING_DIR / 'data' / 'labeled'
 
 FFT_WIN_DUR = 5  # [s]
 
+FILTER = True  # Toggle bandpass filtering of data
+
 STATION = 'YIF2'  # Station to extract features for, use None for all stations
 
 # Initiate DataFrame of extracted features
@@ -50,7 +52,8 @@ for file in sorted(labeled_wf_dir.glob('label_???.pkl')):
     # Process
     st.remove_response()
     st.taper(0.01)
-    # st.filter('bandpass', freqmin=0.2, freqmax=4, zerophase=True)
+    if FILTER:
+        st.filter('bandpass', freqmin=0.2, freqmax=4, zerophase=True)
     st.normalize()
 
     # Calculate features, append to DataFrame
@@ -93,6 +96,8 @@ if STATION:
     filename = f'{STATION}_features.csv'
 else:
     filename = 'features.csv'
+if FILTER:
+    filename = filename.replace('.csv', '_filtered.csv')
 features.to_csv(WORKING_DIR / 'features' / filename, index=False)
 
 #%% Plot two features against each other as a scatter plot
