@@ -10,7 +10,7 @@ from sklearn.utils import resample
 WORKING_DIR = Path.home() / 'work' / 'yasur_ml'
 
 # Filename of features CSV to use
-FEATURES_CSV = 'YIF2_features.csv'
+FEATURES_CSV = 'features_filtered.csv'
 
 # Set to integer for reproducible results
 RANDOM_STATE = None
