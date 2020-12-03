@@ -2,6 +2,7 @@
 figures/
 videos/
 label/catalogs/
+features/csv/
 *.nc
 *.pkl
 *.tif

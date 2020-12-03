@@ -19,7 +19,7 @@ RANDOM_STATE = None
 TRAIN_SIZE = 0.75
 
 # Read in labeled features
-features = pd.read_csv(WORKING_DIR / 'features' / FEATURES_CSV)
+features = pd.read_csv(WORKING_DIR / 'features' / 'csv' / FEATURES_CSV)
 
 # Adjust for class imbalance by down-sampling the majority class (from
 # https://elitedatascience.com/imbalanced-classes)

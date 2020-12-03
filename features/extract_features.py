@@ -98,7 +98,7 @@ else:
     filename = 'features.csv'
 if FILTER:
     filename = filename.replace('.csv', '_filtered.csv')
-features.to_csv(WORKING_DIR / 'features' / filename, index=False)
+features.to_csv(WORKING_DIR / 'features' / 'csv' / filename, index=False)
 
 #%% Plot two features against each other as a scatter plot
 
