@@ -68,6 +68,7 @@ cm = plot_confusion_matrix(
     clf,
     X_test,
     y_test,
+    labels=[0, 1],  # Explicitly setting the order here
     display_labels=['A', 'C'],  # Since 0 = vent A; 1 = vent C
     cmap='Greys',
     normalize='true',  # 'true' means the diagonal contains the TPR and TNR
