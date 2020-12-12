@@ -14,7 +14,7 @@ WORKING_DIR = Path.home() / 'work' / 'yasur_ml'
 # Directory containing labeled waveforms
 labeled_wf_dir = WORKING_DIR / 'data' / 'labeled'
 
-#%% Extract features for a single station
+#%% Extract features
 
 FFT_WIN_DUR = 5  # [s]
 
