@@ -112,12 +112,10 @@ fig.shift_origin(xshift='3.5i', yshift='-4.01i')
 fig.grdimage(
     dem,
     region=(-RADIUS, RADIUS, -RADIUS, RADIUS),
-    cmap='gray',
+    cmap='white',
+    shading=True,
     projection='X5.7i',
     frame=['a500f100', 'x+l"Easting (m)"', 'y+l"Northing (m)"', 'WSen'],
-)
-fig.grdimage(
-    dem, shading=True, cmap='white', t=70,
 )
 fig.grdcontour(dem, interval=10, annotation='100+u" m"')
 verts = [
