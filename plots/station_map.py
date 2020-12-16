@@ -43,7 +43,7 @@ RADIUS = 800
 RTM_RADIUS = 350
 
 # Read in and process DEM to use, command to create was:
-# gdalwarp -t_srs EPSG:32759 DEM_Union_UAV_161116_sm101.tif DEM_Union_UAV_161116_sm101_UTM.tif
+# gdalwarp -t_srs EPSG:32759 -r cubicspline DEM_Union_UAV_161116_sm101.tif DEM_Union_UAV_161116_sm101_UTM.tif
 DEM = WORKING_DIR / 'data' / 'DEM_Union_UAV_161116_sm101_UTM.tif'
 dem = xarray.open_rasterio(DEM).squeeze()
 dem = dem.assign_coords(x=(dem.x.data - x_0))
