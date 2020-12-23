@@ -85,7 +85,7 @@ fig.coast(
     resolution='f',
 )
 fig.plot(*VENT_LOCS['midpoint'], style='t0.4c', color='red', pen=True)  # Center of (b)
-fig.shift_origin(xshift='1.6i', yshift='4i')  # For globe inset
+fig.shift_origin(xshift='1.6i', yshift='4.1i')  # For globe inset
 fig.coast(
     region='g',
     projection='G{}/{}/2i'.format(
@@ -108,7 +108,7 @@ verts = [
 fig.plot(data=np.array(verts), straight_line='p', pen='1p,red')
 
 # (b) Station map
-fig.shift_origin(xshift='3.5i', yshift='-4.01i')
+fig.shift_origin(xshift='3.5i', yshift='-4.11i')
 fig.grdimage(
     dem,
     region=(-RADIUS, RADIUS, -RADIUS, RADIUS),
