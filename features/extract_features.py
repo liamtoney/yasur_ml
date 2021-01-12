@@ -6,6 +6,7 @@ import pandas as pd
 from obspy import read
 from scipy import stats
 from scipy.signal import welch
+from tsfresh import extract_features
 
 # Define project directory
 WORKING_DIR = Path.home() / 'work' / 'yasur_ml'
@@ -13,11 +14,15 @@ WORKING_DIR = Path.home() / 'work' / 'yasur_ml'
 # Directory containing labeled waveforms
 labeled_wf_dir = WORKING_DIR / 'data' / 'labeled'
 
+# Station to extract features for, use None for all stations
+STATION = 'YIF2'
+
+# Toggle bandpass filtering of data
+FILTER = True
+
+#%% Option 1: Manual feature engineering
+
 FFT_WIN_DUR = 5  # [s]
-
-FILTER = True  # Toggle bandpass filtering of data
-
-STATION = 'YIF2'  # Station to extract features for, use None for all stations
 
 # Initiate DataFrame of extracted features
 features = pd.DataFrame(
@@ -124,3 +129,5 @@ axes[1].autoscale(tight=True)
 
 fig.tight_layout()
 fig.show()
+
+#%% Option 2: TSFRESH
