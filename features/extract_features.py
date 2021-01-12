@@ -20,11 +20,15 @@ STATION = 'YIF2'
 # Toggle bandpass filtering of data
 FILTER = True
 
+# Bandpass filter corners [Hz]
+FREQMIN = 0.2
+FREQMAX = 4
+
 #%% Option 1: Manual feature engineering
 
 FFT_WIN_DUR = 5  # [s]
 
-# Initiate DataFrame of extracted features
+# Initialize DataFrame of extracted features
 features = pd.DataFrame(
     columns=[
         'label',
@@ -55,7 +59,7 @@ for file in sorted(labeled_wf_dir.glob('label_???.pkl')):
     st.remove_response()
     st.taper(0.01)
     if FILTER:
-        st.filter('bandpass', freqmin=0.2, freqmax=4, zerophase=True)
+        st.filter('bandpass', freqmin=FREQMIN, freqmax=FREQMAX, zerophase=True)
     st.normalize()
 
     # Calculate features, append to DataFrame
@@ -131,3 +135,57 @@ fig.tight_layout()
 fig.show()
 
 #%% Option 2: TSFRESH
+
+# Initialize DataFrame of extracted features
+features = pd.DataFrame()
+
+# Iterate over all labeled waveform files
+for file in sorted(labeled_wf_dir.glob('label_???.pkl')):
+
+    # Read in
+    print(f'Reading {file}')
+    if STATION:
+        st = read(str(file)).select(station=STATION)  # Use only STATION
+    else:
+        st = read(str(file))  # Use all stations
+
+    # Process
+    st.remove_response()
+    st.taper(0.01)
+    if FILTER:
+        st.filter('bandpass', freqmin=FREQMIN, freqmax=FREQMAX, zerophase=True)
+    st.normalize()
+
+    # Put into TSFRESH format
+    timeseries = pd.DataFrame()
+    labels = []
+    for i, tr in enumerate(st):
+        id = pd.Series(np.ones(tr.stats.npts, dtype=int) * i)
+        time = pd.Series(tr.times())
+        value = pd.Series(tr.data)
+        timeseries = pd.concat(
+            [timeseries, pd.DataFrame(dict(id=id, time=time, x=value))],
+            ignore_index=True,
+        )
+        labels.append(tr.stats.vent)
+
+    # Calculate features
+    extracted_features = extract_features(
+        timeseries, column_id='id', column_sort='time'
+    )
+
+    # Tweak and append to main DataFrame
+    extracted_features.insert(0, column='label', value=labels)
+    extracted_features.columns = [
+        column.split('__', 1)[-1] for column in extracted_features.columns
+    ]
+    features = pd.concat([features, extracted_features], ignore_index=True)
+
+# Save as CSV
+if STATION:
+    filename = f'{STATION}_features_tsfresh.csv'
+else:
+    filename = 'features_tsfresh.csv'
+if FILTER:
+    filename = filename.replace('.csv', '_filtered.csv')
+features.to_csv(WORKING_DIR / 'features' / 'csv' / filename, index=False)
