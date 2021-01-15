@@ -166,4 +166,4 @@ fig.text(x=-RADIUS - 200, text='(b)', **tag_kwargs)
 
 fig.show(method='external')
 
-# fig.savefig(WORKING_DIR / 'figures' / 'station_map.png', dpi=400)
+# fig.savefig(Path(os.environ['YASUR_FIGURE_DIR']) / 'station_map.png', dpi=400)
