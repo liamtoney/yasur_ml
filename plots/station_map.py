@@ -160,9 +160,9 @@ fig.text(
 fig.legend()
 
 # Plot (a) and (b) tags (hacky)
-tag_kwargs = dict(y=RADIUS, no_clip=True, justify='TL', font='18p')
-fig.text(x=-RADIUS - 1625, text='(a)', **tag_kwargs)
-fig.text(x=-RADIUS - 200, text='(b)', **tag_kwargs)
+tag_kwargs = dict(y=RADIUS, no_clip=True, justify='TL', font='18p,Helvetica-Bold')
+fig.text(x=-RADIUS - 1625, text='A', **tag_kwargs)
+fig.text(x=-RADIUS - 200, text='B', **tag_kwargs)
 
 fig.show(method='external')
 
