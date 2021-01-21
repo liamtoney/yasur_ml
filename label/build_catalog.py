@@ -1,6 +1,6 @@
 """
-Run RTM on chunks of data to assemble a catalog of (x, y, t) stored as a series of CSV
-files. x and y are in meters in UTM zone 59S. t is in UTC.
+Run RTM on chunks of data to assemble a catalog of (x, y, t) stored as a CSV file. x and
+y are in meters in UTM zone 59S. t is in UTC.
 """
 
 # isort: skip_file
@@ -58,15 +58,13 @@ SEARCH_Y = 350
 FILENAME_ROOT = 'yasur_rtm_DH2_no_YIF6'  # output filename root prefix
 FDTD_DIR = WORKING_DIR / 'label' / 'fdtd'  # Where travel time lookup table is located
 
-# Make catalog dir
-catalog_dir = (
+# Create catalog CSV name
+catalog_csv = (
     WORKING_DIR
     / 'label'
     / 'catalogs'
-    / f'height_{HEIGHT_THRESHOLD}_spacing_{MIN_TIME_SPACING}_agc_{AGC_WINDOW}'
+    / f'height_{HEIGHT_THRESHOLD}_spacing_{MIN_TIME_SPACING}_agc_{AGC_WINDOW}.csv'
 )
-if not catalog_dir.exists():
-    catalog_dir.mkdir()
 
 #%% Create grids
 
@@ -94,7 +92,7 @@ chunk_duration_sec = CHUNK_DURATION * 60 * 60  # [s]
 # Initialize stuff
 num_hours_processed = 0  # [h]
 starttime = full_starttime
-n = 0
+df_total = pd.DataFrame()
 
 t0 = datetime.now()
 while True:
@@ -140,9 +138,9 @@ while True:
         unproject=False,
     )
 
-    # Export to CSV
+    # Create DataFrame and append to main DataFrame
     df = pd.DataFrame(dict(x=x_max, y=y_max, t=time_max))
-    df.to_csv(catalog_dir / f'catalog_{n:02}.csv', index=False)
+    df_total = pd.concat([df_total, df], ignore_index=True)
 
     # END-OF-LOOP STUFF
     if leave:
@@ -150,7 +148,9 @@ while True:
     num_hours_processed += CHUNK_DURATION
     print(f'{num_hours_processed:g} hrs processed')
     starttime += chunk_duration_sec
-    n += 1
+
+# Write entire catalog to CSV
+df_total.to_csv(catalog_csv, index=False)
 
 # Display total run time
 print('Elapsed time:')

@@ -1,5 +1,5 @@
 """
-Read in CSV files corresponding to a catalog, define the peaks of the histograms around
+Read in CSV file corresponding to a catalog, define the peaks of the histograms around
 each vent, and label events based upon proximity to these peaks.
 """
 
@@ -21,15 +21,13 @@ from rtm import define_grid, produce_dem
 WORKING_DIR = Path.home() / 'work' / 'yasur_ml'
 
 # Define which catalog to label
-catalog_dir = WORKING_DIR / 'label' / 'catalogs' / 'height_4_spacing_30_agc_60'
+catalog_csv = WORKING_DIR / 'label' / 'catalogs' / 'height_4_spacing_30_agc_60.csv'
 
 # [m] Maximum distance from vent location estimate to a given event
 MAX_RADIUS = 40
 
 # Read in entire catalog to pandas DataFrame
-df = pd.DataFrame()
-for csv in sorted(catalog_dir.glob('catalog_??.csv')):
-    df = pd.concat([df, pd.read_csv(csv)], ignore_index=True)
+df = pd.read_csv(catalog_csv)
 df.t = [UTCDateTime(t) for t in df.t]
 
 # Load vent locs
