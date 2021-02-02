@@ -2,11 +2,13 @@ name: yasur_ml
 channels:
   - conda-forge
   - defaults
+  - conda-forge/label/dev
 dependencies:
   - black
   - cartopy
   - colorcet
   - gdal
+  - gmt=6.2.*  # Otherwise station_map.py crashes
   - ipython
   - isort
   - obspy
