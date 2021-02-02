@@ -1,0 +1,23 @@
+name: yasur_ml
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - black
+  - cartopy
+  - colorcet
+  - gdal
+  - ipython
+  - isort
+  - obspy
+  - pip
+  - pygmt
+  - rasterio
+  - scikit-learn
+  - tsfresh
+  - utm
+  - xarray
+  - pip:
+      - --editable /Users/ldtoney/work/python_util
+      - --editable /Users/ldtoney/repos/waveform_collection
+      - --editable /Users/ldtoney/repos/rtm
