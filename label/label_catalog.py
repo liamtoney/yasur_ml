@@ -50,7 +50,9 @@ grid = define_grid(
     projected=True,
 )
 dem = produce_dem(
-    grid, external_file=str(WORKING_DIR / 'data' / 'DEM_WGS84.tif'), plot_output=False,
+    grid,
+    external_file=str(WORKING_DIR / 'data' / 'DEM_WGS84.tif'),
+    plot_output=False,
 )
 
 #%% Make histogram
@@ -158,7 +160,9 @@ if PLOT:
 
     # Load in a single station's data and process (takes a while, can comment out for repeat
     # runs)
-    tr = read(str(WORKING_DIR / 'data' / '3E_YIF1-5_50hz.pkl')).select(station='YIF3')[0]
+    tr = read(str(WORKING_DIR / 'data' / '3E_YIF1-5_50hz.pkl')).select(station='YIF3')[
+        0
+    ]
     tr.remove_response()
     tr.filter('bandpass', freqmin=0.2, freqmax=4, zerophase=True)
 
