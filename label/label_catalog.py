@@ -154,7 +154,7 @@ for t in t_vec:
 
 # Load in a single station's data and process (takes a while, can comment out for repeat
 # runs)
-tr = read('data/3E_YIF1-5_50hz.pkl').select(station='YIF3')[0]
+tr = read(WORKING_DIR / 'data' / '3E_YIF1-5_50hz.pkl').select(station='YIF3')[0]
 tr.remove_response()
 tr.filter('bandpass', freqmin=0.2, freqmax=4, zerophase=True)
 
@@ -192,7 +192,7 @@ fig.show()
 #%% Load in full dataset
 
 print('Reading in full dataset...')
-st_full = read('data/3E_YIF1-5_50hz.pkl')
+st_full = read(WORKING_DIR / 'data' / '3E_YIF1-5_50hz.pkl')
 print('Done')
 
 WAVEFORM_DUR = 5  # [s] Duration of labeled waveform snippets
