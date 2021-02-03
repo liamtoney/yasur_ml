@@ -223,7 +223,7 @@ for i, row in df_locs.iterrows():
             str(WORKING_DIR / 'data' / 'labeled' / f'label_{n:03}.pkl'), format='PICKLE'
         )
         st_label = Stream()
-        print(f'{(i / df_locs.shape[0]) * 100:.1f}%')
+        print(f'{(i / df_locs.shape[0]) * 100:.1f}%')  # TODO: Goes wayy over 100%, lol
         n += 1
 
 # Handle last one
