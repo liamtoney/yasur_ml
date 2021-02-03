@@ -78,6 +78,7 @@ grid = define_grid(
 )
 
 # DEM info here: https://portal.opentopography.org/dataspace/dataset?opentopoID=OTDS.072019.4326.1
+# Can obtain with curl -O https://cloud.sdsc.edu/v1/AUTH_opentopography/hosted_data/OTDS.072019.4326.1/raster/DEM_WGS84.tif
 dem = produce_dem(
     grid, external_file=str(WORKING_DIR / 'data' / 'DEM_WGS84.tif'), plot_output=False
 )
