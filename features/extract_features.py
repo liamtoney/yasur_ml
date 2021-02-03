@@ -15,7 +15,7 @@ WORKING_DIR = Path.home() / 'work' / 'yasur_ml'
 labeled_wf_dir = WORKING_DIR / 'data' / 'labeled'
 
 # Station to extract features for, use None for all stations
-STATION = 'YIF2'
+STATION = None
 
 # Toggle bandpass filtering of data
 FILTER = True
