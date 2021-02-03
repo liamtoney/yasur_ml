@@ -20,6 +20,6 @@ dependencies:
   - utm
   - xarray
   - pip:
-      - --editable /Users/ldtoney/work/python_util
-      - --editable /Users/ldtoney/repos/waveform_collection
-      - --editable /Users/ldtoney/repos/rtm
+      - --editable ${HOME}/work/python_util
+      - --editable ${HOME}/repos/waveform_collection
+      - --editable ${HOME}/repos/rtm
