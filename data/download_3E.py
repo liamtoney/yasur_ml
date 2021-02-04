@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 """
 Download 3E data, downsample, add coordinates, and save to a pickle file.
 """

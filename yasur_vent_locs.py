@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 """
 Generates JSON file which contains estimated locations for vent A and vent C based upon
 DEM minima for each subcrater (also calculates the midpoint between the two vents).

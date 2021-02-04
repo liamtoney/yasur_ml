@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 """
 Read in CSV file corresponding to a catalog, define the peaks of the histograms around
 each vent, and label events based upon proximity to these peaks.
