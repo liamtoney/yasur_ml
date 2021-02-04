@@ -14,6 +14,7 @@ dependencies:
   - obspy
   - pip
   - pygmt
+  - pyqt  # For using Qt5Agg backend with Matplotlib
   - rasterio
   - scikit-learn
   - tsfresh
