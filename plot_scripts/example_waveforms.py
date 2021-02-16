@@ -12,11 +12,11 @@ plt.rcParams.update({'font.size': 14})
 # Define project directory
 WORKING_DIR = Path.home() / 'work' / 'yasur_ml'
 
-# Define paths for all labeled waveform files and randomly pick 2
+# Define paths for all labeled waveform files and randomly pick 3
 wf_files = np.array(
     [str(p) for p in sorted((WORKING_DIR / 'data' / 'labeled').glob('*'))]
 )
-inds = np.random.choice(range(len(wf_files)), size=2, replace=False)
+inds = np.random.choice(range(len(wf_files)), size=3, replace=False)
 
 # Read in data
 st = Stream()
@@ -55,6 +55,9 @@ ax.set_xlabel('Time (s)')
 ax.spines['top'].set_visible(False)
 ax.spines['right'].set_visible(False)
 ax.spines['left'].set_visible(False)
+lw = 1.2
+ax.spines['bottom'].set_linewidth(lw)
+ax.xaxis.set_tick_params(direction='in', pad=8, width=lw, length=5)
 fig.tight_layout()
 fig.show()
 
