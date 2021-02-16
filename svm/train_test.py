@@ -18,7 +18,7 @@ PLOT = False
 WORKING_DIR = Path.home() / 'work' / 'yasur_ml'
 
 # Filename of features CSV to use
-FEATURES_CSV = 'features_tsfresh_filtered.csv'
+FEATURES_CSV = 'features_tsfresh.csv'
 
 # Set to integer for reproducible results
 RANDOM_STATE = None
@@ -33,6 +33,9 @@ features = pd.read_csv(WORKING_DIR / 'features' / 'csv' / FEATURES_CSV)
 for column in features.columns:
     if np.unique(features[column]).size == 1:
         features.drop(columns=[column], inplace=True)
+
+# Remove rows with NaNs
+features.dropna(inplace=True)
 
 # # Remove correlated features
 # features.drop(
@@ -106,6 +109,9 @@ fig = cm.figure_
 ax = fig.axes[0]
 ax.set_xlabel(ax.get_xlabel().replace('label', 'vent'))
 ax.set_ylabel(ax.get_ylabel().replace('label', 'vent'))
+for label in ax.get_xticklabels() + ax.get_yticklabels():
+    label.set_weight('bold')
+    label.set_color(os.environ[f'VENT_{label.get_text()}'])
 ax.set_title(f'{y_test.size:,} test waveforms')
 fig.axes[1].remove()  # Remove colorbar
 fig.tight_layout()
