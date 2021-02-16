@@ -5,11 +5,13 @@ import os
 from pathlib import Path
 
 import numpy as np
+import pandas as pd
 import pygmt
 import utm
 import xarray
 from obspy import UTCDateTime
 from obspy.clients.fdsn import Client
+from rtm import define_grid
 
 # Define project directory
 WORKING_DIR = Path.home() / 'work' / 'yasur_ml'
@@ -111,15 +113,49 @@ fig.plot(data=np.array(verts), straight_line='p', pen='1p,red')
 
 # (b) Station map
 fig.shift_origin(xshift='3.5i', yshift='-4.11i')
+
+HEIGHT = 5.7  # [in]
 fig.grdimage(
     dem,
     region=(-RADIUS, RADIUS, -RADIUS, RADIUS),
     cmap='white',
     shading=True,
-    projection='X5.7i',
+    projection=f'X{HEIGHT}i',
     frame=['a500f100', 'x+l"Easting (m)"', 'y+l"Northing (m)"', 'WSen'],
 )
 fig.grdcontour(dem, interval=10, annotation='100+u" m"')
+
+# Read in entire catalog to pandas DataFrame
+catalog_csv = WORKING_DIR / 'label' / 'catalogs' / 'height_4_spacing_30_agc_60.csv'
+df = pd.read_csv(catalog_csv)
+
+# Define grid (TODO: Needs to be the same as the original RTM grid!)
+grid = define_grid(
+    lon_0=VENT_LOCS['midpoint'][0],
+    lat_0=VENT_LOCS['midpoint'][1],
+    x_radius=350,
+    y_radius=350,
+    spacing=10,
+    projected=True,
+)
+
+# Make histogram
+xe = np.hstack([grid.x.values, grid.x.values[-1] + grid.spacing]) - grid.spacing / 2
+ye = np.hstack([grid.y.values, grid.y.values[-1] + grid.spacing]) - grid.spacing / 2
+h, *_ = np.histogram2d(df.x, df.y, bins=[xe, ye])
+h[h == 0] = np.nan
+hist = grid.copy()
+hist.data = h.T  # Because of NumPy array axis handling
+hist = hist.assign_coords(x=(hist.x.data - x_0))
+hist = hist.assign_coords(y=(hist.y.data - y_0))
+
+# Plot histogram and add colorbar
+pygmt.makecpt(
+    cmap='inferno', reverse=True, series=[hist.min().values, hist.max().values]
+)
+fig.grdview(hist, cmap=True, T='+s')
+fig.colorbar(position=f'JMR+w{HEIGHT}i', frame=f'a100f50+l"# of locations"')
+
 verts = [
     (-RTM_RADIUS, -RTM_RADIUS),
     (-RTM_RADIUS, RTM_RADIUS),
@@ -128,44 +164,45 @@ verts = [
     (-RTM_RADIUS, -RTM_RADIUS),
 ]
 fig.plot(data=np.array(verts), straight_line='p', pen='0.75p,black,-')
-vent_style = 'c0.3c'
-vent_pen = '0.75p'
+
+# Find maxima for each vent cluster
+hist_A = hist.where(hist.y < 0, drop=True)
+hist_C = hist.where(hist.y > 0, drop=True)
+A_max = hist_A.where(hist_A == hist_A.max(), drop=True)
+C_max = hist_C.where(hist_C == hist_C.max(), drop=True)
+
+MAX_RADIUS = 40  # TODO: This is taken from label_catalog.py!
+
+vent_style = f'c{(MAX_RADIUS / RADIUS) * HEIGHT}i'  # Scale the circles to match radius
+vent_pen = '2p'
 fig.plot(
-    *transform(*VENT_LOCS['A']),
+    A_max.x.values,
+    A_max.y.values,
     style=vent_style,
-    pen=vent_pen,
-    color=os.environ['VENT_A'],
-    label='"Vent A"',
+    pen=vent_pen + ',' + os.environ['VENT_A'],
 )
 fig.plot(
-    *transform(*VENT_LOCS['C']),
+    C_max.x.values,
+    C_max.y.values,
     style=vent_style,
-    pen=vent_pen,
-    color=os.environ['VENT_C'],
-    label='"Vent C"',
+    pen=vent_pen + ',' + os.environ['VENT_C'],
 )
+
+# Dummy for legend
+dummy_kwargs = dict(x=-4747, y=-4747, style='c0.3c')
+fig.plot(pen=vent_pen + ',' + os.environ['VENT_A'], label='"Vent A"', **dummy_kwargs)
+fig.plot(pen=vent_pen + ',' + os.environ['VENT_C'], label='"Vent C"', **dummy_kwargs)
+
 fig.plot(
     *transform(sta_lon, sta_lat),
     style='i0.4c',
-    pen=vent_pen,
+    pen='0.75p',
     color='mediumseagreen',
     label='Station',
 )
-fig.text(
-    x=transform(sta_lon, sta_lat)[0],
-    y=transform(sta_lon, sta_lat)[1],
-    text=sta_code,
-    font='white=~1p',
-    justify='LM',
-    D='0.13i/-0.01i',
-)
-fig.legend()
 
-# Plot (a) and (b) tags (hacky)
-tag_kwargs = dict(y=RADIUS, no_clip=True, justify='TL', font='18p,Helvetica-Bold')
-fig.text(x=-RADIUS - 1625, text='A', **tag_kwargs)
-fig.text(x=-RADIUS - 200, text='B', **tag_kwargs)
+fig.legend()
 
 fig.show(method='external')
 
-# fig.savefig(Path(os.environ['YASUR_FIGURE_DIR']) / 'station_map.png', dpi=400)
+# fig.savefig('/Users/ldtoney/Downloads/station_map.png', dpi=400)
