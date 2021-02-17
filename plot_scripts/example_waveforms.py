@@ -38,7 +38,7 @@ st_plot.remove_response()
 st_plot.normalize()
 
 # Plot
-fig, ax = plt.subplots(figsize=(7, 8))
+fig, ax = plt.subplots(figsize=(7, 9))
 for i, tr in enumerate(st_plot):
     ax.plot(
         tr.times(),
