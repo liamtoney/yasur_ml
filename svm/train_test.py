@@ -12,99 +12,114 @@ from sklearn.metrics import plot_confusion_matrix
 from sklearn.model_selection import train_test_split
 from sklearn.utils import resample
 
-# Toggle plotting
+# Toggle plotting (for script use, mainly)
 PLOT = False
 
 # Define project directory
 WORKING_DIR = Path.home() / 'work' / 'yasur_ml'
 
-# Filename of features CSV to use
-FEATURES_CSV = 'features_tsfresh.csv'
+# Maximum iterations for SVC classifier
+MAX_ITER = 5000
 
-# Set to integer for reproducible results
-RANDOM_STATE = None
 
-# Fraction of data to use for training
-TRAIN_SIZE = 0.75
+def train_test(features_path, train_size=0.75, plot=False, random_state=None):
+    """Train and test an SVM model using a features CSV file.
 
-# Read in labeled features
-features = pd.read_csv(WORKING_DIR / 'features' / 'csv' / FEATURES_CSV)
+    Args:
+        features_path (str): Full path to CSV file
+        train_size (float): Fraction of [balanced] data to use for training
+        plot (bool): Toggle plotting confusion matrix
+        random_state (int or None): Set to integer for reproducible results
+    """
 
-# Convert times to UTCDateTime
-features.time = [UTCDateTime(t) for t in features.time]
+    # Read in labeled features
+    features = pd.read_csv(features_path)
 
-# Remove constant features
-for column in features.columns:
-    if np.unique(features[column]).size == 1:
-        features.drop(columns=[column], inplace=True)
+    # Convert times to UTCDateTime
+    features.time = [UTCDateTime(t) for t in features.time]
 
-# Remove rows with NaNs
-features.dropna(inplace=True)
+    # Remove constant features
+    for column in features.columns:
+        if np.unique(features[column]).size == 1:
+            features.drop(columns=[column], inplace=True)
 
-# Adjust for class imbalance by down-sampling the majority class (from
-# https://elitedatascience.com/imbalanced-classes)
-class_counts_before = features.label.value_counts()
-print('Before:\n' + class_counts_before.to_string())
-dominant_vent = class_counts_before.index[class_counts_before.argmax()]
-majority = features[features.label == dominant_vent]
-minority = features[features.label != dominant_vent]
-majority_downsampled = resample(
-    majority,
-    replace=False,  # Sample w/o replacement
-    n_samples=minority.shape[0],  # Match number of waveforms in minority class
-    random_state=RANDOM_STATE,
+    # Remove rows with NaNs
+    features.dropna(inplace=True)
+
+    # Adjust for class imbalance by down-sampling the majority class (from
+    # https://elitedatascience.com/imbalanced-classes)
+    class_counts_before = features.label.value_counts()
+    print('Before:\n' + class_counts_before.to_string())
+    dominant_vent = class_counts_before.index[class_counts_before.argmax()]
+    majority = features[features.label == dominant_vent]
+    minority = features[features.label != dominant_vent]
+    majority_downsampled = resample(
+        majority,
+        replace=False,  # Sample w/o replacement
+        n_samples=minority.shape[0],  # Match number of waveforms in minority class
+        random_state=random_state,
+    )
+    features_downsampled = pd.concat([majority_downsampled, minority])
+    class_counts_after = features_downsampled.label.value_counts()
+    print('After:\n' + class_counts_after.to_string())
+    num_removed = (class_counts_before - class_counts_after)[dominant_vent]
+    print(f'({num_removed} vent {dominant_vent} examples removed)')
+
+    # Format dataset for use with scikit-learn
+    y = (features_downsampled['label'] == 'C').to_numpy(
+        dtype=int
+    )  # 0 = vent A; 1 = vent C
+    X = features_downsampled.iloc[:, 2:].to_numpy()  # Skipping first two columns here
+
+    # Rescale data to have zero mean and unit variance
+    X_scaled = preprocessing.scale(X)
+
+    # Split into training and testing
+    X_train, X_test, y_train, y_test = train_test_split(
+        X_scaled, y, train_size=train_size, random_state=random_state
+    )
+    print(f'\nTraining portion: {train_size * 100:g}%')
+    print(f'Training size: {y_train.size}')
+    print(f'Testing size: {y_test.size}')
+
+    # Run SVC
+    clf = svm.LinearSVC(max_iter=MAX_ITER)
+    clf.fit(X_train, y_train)
+
+    # Test SVC
+    score = clf.score(X_test, y_test)
+    print(f'\nAccuracy is {score:.0%}')
+
+    # Plot if desired
+    if plot:
+        cm = plot_confusion_matrix(
+            clf,
+            X_test,
+            y_test,
+            labels=[0, 1],  # Explicitly setting the order here
+            display_labels=['A', 'C'],  # Since 0 = vent A; 1 = vent C
+            cmap='Greys',
+            normalize='true',  # 'true' means the diagonal contains the TPR and TNR
+            values_format='.0%',  # Format as integer percent
+        )
+        fig = cm.figure_
+        ax = fig.axes[0]
+        ax.set_xlabel(ax.get_xlabel().replace('label', 'vent'))
+        ax.set_ylabel(ax.get_ylabel().replace('label', 'vent'))
+        for label in ax.get_xticklabels() + ax.get_yticklabels():
+            label.set_weight('bold')
+            label.set_color(os.environ[f'VENT_{label.get_text()}'])
+        ax.set_title(f'{y_test.size:,} test waveforms')
+        fig.axes[1].remove()  # Remove colorbar
+        fig.tight_layout()
+        fig.show()
+
+
+train_test(
+    WORKING_DIR / 'features' / 'csv' / 'features_tsfresh.csv',
+    train_size=0.75,
+    plot=False,
 )
-features_downsampled = pd.concat([majority_downsampled, minority])
-class_counts_after = features_downsampled.label.value_counts()
-print('After:\n' + class_counts_after.to_string())
-num_removed = (class_counts_before - class_counts_after)[dominant_vent]
-print(f'({num_removed} vent {dominant_vent} examples removed)')
-
-# Format dataset for use with scikit-learn
-y = (features_downsampled['label'] == 'C').to_numpy(dtype=int)  # 0 = vent A; 1 = vent C
-X = features_downsampled.iloc[:, 2:].to_numpy()  # Skipping first two columns here
-
-# Rescale data to have zero mean and unit variance
-X_scaled = preprocessing.scale(X)
-
-# Split into training and testing
-X_train, X_test, y_train, y_test = train_test_split(
-    X_scaled, y, train_size=TRAIN_SIZE, random_state=RANDOM_STATE
-)
-print(f'\nTraining portion: {TRAIN_SIZE * 100:g}%')
-print(f'Training size: {y_train.size}')
-print(f'Testing size: {y_test.size}')
-
-# Run SVC
-clf = svm.LinearSVC(max_iter=5000)
-clf.fit(X_train, y_train)
-
-# Test SVC
-score = clf.score(X_test, y_test)
-print(f'\nAccuracy is {score:.0%}')
-
-# Plot
-cm = plot_confusion_matrix(
-    clf,
-    X_test,
-    y_test,
-    labels=[0, 1],  # Explicitly setting the order here
-    display_labels=['A', 'C'],  # Since 0 = vent A; 1 = vent C
-    cmap='Greys',
-    normalize='true',  # 'true' means the diagonal contains the TPR and TNR
-    values_format='.0%',  # Format as integer percent
-)
-fig = cm.figure_
-ax = fig.axes[0]
-ax.set_xlabel(ax.get_xlabel().replace('label', 'vent'))
-ax.set_ylabel(ax.get_ylabel().replace('label', 'vent'))
-for label in ax.get_xticklabels() + ax.get_yticklabels():
-    label.set_weight('bold')
-    label.set_color(os.environ[f'VENT_{label.get_text()}'])
-ax.set_title(f'{y_test.size:,} test waveforms')
-fig.axes[1].remove()  # Remove colorbar
-fig.tight_layout()
-fig.show()
 
 #%% (DRAFT) Feature importance plot (permutation) - bad for correlated features
 
