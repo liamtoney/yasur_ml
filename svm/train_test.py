@@ -115,13 +115,15 @@ def train_test(features_path, train_size=0.75, plot=False, random_state=None):
         fig.show()
 
 
+#%% Run function
+
 train_test(
-    WORKING_DIR / 'features' / 'csv' / 'features_tsfresh.csv',
+    WORKING_DIR / 'features' / 'csv' / 'YIF2_features_tsfresh.csv',
     train_size=0.75,
-    plot=False,
+    plot=True,
 )
 
-#%% (DRAFT) Feature importance plot (permutation) - bad for correlated features
+#%% (TODO: Update for function) Feature importance plot (permutation) - bad for correlated features
 
 if PLOT:
 
@@ -145,7 +147,7 @@ if PLOT:
     fig.tight_layout()
     plt.show()
 
-    #%% (DRAFT) Feature importance plot (RF)
+    #%% (TODO: Update for function) Feature importance plot (RF)
 
     import matplotlib.pyplot as plt
     import numpy as np
@@ -180,7 +182,7 @@ if PLOT:
     fig.tight_layout()
     fig.show()
 
-    #%% (DRAFT) Look at feature correlation
+    #%% (TODO: Update for function) Look at feature correlation
 
     import numpy as np
     from scipy.cluster import hierarchy
@@ -213,7 +215,7 @@ if PLOT:
     fig.tight_layout()
     fig.show()
 
-    #%% (DRAFT) Plot feature correlation via scatterplot, plot decision boundary if possible
+    #%% (TODO: Update for function) Plot feature correlation via scatterplot, plot decision boundary if possible
 
     import numpy as np
 
