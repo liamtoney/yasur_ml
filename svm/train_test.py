@@ -73,7 +73,7 @@ print(f'({num_removed} vent {dominant_vent} examples removed)')
 
 # Format dataset for use with scikit-learn
 y = (features_downsampled['label'] == 'C').to_numpy(dtype=int)  # 0 = vent A; 1 = vent C
-X = features_downsampled.iloc[:, 1:].to_numpy()
+X = features_downsampled.iloc[:, 2:].to_numpy()  # Skipping first two columns here
 
 # Rescale data to have zero mean and unit variance
 X_scaled = preprocessing.scale(X)
@@ -128,7 +128,7 @@ if PLOT:
     result = permutation_importance(clf, X_train, y_train, n_repeats=10)
     sorted_idx = result.importances_mean.argsort()
 
-    feature_names = features.columns[1:]
+    feature_names = features.columns[2:]
     y_ticks = np.arange(0, len(feature_names))
     fig, ax = plt.subplots()
     ax.barh(y_ticks, result.importances_mean[sorted_idx], color='grey')
@@ -155,7 +155,7 @@ if PLOT:
     std = np.std([tree.feature_importances_ for tree in forest.estimators_], axis=0)
     sorted_idx = np.argsort(importances)
 
-    feature_names = features.columns[1:]
+    feature_names = features.columns[2:]
     y_ticks = np.arange(0, len(feature_names))
     fig, ax = plt.subplots()
     ax.barh(
@@ -184,7 +184,7 @@ if PLOT:
 
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 8))
 
-    feature_names = features.columns[1:]
+    feature_names = features.columns[2:]
     corr = spearmanr(X).correlation
     corr_linkage = hierarchy.ward(corr)
     dendro = hierarchy.dendrogram(

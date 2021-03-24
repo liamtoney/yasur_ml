@@ -43,7 +43,7 @@ fig.show()
 
 #%% Histograms of each feature
 
-feature_names = features.columns[1:]  # Skip first column since it's the label
+feature_names = features.columns[2:]  # Skip first two columns
 
 MANUAL_BIN_RANGE = True
 

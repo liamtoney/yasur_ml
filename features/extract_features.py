@@ -38,6 +38,7 @@ if not TSFRESH:
     # Initialize DataFrame of extracted features
     features = pd.DataFrame(
         columns=[
+            'time',  # Origin time from catalog
             'label',
             'td_std',
             'td_skewness',
@@ -90,6 +91,7 @@ if not TSFRESH:
                 quartiles[quartile] = f[idx]
 
             info = dict(
+                time=tr.stats.event_info.origin_time,
                 label=tr.stats.vent,
                 td_std=np.std(tr.data),
                 td_skewness=stats.skew(tr.data),
@@ -168,6 +170,7 @@ else:
         # Put into TSFRESH format
         timeseries = pd.DataFrame()
         labels = []
+        otimes = []  # Origin time from catalog
         for i, tr in enumerate(st):
             id = pd.Series(np.ones(tr.stats.npts, dtype=int) * i)
             time = pd.Series(tr.times())
@@ -177,14 +180,16 @@ else:
                 ignore_index=True,
             )
             labels.append(tr.stats.vent)
+            otimes.append(tr.stats.event_info.origin_time)
 
         # Calculate features
         extracted_features = extract_features(
             timeseries, column_id='id', column_sort='time'
         )
 
-        # Tweak and append to main DataFrame
+        # Tweak and append label and time info to main DataFrame
         extracted_features.insert(0, column='label', value=labels)
+        extracted_features.insert(0, column='time', value=otimes)
         extracted_features.columns = [
             column.split('__', 1)[-1] for column in extracted_features.columns
         ]
