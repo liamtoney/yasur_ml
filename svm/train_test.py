@@ -41,21 +41,6 @@ for column in features.columns:
 # Remove rows with NaNs
 features.dropna(inplace=True)
 
-# # Remove correlated features
-# features.drop(
-#     columns=[
-#         'td_kurtosis',
-#         'fd_kurtosis',
-#         'td_std',
-#         'fd_std',
-#         'fd_q1',
-#         'fd_q2',
-#         'fd_q3',
-#         'fd_skewness',
-#     ],
-#     inplace=True,
-# )
-
 # Adjust for class imbalance by down-sampling the majority class (from
 # https://elitedatascience.com/imbalanced-classes)
 class_counts_before = features.label.value_counts()
