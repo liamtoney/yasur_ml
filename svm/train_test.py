@@ -6,6 +6,7 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+from obspy import UTCDateTime
 from sklearn import preprocessing, svm
 from sklearn.metrics import plot_confusion_matrix
 from sklearn.model_selection import train_test_split
@@ -28,6 +29,9 @@ TRAIN_SIZE = 0.75
 
 # Read in labeled features
 features = pd.read_csv(WORKING_DIR / 'features' / 'csv' / FEATURES_CSV)
+
+# Convert times to UTCDateTime
+features.time = [UTCDateTime(t) for t in features.time]
 
 # Remove constant features
 for column in features.columns:
