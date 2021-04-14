@@ -16,9 +16,6 @@ WORKING_DIR = Path.home() / 'work' / 'yasur_ml'
 # Directory containing labeled waveforms
 labeled_wf_dir = WORKING_DIR / 'data' / 'labeled'
 
-# Station to extract features for, use None for all stations
-STATION = None
-
 # Toggle bandpass filtering of data
 FILTER = True
 
@@ -38,6 +35,7 @@ if not TSFRESH:
     # Initialize DataFrame of extracted features
     features = pd.DataFrame(
         columns=[
+            'station',
             'time',  # Origin time from catalog
             'label',
             'td_std',
@@ -58,10 +56,7 @@ if not TSFRESH:
 
         # Read in
         print(f'Reading {file}')
-        if STATION:
-            st = read(str(file)).select(station=STATION)  # Use only STATION
-        else:
-            st = read(str(file))  # Use all stations
+        st = read(str(file))  # Use all stations
 
         # Process
         st.remove_response()
@@ -91,6 +86,7 @@ if not TSFRESH:
                 quartiles[quartile] = f[idx]
 
             info = dict(
+                station=tr.stats.station,
                 time=tr.stats.event_info.origin_time,
                 label=tr.stats.vent,
                 td_std=np.std(tr.data),
@@ -107,10 +103,7 @@ if not TSFRESH:
             features = features.append(info, ignore_index=True)
 
     # Save as CSV
-    if STATION:
-        filename = f'{STATION}_features.csv'
-    else:
-        filename = 'features.csv'
+    filename = 'features.csv'
     if FILTER:
         filename = filename.replace('.csv', '_filtered.csv')
     features.to_csv(WORKING_DIR / 'features' / 'csv' / filename, index=False)
@@ -155,10 +148,7 @@ else:
 
         # Read in
         print(f'Reading {file}')
-        if STATION:
-            st = read(str(file)).select(station=STATION)  # Use only STATION
-        else:
-            st = read(str(file))  # Use all stations
+        st = read(str(file))  # Use all stations
 
         # Process
         st.remove_response()
@@ -171,6 +161,7 @@ else:
         timeseries = pd.DataFrame()
         labels = []
         otimes = []  # Origin time from catalog
+        stations = []
         for i, tr in enumerate(st):
             id = pd.Series(np.ones(tr.stats.npts, dtype=int) * i)
             time = pd.Series(tr.times())
@@ -181,25 +172,24 @@ else:
             )
             labels.append(tr.stats.vent)
             otimes.append(tr.stats.event_info.origin_time)
+            stations.append(tr.stats.station)
 
         # Calculate features
         extracted_features = extract_features(
             timeseries, column_id='id', column_sort='time'
         )
 
-        # Tweak and append label and time info to main DataFrame
+        # Tweak and append label, time, and station info to main DataFrame
         extracted_features.insert(0, column='label', value=labels)
         extracted_features.insert(0, column='time', value=otimes)
+        extracted_features.insert(0, column='station', value=stations)
         extracted_features.columns = [
             column.split('__', 1)[-1] for column in extracted_features.columns
         ]
         features = pd.concat([features, extracted_features], ignore_index=True)
 
     # Save as CSV
-    if STATION:
-        filename = f'{STATION}_features_tsfresh.csv'
-    else:
-        filename = 'features_tsfresh.csv'
+    filename = 'features_tsfresh.csv'
     if FILTER:
         filename = filename.replace('.csv', '_filtered.csv')
     features.to_csv(WORKING_DIR / 'features' / 'csv' / filename, index=False)
