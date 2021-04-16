@@ -319,7 +319,7 @@ features = read_and_preprocess(
     WORKING_DIR / 'features' / 'csv' / 'features_tsfresh.csv'
 )
 
-#%%
+#%% TODO: Wrap this stuff into the pre-existing function (i.e. add more kwargs)
 
 # Set time interval for training
 WINDOW = 'test'  # Specify if [T1, T2] window is for 'train' or 'test' data subsetting
@@ -337,6 +337,11 @@ else:
     raise ValueError('Window must be either \'train\' or \'test\'')
 if train.shape[0] + test.shape[0] != features.shape[0]:
     raise ValueError('Temporal subsetting failed due to dimension mismatch!')
+
+# Adjust for which stations we're using
+TEST_STATION = 'YIF3'
+train = train[train.station != TEST_STATION]
+test = test[test.station == TEST_STATION]
 
 # Balance classes
 print('TRAINING')
