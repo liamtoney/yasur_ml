@@ -85,6 +85,24 @@ def balance_classes(features):
     return features_downsampled
 
 
+def format_scikit(features):
+    """Format a features DataFrame for use with scikit-learn.
+
+    Args:
+        features (pandas.DataFrame): Input features (must have "station", "time", and
+            "label" as the first three columns)
+
+    Returns:
+        Tuple containing y and X (NumPy arrays)
+
+    """
+
+    y = (features['label'] == 'C').to_numpy(dtype=int)  # 0 = vent A; 1 = vent C
+    X = features.iloc[:, 3:].to_numpy()  # Skipping first three (metadata) columns
+
+    return y, X
+
+
 def plot_confusion(clf, X_test, y_test):
     """Shallow wrapper around plot_confusion_matrix().
 
@@ -127,12 +145,24 @@ def plot_confusion(clf, X_test, y_test):
     fig.show()
 
 
-def train_test(features_path, train_size=0.75, plot=False, random_state=None):
+def train_test(
+    features_path,
+    train_size=0.75,
+    train_stations=[],
+    test_stations=[],
+    plot=False,
+    random_state=None,
+):
     """Train and test an SVM model using a features CSV file.
 
     Args:
         features_path (str): Full path to CSV file
-        train_size (float): Fraction of [balanced] data to use for training
+        train_size (float or None): Random fraction of [balanced] data to use for
+            training. When this argument is set, train_stations and test_stations are
+            ignored
+        train_stations (str or list): Station(s) to train on. Ignored if train_size is
+            set
+        test_stations (str or list): Station(s) to test on. Ignored if test_size is set
         plot (bool): Toggle plotting confusion matrix
         random_state (int or None): Set to integer for reproducible results
     """
@@ -140,23 +170,56 @@ def train_test(features_path, train_size=0.75, plot=False, random_state=None):
     # Read in labeled features
     features = read_and_preprocess(features_path)
 
-    # Balance classes
-    features_downsampled = balance_classes(features)
+    if train_size is not None:  # Random fraction of data
 
-    # Format dataset for use with scikit-learn
-    y = (features_downsampled['label'] == 'C').to_numpy(
-        dtype=int
-    )  # 0 = vent A; 1 = vent C
-    X = features_downsampled.iloc[:, 3:].to_numpy()  # Skipping first three columns here
+        print(
+            'train_size is set, so ignoring train_stations and test_stations args if '
+            'they were provided!\n'
+        )
 
-    # Rescale data to have zero mean and unit variance
-    X_scaled = preprocessing.scale(X)
+        # Balance classes
+        features_downsampled = balance_classes(features)
 
-    # Split into training and testing
-    X_train, X_test, y_train, y_test = train_test_split(
-        X_scaled, y, train_size=train_size, random_state=random_state
-    )
-    print(f'\nTraining portion: {train_size * 100:g}%')
+        # Format dataset for use with scikit-learn
+        y, X = format_scikit(features_downsampled)
+
+        # Rescale data to have zero mean and unit variance
+        X_scaled = preprocessing.scale(X)
+
+        # Split into training and testing
+        X_train, X_test, y_train, y_test = train_test_split(
+            X_scaled, y, train_size=train_size, random_state=random_state
+        )
+
+    else:  # Station subsets
+
+        # Type conversion
+        train_stations = np.atleast_1d(train_stations)
+        test_stations = np.atleast_1d(test_stations)
+
+        # Check to make sure the lists aren't empty
+        if len(train_stations) == 0 or len(test_stations) == 0:
+            raise ValueError('Neither train_stations or test_stations can be empty!')
+
+        # Adjust for which stations we're using
+        train = features[features.station.isin(train_stations)]
+        test = features[features.station.isin(test_stations)]
+
+        # Balance train and test subsets
+        print('TRAINING')
+        train_ds = balance_classes(train)
+        print('\nTESTING')
+        test_ds = balance_classes(test)
+
+        # Format dataset for use with scikit-learn
+        y_train, X_train = format_scikit(train_ds)
+        y_test, X_test = format_scikit(test_ds)
+
+        # Rescale data to have zero mean and unit variance
+        X_train = preprocessing.scale(X_train)
+        X_test = preprocessing.scale(X_test)
+
+    print(f'\nTraining portion: {y_train.size / (y_train.size + y_test.size) * 100:g}%')
     print(f'Training size: {y_train.size}')
     print(f'Testing size: {y_test.size}')
 
@@ -317,6 +380,16 @@ if PLOT:
 # Read in labeled features
 features = read_and_preprocess(
     WORKING_DIR / 'features' / 'csv' / 'features_tsfresh.csv'
+)
+
+#%%
+
+train_test(
+    WORKING_DIR / 'features' / 'csv' / 'features_tsfresh.csv',
+    train_size=None,
+    train_stations=['YIF1', 'YIF2', 'YIF4', 'YIF5'],
+    test_stations=['YIF3'],
+    plot=PLOT,
 )
 
 #%% TODO: Wrap this stuff into the pre-existing function (i.e. add more kwargs)
