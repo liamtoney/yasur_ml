@@ -93,14 +93,14 @@ def format_scikit(features):
             "label" as the first three columns)
 
     Returns:
-        Tuple containing y and X (NumPy arrays)
+        Tuple containing X and y (NumPy arrays)
 
     """
 
-    y = (features['label'] == 'C').to_numpy(dtype=int)  # 0 = vent A; 1 = vent C
     X = features.iloc[:, 3:].to_numpy()  # Skipping first three (metadata) columns
+    y = (features['label'] == 'C').to_numpy(dtype=int)  # 0 = vent A; 1 = vent C
 
-    return y, X
+    return X, y
 
 
 def plot_confusion(clf, X_test, y_test):
@@ -147,7 +147,7 @@ def plot_confusion(clf, X_test, y_test):
 
 def train_test(
     features_path,
-    train_size=0.75,
+    train_size=None,
     train_stations=[],
     test_stations=[],
     plot=False,
@@ -158,48 +158,44 @@ def train_test(
     Args:
         features_path (str): Full path to CSV file
         train_size (float or None): Random fraction of [balanced] data to use for
-            training. When this argument is set, train_stations and test_stations are
-            ignored
-        train_stations (str or list): Station(s) to train on. Ignored if train_size is
-            set
-        test_stations (str or list): Station(s) to test on. Ignored if test_size is set
+            training
+        train_stations (str or list): Station(s) to train on
+        test_stations (str or list): Station(s) to test on
         plot (bool): Toggle plotting confusion matrix
         random_state (int or None): Set to integer for reproducible results
     """
 
-    # Read in labeled features
+    # Type conversion
+    train_stations = np.atleast_1d(train_stations)
+    test_stations = np.atleast_1d(test_stations)
+
+    # Input checking (doing this before the potentially lengthy read-in step)
+    if (
+        train_size is None and (len(train_stations) == 0 or len(test_stations) == 0)
+    ) or (
+        train_size is not None and (len(train_stations) != 0 or len(test_stations) != 0)
+    ):
+        raise ValueError(
+            'Either train_size OR train_stations AND test_stations must be set!'
+        )
+
+    # Read in labeled features (can be slow!)
     features = read_and_preprocess(features_path)
 
-    if train_size is not None:  # Random fraction of data
-
-        print(
-            'train_size is set, so ignoring train_stations and test_stations args if '
-            'they were provided!\n'
-        )
+    if train_size is not None:  # Subset using random fraction of data
 
         # Balance classes
         features_downsampled = balance_classes(features)
 
         # Format dataset for use with scikit-learn
-        y, X = format_scikit(features_downsampled)
-
-        # Rescale data to have zero mean and unit variance
-        X_scaled = preprocessing.scale(X)
+        X, y = format_scikit(features_downsampled)
 
         # Split into training and testing
         X_train, X_test, y_train, y_test = train_test_split(
-            X_scaled, y, train_size=train_size, random_state=random_state
+            X, y, train_size=train_size, random_state=random_state
         )
 
-    else:  # Station subsets
-
-        # Type conversion
-        train_stations = np.atleast_1d(train_stations)
-        test_stations = np.atleast_1d(test_stations)
-
-        # Check to make sure the lists aren't empty
-        if len(train_stations) == 0 or len(test_stations) == 0:
-            raise ValueError('Neither train_stations or test_stations can be empty!')
+    else:  # Subset using manual station train and test specifications
 
         # Adjust for which stations we're using
         train = features[features.station.isin(train_stations)]
@@ -212,16 +208,16 @@ def train_test(
         test_ds = balance_classes(test)
 
         # Format dataset for use with scikit-learn
-        y_train, X_train = format_scikit(train_ds)
-        y_test, X_test = format_scikit(test_ds)
-
-        # Rescale data to have zero mean and unit variance
-        X_train = preprocessing.scale(X_train)
-        X_test = preprocessing.scale(X_test)
+        X_train, y_train = format_scikit(train_ds)
+        X_test, y_test = format_scikit(test_ds)
 
     print(f'\nTraining portion: {y_train.size / (y_train.size + y_test.size) * 100:g}%')
     print(f'Training size: {y_train.size}')
     print(f'Testing size: {y_test.size}')
+
+    # Rescale data to have zero mean and unit variance
+    X_train = preprocessing.scale(X_train)
+    X_test = preprocessing.scale(X_test)
 
     # Run SVC
     clf = svm.LinearSVC(max_iter=MAX_ITER)
