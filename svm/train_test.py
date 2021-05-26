@@ -282,8 +282,13 @@ def train_test(
 #%% Run function
 
 train_test(
-    WORKING_DIR / 'features' / 'csv' / 'features.csv',
-    train_size=0.75,
+    WORKING_DIR / 'features' / 'csv' / 'features_tsfresh.csv',
+    train_size=None,
+    train_stations=['YIF1', 'YIF2', 'YIF4', 'YIF5'],
+    test_stations=['YIF3'],
+    time_window_type='test',
+    tmin=UTCDateTime(2016, 7, 31),
+    tmax=UTCDateTime(2016, 8, 1),
     plot=PLOT,
 )
 
@@ -417,16 +422,3 @@ if PLOT:
         ax.set_ylim(f2.min(), f2.max())
 
     fig.show()
-
-#%%
-
-train_test(
-    WORKING_DIR / 'features' / 'csv' / 'features_tsfresh.csv',
-    train_size=None,
-    train_stations=['YIF1', 'YIF2', 'YIF4', 'YIF5'],
-    test_stations=['YIF3'],
-    time_window_type='test',
-    tmin=UTCDateTime(2016, 7, 31),
-    tmax=UTCDateTime(2016, 8, 1),
-    plot=PLOT,
-)
