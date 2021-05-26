@@ -94,7 +94,6 @@ def format_scikit(features):
 
     Returns:
         Tuple containing X and y (NumPy arrays)
-
     """
 
     X = features.iloc[:, 3:].to_numpy()  # Skipping first three (metadata) columns
@@ -145,11 +144,48 @@ def plot_confusion(clf, X_test, y_test):
     fig.show()
 
 
+def time_subset(features, time_window_type, tmin, tmax):
+    """Temporally split a features DataFrame.
+
+    Args:
+        features (pandas.DataFrame): Input features (must have "time" column)
+        time_window_type (str): Either 'train' or 'test'
+        tmin (UTCDateTime or None): Beginning of time window (None to use start of
+            features)
+        tmax (UTCDateTime or None): End of time window (None to use end of features)
+
+    Returns:
+        Tuple containing training subset and testing subset
+    """
+
+    if tmin is None:
+        tmin = features.time.min()
+    if tmax is None:
+        tmax = features.time.max()
+
+    if time_window_type == 'train':
+        train = features[(features.time >= tmin) & (features.time <= tmax)]
+        test = features[(features.time < tmin) | (features.time > tmax)]
+    elif time_window_type == 'test':
+        train = features[(features.time < tmin) | (features.time > tmax)]
+        test = features[(features.time >= tmin) & (features.time <= tmax)]
+    else:
+        raise ValueError('Window must be either \'train\' or \'test\'')
+
+    if train.shape[0] + test.shape[0] != features.shape[0]:
+        raise ValueError('Temporal subsetting failed due to dimension mismatch!')
+
+    return train, test
+
+
 def train_test(
     features_path,
     train_size=None,
     train_stations=[],
     test_stations=[],
+    time_window_type=None,
+    tmin=None,
+    tmax=None,
     plot=False,
     random_state=None,
 ):
@@ -161,6 +197,11 @@ def train_test(
             training
         train_stations (str or list): Station(s) to train on
         test_stations (str or list): Station(s) to test on
+        time_window_type (str or None): Either 'train', 'test', or None (the latter
+            disables time subsetting)
+        tmin (UTCDateTime or None): Beginning of time window (None to use start of
+            features)
+        tmax (UTCDateTime or None): End of time window (None to use end of features)
         plot (bool): Toggle plotting confusion matrix
         random_state (int or None): Set to integer for reproducible results
     """
@@ -195,11 +236,17 @@ def train_test(
             X, y, train_size=train_size, random_state=random_state
         )
 
-    else:  # Subset using manual station train and test specifications
+    else:  # Subset by time or by station
 
-        # Adjust for which stations we're using
-        train = features[features.station.isin(train_stations)]
-        test = features[features.station.isin(test_stations)]
+        # TIME subsetting
+        if time_window_type is not None:
+            train, test = time_subset(features, time_window_type, tmin, tmax)
+        else:
+            train, test = features, features
+
+        # STATION subsetting
+        train = train[train.station.isin(train_stations)]
+        test = test[test.station.isin(test_stations)]
 
         # Balance train and test subsets
         print('TRAINING')
@@ -371,13 +418,6 @@ if PLOT:
 
     fig.show()
 
-#%% Train and test on different times
-
-# Read in labeled features
-features = read_and_preprocess(
-    WORKING_DIR / 'features' / 'csv' / 'features_tsfresh.csv'
-)
-
 #%%
 
 train_test(
@@ -385,63 +425,8 @@ train_test(
     train_size=None,
     train_stations=['YIF1', 'YIF2', 'YIF4', 'YIF5'],
     test_stations=['YIF3'],
+    time_window_type='test',
+    tmin=UTCDateTime(2016, 7, 31),
+    tmax=UTCDateTime(2016, 8, 1),
     plot=PLOT,
 )
-
-#%% TODO: Wrap this stuff into the pre-existing function (i.e. add more kwargs)
-
-# Set time interval for training
-WINDOW = 'test'  # Specify if [T1, T2] window is for 'train' or 'test' data subsetting
-T1 = features.time.max() - 2 * 24 * 60 * 60
-T2 = features.time.max()
-
-# Split by time
-if WINDOW == 'train':
-    train = features[(features.time >= T1) & (features.time <= T2)]
-    test = features[(features.time < T1) | (features.time > T2)]
-elif WINDOW == 'test':
-    train = features[(features.time < T1) | (features.time > T2)]
-    test = features[(features.time >= T1) & (features.time <= T2)]
-else:
-    raise ValueError('Window must be either \'train\' or \'test\'')
-if train.shape[0] + test.shape[0] != features.shape[0]:
-    raise ValueError('Temporal subsetting failed due to dimension mismatch!')
-
-# Adjust for which stations we're using
-TEST_STATION = 'YIF3'
-train = train[train.station != TEST_STATION]
-test = test[test.station == TEST_STATION]
-
-# Balance classes
-print('TRAINING')
-train_ds = balance_classes(train)
-print('\nTESTING')
-test_ds = balance_classes(test)
-
-# Format dataset for use with scikit-learn
-y_train = (train_ds['label'] == 'C').to_numpy(dtype=int)  # 0 = vent A; 1 = vent C
-X_train = train_ds.iloc[:, 3:].to_numpy()  # Skipping first three columns here
-y_test = (test_ds['label'] == 'C').to_numpy(dtype=int)  # 0 = vent A; 1 = vent C
-X_test = test_ds.iloc[:, 3:].to_numpy()  # Skipping first three columns here
-
-# Rescale data to have zero mean and unit variance
-X_train = preprocessing.scale(X_train)
-X_test = preprocessing.scale(X_test)
-
-print(
-    f'\nTraining portion: {train_ds.shape[0] / (train_ds.shape[0] + test_ds.shape[0]) * 100:g}%'
-)
-print(f'Training size: {y_train.size}')
-print(f'Testing size: {y_test.size}')
-
-# Run SVC
-clf = svm.LinearSVC(max_iter=MAX_ITER)
-clf.fit(X_train, y_train)
-
-# Test SVC
-score = clf.score(X_test, y_test)
-print(f'\nAccuracy is {score:.0%}')
-
-# Plot if desired
-if PLOT:
-    plot_confusion(clf, X_test, y_test)
