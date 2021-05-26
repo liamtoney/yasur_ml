@@ -102,7 +102,7 @@ def format_scikit(features):
     return X, y
 
 
-def plot_confusion(clf, X_test, y_test):
+def plot_confusion(clf, X_test, y_test, title=None):
     """Shallow wrapper around plot_confusion_matrix().
 
     See
@@ -119,6 +119,7 @@ def plot_confusion(clf, X_test, y_test):
         clf (estimator): Fitted classifier
         X_test (numpy.ndarray): Input values
         y_test (numpy.ndarray): Target values
+        title (str or None): Title for plot (no title if None)
     """
 
     cm = plot_confusion_matrix(
@@ -138,7 +139,8 @@ def plot_confusion(clf, X_test, y_test):
     for label in ax.get_xticklabels() + ax.get_yticklabels():
         label.set_weight('bold')
         label.set_color(os.environ[f'VENT_{label.get_text()}'])
-    ax.set_title(f'{y_test.size:,} test waveforms')
+    if title is not None:
+        ax.set_title(title, loc='left', fontsize='medium')
     fig.axes[1].remove()  # Remove colorbar
     fig.tight_layout()
     fig.show()
@@ -155,13 +157,15 @@ def time_subset(features, time_window_type, tmin, tmax):
         tmax (UTCDateTime or None): End of time window (None to use end of features)
 
     Returns:
-        Tuple containing training subset and testing subset
+        Tuple containing training subset, testing subset, tmin, and tmax
     """
 
     if tmin is None:
         tmin = features.time.min()
+        print('Using beginning of features for tmin')
     if tmax is None:
         tmax = features.time.max()
+        print('Using end of features for tmax')
 
     if time_window_type == 'train':
         train = features[(features.time >= tmin) & (features.time <= tmax)]
@@ -175,7 +179,7 @@ def time_subset(features, time_window_type, tmin, tmax):
     if train.shape[0] + test.shape[0] != features.shape[0]:
         raise ValueError('Temporal subsetting failed due to dimension mismatch!')
 
-    return train, test
+    return train, test, tmin, tmax
 
 
 def train_test(
@@ -240,7 +244,9 @@ def train_test(
 
         # TIME subsetting
         if time_window_type is not None:
-            train, test = time_subset(features, time_window_type, tmin, tmax)
+            train, test, tmin, tmax = time_subset(
+                features, time_window_type, tmin, tmax
+            )
         else:
             train, test = features, features
 
@@ -276,7 +282,14 @@ def train_test(
 
     # Plot if desired
     if plot:
-        plot_confusion(clf, X_test, y_test)
+        title = 'Training stations: {}\nTesting stations: {}'.format(
+            ', '.join(train_stations), ', '.join(test_stations)
+        )
+        fmt = '%Y-%m-%d %H:%M'
+        if time_window_type is not None:
+            title += f'\n{time_window_type.capitalize()}ing window: {tmin.strftime(fmt)} – {tmax.strftime(fmt)}'
+        title += f'\n$\\bf{y_test.size}~test~waveforms$'
+        plot_confusion(clf, X_test, y_test, title=title)
 
 
 #%% Run function
