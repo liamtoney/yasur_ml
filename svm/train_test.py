@@ -19,7 +19,7 @@ PLOT = True
 WORKING_DIR = Path.home() / 'work' / 'yasur_ml'
 
 # Maximum iterations for SVC classifier
-MAX_ITER = 5000
+MAX_ITER = 10000
 
 
 def read_and_preprocess(features_csv_file):
@@ -131,7 +131,9 @@ def plot_confusion(clf, X_test, y_test, title=None):
         cmap='Greys',
         normalize='true',  # 'true' means the diagonal contains the TPR and TNR
         values_format='.0%',  # Format as integer percent
+        colorbar=False,  # Don't add colorbar
     )
+    cm.im_.set_clim(0, 1)  # For easier comparison between plots
     fig = cm.figure_
     ax = fig.axes[0]
     ax.set_xlabel(ax.get_xlabel().replace('label', 'vent'))
@@ -141,7 +143,6 @@ def plot_confusion(clf, X_test, y_test, title=None):
         label.set_color(os.environ[f'VENT_{label.get_text()}'])
     if title is not None:
         ax.set_title(title, loc='left', fontsize='medium')
-    fig.axes[1].remove()  # Remove colorbar
     fig.tight_layout()
     fig.show()
 
