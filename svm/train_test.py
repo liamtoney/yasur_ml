@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 import os
 from pathlib import Path
 
@@ -291,17 +289,3 @@ def train_test(
             title += f'\n{time_window_type.capitalize()}ing window: {tmin.strftime(fmt)} – {tmax.strftime(fmt)}'
         title += f'\n$\\bf{y_test.size}~test~waveforms$'
         plot_confusion(clf, X_test, y_test, title=title)
-
-
-#%% Run function
-
-train_test(
-    WORKING_DIR / 'features' / 'csv' / 'features_tsfresh.csv',
-    train_size=None,
-    train_stations=['YIF1', 'YIF2', 'YIF4', 'YIF5'],
-    test_stations=['YIF3'],
-    time_window_type='test',
-    tmin=UTCDateTime(2016, 7, 31),
-    tmax=UTCDateTime(2016, 8, 1),
-    plot=PLOT,
-)
