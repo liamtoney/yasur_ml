@@ -48,13 +48,14 @@ def read_and_preprocess(features_csv_file):
     return features
 
 
-def balance_classes(features):
+def balance_classes(features, verbose=True):
     """Function to adjust for class imbalance by down-sampling the majority class.
 
     See https://elitedatascience.com/imbalanced-classes for more info.
 
     Args:
         features (pandas.DataFrame): Input features (must have a "label" column)
+        verbose (bool): Toggle printing info about balancing
 
     Returns:
         pandas.DataFrame: Output features
@@ -62,7 +63,8 @@ def balance_classes(features):
 
     # Perform the balancing
     class_counts_before = features.label.value_counts()
-    print('Before:\n' + class_counts_before.to_string())
+    if verbose:
+        print('Before:\n' + class_counts_before.to_string())
     dominant_vent = class_counts_before.index[class_counts_before.argmax()]
     majority = features[features.label == dominant_vent]
     minority = features[features.label != dominant_vent]
@@ -74,11 +76,12 @@ def balance_classes(features):
     )
     features_downsampled = pd.concat([majority_downsampled, minority])
 
-    # Print what action was taken
-    class_counts_after = features_downsampled.label.value_counts()
-    print('After:\n' + class_counts_after.to_string())
-    num_removed = (class_counts_before - class_counts_after)[dominant_vent]
-    print(f'({num_removed} vent {dominant_vent} examples removed)')
+    if verbose:
+        # Print what action was taken
+        class_counts_after = features_downsampled.label.value_counts()
+        print('After:\n' + class_counts_after.to_string())
+        num_removed = (class_counts_before - class_counts_after)[dominant_vent]
+        print(f'({num_removed} vent {dominant_vent} examples removed)')
 
     return features_downsampled
 
