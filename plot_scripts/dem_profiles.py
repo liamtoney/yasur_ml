@@ -21,7 +21,7 @@ YLIM = (7839600, 7840300)
 
 # gdalwarp -t_srs EPSG:32759 -r cubicspline DEM_WGS84.tif DEM_WGS84_UTM.tif
 DEM_FILE = WORKING_DIR / 'data' / 'DEM_WGS84_UTM.tif'
-# DEM_FILE = '/Users/ldtoney/work/yasur_ml/data/DEM_Union_UAV_161116_sm101_UTM.tif'
+# DEM_FILE = WORKING_DIR / 'data' / 'DEM_Union_UAV_161116_sm101_UTM.tif'
 
 # Read in full-res DEM, clip to extent to reduce size
 dem = xr.open_rasterio(DEM_FILE).squeeze()
