@@ -25,7 +25,7 @@ DEM_FILE = WORKING_DIR / 'data' / 'DEM_WGS84_UTM.tif'
 
 # Read in full-res DEM, clip to extent to reduce size
 dem = xr.open_rasterio(DEM_FILE).squeeze()
-dem = dem.where(dem > 0)  # Set no data values to NaN
+dem = dem.where(dem != dem.nodatavals)  # Set no data values to NaN
 dem = dem.where(
     (dem.x >= XLIM[0]) & (dem.x <= XLIM[1]) & (dem.y >= YLIM[0]) & (dem.y <= YLIM[1])
 )
@@ -66,7 +66,7 @@ STATION_COORDS = dict(
 # Actually interpolate!
 profiles_A = []
 profiles_C = []
-N = 1000  # Number of points in profile (overkill)
+N = 1000  # Number of points in profile (overkill!)
 for station_coord in STATION_COORDS.values():
     profile_A = dem.interp(
         x=xr.DataArray(np.linspace(x_A, station_coord[0], N)),
