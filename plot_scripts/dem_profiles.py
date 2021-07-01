@@ -49,6 +49,9 @@ ax_dem.set_xlim(XLIM)
 ax_dem.set_ylim(YLIM)
 ax_dem.xaxis.set_ticks_position('both')
 ax_dem.yaxis.set_ticks_position('both')
+for label in ax_dem.get_xticklabels():
+    label.set_rotation(30)
+    label.set_ha('right')
 fig_dem.tight_layout()
 fig_dem.show()
 
@@ -65,7 +68,7 @@ for tr in read(str(WORKING_DIR / 'data' / 'labeled' / 'label_000.pkl'))[:5]:
 # Actually interpolate!
 profiles_A = []
 profiles_C = []
-N = 1000  # Number of points in profile (overkill!)
+N = 500  # Number of points in profile (overkill!)
 for station_coord in STATION_COORDS.values():
     profile_A = dem.interp(
         x=xr.DataArray(np.linspace(x_A, station_coord[0], N)),
