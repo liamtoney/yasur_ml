@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import utm
 import xarray as xr
+from obspy import read
 
 # Define project directory
 WORKING_DIR = Path.home() / 'work' / 'yasur_ml'
@@ -13,7 +14,7 @@ WORKING_DIR = Path.home() / 'work' / 'yasur_ml'
 with open(WORKING_DIR / 'yasur_vent_locs.json') as f:
     VENT_LOCS = json.load(f)
 
-ELEVATION_LIMITS = (100, 350)  # [m] Limits for all plots
+ELEVATION_LIMITS = (100, 400)  # [m] Limits for all plots
 
 # UTM (need to adjust to show all stations)
 XLIM = (336800, 337500)
@@ -55,13 +56,11 @@ fig_dem.show()
 x_A, y_A, *_ = utm.from_latlon(*VENT_LOCS['A'][::-1])
 x_C, y_C, *_ = utm.from_latlon(*VENT_LOCS['C'][::-1])
 
-# Station locations in UTM
-STATION_COORDS = dict(
-    YIF7=(x_A + 250, y_A + 250),  # This and below are all dummies
-    YIF8=(x_C - 250, y_C + 100),
-    YIF9=(x_A - 50, y_A - 150),
-    YIF10=(337320, 7839938),
-)
+# Station locations in UTM, read from labeled waveform file
+STATION_COORDS = {}
+for tr in read(str(WORKING_DIR / 'data' / 'labeled' / 'label_000.pkl'))[:5]:
+    x, y, *_ = utm.from_latlon(tr.stats.latitude, tr.stats.longitude)
+    STATION_COORDS[tr.stats.station] = x, y
 
 # Actually interpolate!
 profiles_A = []
@@ -103,7 +102,7 @@ for ax, profiles in zip(axes, [profiles_A, profiles_C]):
     )
     ax.set_aspect('equal')
     ax.set_ylim(*ELEVATION_LIMITS)
-    ax.set_xlim(0, 400)
+    ax.set_xlim(0, 450)
     ax.set_xlabel('Horizontal distance (m)')
 axes[0].set_title('Vent A')
 axes[1].set_title('Vent C')
