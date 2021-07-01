@@ -50,7 +50,7 @@ x_C, y_C, *_ = utm.from_latlon(*VENT_LOCS['C'][::-1])
 
 # Station locations in UTM
 STATION_COORDS = dict(
-    YIF7=(x_A + 250, y_A + 250),
+    YIF7=(x_A + 250, y_A + 250),  # This and below are all dummies
     YIF8=(x_C - 250, y_C + 100),
     YIF9=(x_A - 50, y_A - 150),
     YIF10=(337320, 7839938),
