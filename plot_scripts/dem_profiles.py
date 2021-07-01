@@ -1,5 +1,4 @@
 import json
-import os
 from pathlib import Path
 
 import matplotlib.pyplot as plt
@@ -35,9 +34,13 @@ dem.plot.imshow(
     vmax=ELEVATION_LIMITS[1],
 )
 ax_dem.set_aspect('equal')
-ax_dem.ticklabel_format(style='plain')
+ax_dem.ticklabel_format(style='plain', useOffset=False)
 ax_dem.set_xlabel('UTM easting (m)')
 ax_dem.set_ylabel('UTM northing (m)')
+ax_dem.set_xlim(336800, 337500)
+ax_dem.set_ylim(7839600, 7840300)
+ax_dem.xaxis.set_ticks_position('both')
+ax_dem.yaxis.set_ticks_position('both')
 fig_dem.tight_layout()
 fig_dem.show()
 
@@ -46,15 +49,18 @@ x_A, y_A, *_ = utm.from_latlon(*VENT_LOCS['A'][::-1])
 x_C, y_C, *_ = utm.from_latlon(*VENT_LOCS['C'][::-1])
 
 # Station locations in UTM
-station_coords = dict(
-    YIF7=(x_A + 250, y_A + 250), YIF8=(x_C - 250, y_C + 100), YIF9=(x_A - 50, y_A - 150)
+STATION_COORDS = dict(
+    YIF7=(x_A + 250, y_A + 250),
+    YIF8=(x_C - 250, y_C + 100),
+    YIF9=(x_A - 50, y_A - 150),
+    YIF10=(337320, 7839938),
 )
 
 # Actually interpolate!
 profiles_A = []
 profiles_C = []
 N = 1000  # Number of points in profile (overkill)
-for station_coord in station_coords.values():
+for station_coord in STATION_COORDS.values():
     profile_A = dem.interp(
         x=xr.DataArray(np.linspace(x_A, station_coord[0], N)),
         y=xr.DataArray(np.linspace(y_A, station_coord[1], N)),
@@ -71,7 +77,7 @@ for station_coord in station_coords.values():
 # Plot profiles as groups of lines
 fig, axes = plt.subplots(ncols=2, sharey=True)
 for ax, profiles in zip(axes, [profiles_A, profiles_C]):
-    for p, name in zip(profiles, station_coords.keys()):
+    for p, name in zip(profiles, STATION_COORDS.keys()):
         h = np.hstack(
             [0, np.cumsum(np.linalg.norm([np.diff(p.x), np.diff(p.y)], axis=0))]
         )
@@ -104,7 +110,7 @@ fig.show()
 for pA, pC in zip(profiles_A, profiles_C):
     lines = ax_dem.plot(pA.x.values, pA.y.values)
     ax_dem.plot(pC.x.values, pC.y.values, color=lines[0].get_color())
-for name, station_coord in station_coords.items():
+for name, station_coord in STATION_COORDS.items():
     ax_dem.scatter(*station_coord, marker='v', edgecolor='black', zorder=5)
     ax_dem.text(*station_coord, s='  ' + name, va='center')
 ax_dem.scatter(x_A, y_A, color='white', edgecolor='black', zorder=5)
