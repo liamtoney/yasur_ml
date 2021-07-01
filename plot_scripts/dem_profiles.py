@@ -68,29 +68,7 @@ for station_coord in station_coords.values():
     )
     profiles_C.append(profile_C)
 
-# Plot profiles individually and filled
-fig, axes = plt.subplots(ncols=2, nrows=len(station_coords))
-for row, pA, pC, sta_name in zip(axes, profiles_A, profiles_C, station_coords.keys()):
-    # Find horizontal distance vector (works for curvy paths, too!)
-    hA = np.hstack(
-        [0, np.cumsum(np.linalg.norm([np.diff(pA.x), np.diff(pA.y)], axis=0))]
-    )
-    hC = np.hstack(
-        [0, np.cumsum(np.linalg.norm([np.diff(pC.x), np.diff(pC.y)], axis=0))]
-    )
-    row[0].fill_between(hA, pA, color=os.environ['VENT_A'])
-    row[1].fill_between(hC, pC, color=os.environ['VENT_C'])
-    for ax in row:
-        ax.set_aspect('equal')
-        ax.set_ylim(*ELEVATION_LIMITS)
-        ax.set_xlim(0, 400)
-    row[0].set_ylabel(sta_name)
-axes[0][0].set_title('Vent A')
-axes[0][1].set_title('Vent C')
-fig.tight_layout()
-fig.show()
-
-# Plot profiles as lines
+# Plot profiles as groups of lines
 fig, axes = plt.subplots(ncols=2, sharey=True)
 for ax, profiles in zip(axes, [profiles_A, profiles_C]):
     for p, name in zip(profiles, station_coords.keys()):
