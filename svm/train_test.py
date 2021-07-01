@@ -1,5 +1,4 @@
 import os
-from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -9,12 +8,6 @@ from sklearn.metrics import plot_confusion_matrix
 from sklearn.model_selection import train_test_split
 from sklearn.utils import resample
 from tsfresh import select_features
-
-# Toggle plotting (for script use, mainly)
-PLOT = True
-
-# Define project directory
-WORKING_DIR = Path.home() / 'work' / 'yasur_ml'
 
 # Maximum iterations for SVC classifier
 MAX_ITER = 10000
@@ -208,7 +201,7 @@ def time_subset(features, time_window_type, tmin, tmax):
 
 
 def train_test(
-    features_path,
+    features,
     train_size=None,
     train_stations=[],
     test_stations=[],
@@ -221,7 +214,7 @@ def train_test(
     """Train and test an SVM model using a features CSV file.
 
     Args:
-        features_path (str): Full path to CSV file
+        features (pandas.DataFrame): Input features [output of read_and_preprocess()]
         train_size (float or None): Random fraction of [balanced] data to use for
             training
         train_stations (str or list): Station(s) to train on
@@ -239,7 +232,7 @@ def train_test(
     train_stations = np.atleast_1d(train_stations)
     test_stations = np.atleast_1d(test_stations)
 
-    # Input checking (doing this before the potentially lengthy read-in step)
+    # Input checking
     if (
         train_size is None and (len(train_stations) == 0 or len(test_stations) == 0)
     ) or (
@@ -248,9 +241,6 @@ def train_test(
         raise ValueError(
             'Either train_size OR train_stations AND test_stations must be set!'
         )
-
-    # Read in labeled features (can be slow!)
-    features = read_and_preprocess(features_path)
 
     if train_size is not None:  # Subset using random fraction of data
 
