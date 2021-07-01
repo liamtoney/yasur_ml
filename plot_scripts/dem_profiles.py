@@ -15,13 +15,20 @@ with open(WORKING_DIR / 'yasur_vent_locs.json') as f:
 
 ELEVATION_LIMITS = (100, 350)  # [m] Limits for all plots
 
+# UTM (need to adjust to show all stations)
+XLIM = (336800, 337500)
+YLIM = (7839600, 7840300)
+
 # gdalwarp -t_srs EPSG:32759 -r cubicspline DEM_WGS84.tif DEM_WGS84_UTM.tif
 DEM_FILE = WORKING_DIR / 'data' / 'DEM_WGS84_UTM.tif'
 # DEM_FILE = '/Users/ldtoney/work/yasur_ml/data/DEM_Union_UAV_161116_sm101_UTM.tif'
 
-# Read in full-res DEM
+# Read in full-res DEM, clip to extent to reduce size
 dem = xr.open_rasterio(DEM_FILE).squeeze()
 dem = dem.where(dem > 0)  # Set no data values to NaN
+dem = dem.where(
+    (dem.x >= XLIM[0]) & (dem.x <= XLIM[1]) & (dem.y >= YLIM[0]) & (dem.y <= YLIM[1])
+)
 
 # Plot DEM
 fig_dem, ax_dem = plt.subplots()
@@ -37,8 +44,8 @@ ax_dem.set_aspect('equal')
 ax_dem.ticklabel_format(style='plain', useOffset=False)
 ax_dem.set_xlabel('UTM easting (m)')
 ax_dem.set_ylabel('UTM northing (m)')
-ax_dem.set_xlim(336800, 337500)
-ax_dem.set_ylim(7839600, 7840300)
+ax_dem.set_xlim(XLIM)
+ax_dem.set_ylim(YLIM)
 ax_dem.xaxis.set_ticks_position('both')
 ax_dem.yaxis.set_ticks_position('both')
 fig_dem.tight_layout()
