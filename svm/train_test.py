@@ -226,6 +226,9 @@ def train_test(
         tmax (UTCDateTime or None): End of time window (None to use end of features)
         plot (bool): Toggle plotting confusion matrix
         random_state (int or None): Set to integer for reproducible results
+
+    Returns:
+        Float: Score
     """
 
     # Type conversion
@@ -305,3 +308,5 @@ def train_test(
             title += f'\n{time_window_type.capitalize()}ing window: {tmin.strftime(fmt)} – {tmax.strftime(fmt)}'
         title += f'\n$\\bf{y_test.size}~test~waveforms$'
         plot_confusion(clf, X_test, y_test, title=title)
+
+    return score
