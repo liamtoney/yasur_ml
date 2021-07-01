@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import json
 from pathlib import Path
 
@@ -5,6 +7,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import utm
 import xarray as xr
+from matplotlib.ticker import MultipleLocator
 from obspy import read
 
 # Define project directory
@@ -102,6 +105,7 @@ for ax, profiles in zip(axes, [profiles_A, profiles_C]):
     ax.set_ylim(*ELEVATION_LIMITS)
     ax.set_xlim(0, 450)
     ax.set_xlabel('Horizontal distance (m)')
+    ax.xaxis.set_minor_locator(MultipleLocator(50))  # Minor ticks every 50 m
 axes[0].set_title('Vent A')
 axes[1].set_title('Vent C')
 axes[0].set_ylabel('Elevation (m)')
@@ -119,3 +123,6 @@ for name, station_coord in STATION_COORDS.items():
 ax_dem.scatter(x_A, y_A, **vent_marker_kwargs)
 ax_dem.scatter(x_C, y_C, **vent_marker_kwargs)
 fig_dem.show()
+
+# fig_dem.savefig('/Users/ldtoney/Downloads/profiles_dem.png', bbox_inches='tight', dpi=300)
+# fig.savefig('/Users/ldtoney/Downloads/profiles_lines.png', bbox_inches='tight', dpi=300)
