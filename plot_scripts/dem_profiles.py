@@ -83,6 +83,9 @@ for station_coord in STATION_COORDS.values():
     )
     profiles_C.append(profile_C)
 
+vent_marker_kwargs = dict(color='white', edgecolor='black', zorder=5)
+station_marker_kwargs = dict(marker='v', edgecolor='black', zorder=5)
+
 # Plot profiles as groups of lines
 fig, axes = plt.subplots(ncols=2, sharey=True)
 for ax, profiles in zip(axes, [profiles_A, profiles_C]):
@@ -90,19 +93,11 @@ for ax, profiles in zip(axes, [profiles_A, profiles_C]):
         h = np.hstack(
             [0, np.cumsum(np.linalg.norm([np.diff(p.x), np.diff(p.y)], axis=0))]
         )
-        lines = ax.plot(h, p)
+        l = ax.plot(h, p)
         ax.scatter(
-            h[-1],
-            p[-1],
-            marker='v',
-            color=lines[0].get_color(),
-            edgecolor='black',
-            label=name,
-            zorder=5,
+            h[-1], p[-1], color=l[0].get_color(), label=name, **station_marker_kwargs
         )
-    ax.scatter(
-        0, p[0], color='white', edgecolor='black', zorder=5, label='Vent', clip_on=False
-    )
+    ax.scatter(0, p[0], label='Vent', clip_on=False, **vent_marker_kwargs)
     ax.set_aspect('equal')
     ax.set_ylim(*ELEVATION_LIMITS)
     ax.set_xlim(0, 450)
@@ -117,11 +112,11 @@ fig.show()
 
 # Plot profiles on DEM
 for pA, pC in zip(profiles_A, profiles_C):
-    lines = ax_dem.plot(pA.x.values, pA.y.values)
-    ax_dem.plot(pC.x.values, pC.y.values, color=lines[0].get_color())
+    l = ax_dem.plot(pA.x.values, pA.y.values)
+    ax_dem.plot(pC.x.values, pC.y.values, color=l[0].get_color())
 for name, station_coord in STATION_COORDS.items():
-    ax_dem.scatter(*station_coord, marker='v', edgecolor='black', zorder=5)
+    ax_dem.scatter(*station_coord, **station_marker_kwargs)
     ax_dem.text(*station_coord, s='  ' + name, va='center')
-ax_dem.scatter(x_A, y_A, color='white', edgecolor='black', zorder=5)
-ax_dem.scatter(x_C, y_C, color='white', edgecolor='black', zorder=5)
+ax_dem.scatter(x_A, y_A, **vent_marker_kwargs)
+ax_dem.scatter(x_C, y_C, **vent_marker_kwargs)
 fig_dem.show()
