@@ -9,6 +9,7 @@ from sklearn import preprocessing, svm
 from sklearn.metrics import plot_confusion_matrix
 from sklearn.model_selection import train_test_split
 from sklearn.utils import resample
+from tsfresh import select_features
 
 # Toggle plotting (for script use, mainly)
 PLOT = True
@@ -46,6 +47,29 @@ def read_and_preprocess(features_csv_file):
     features.dropna(inplace=True)
 
     return features
+
+
+def tsfresh_select(features, **selection_kwargs):
+    """Apply TSFRESH's select_features(), skipping metadata columns
+
+    Args:
+        features (pandas.DataFrame): Input features
+        **selection_kwargs: Keyword arguments to be passed on to select_features()
+
+    Returns:
+        pandas.DataFrame: Output features
+    """
+
+    features_subset = features.iloc[:, 3:]  # Skipping first three (metadata) columns
+    y = (features['label'] == 'C').to_numpy(dtype=int)  # 0 = vent A; 1 = vent C
+
+    print('Applying TSFRESH feature selection...')
+    features_filtered = select_features(features_subset, y, **selection_kwargs)
+    print(
+        f'# of features reduced from {features_subset.shape[1]} to {features_filtered.shape[1]}'
+    )
+
+    return pd.concat([features.iloc[:, :3], features_filtered], axis='columns')
 
 
 def balance_classes(features, verbose=True):
