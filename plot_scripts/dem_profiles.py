@@ -106,7 +106,6 @@ axes[0].set_title('Vent A')
 axes[1].set_title('Vent C')
 axes[0].set_ylabel('Elevation (m)')
 axes[1].legend()
-fig.suptitle('Elevation profiles from vents to stations', y=0.75)
 fig.tight_layout()
 fig.show()
 
