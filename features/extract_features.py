@@ -26,6 +26,9 @@ FREQMAX = 4
 # Toggle using TSFRESH
 TSFRESH = True
 
+# Toggle randomly shifting travel times via np.roll() (TSFRESH only)
+ROLL = False
+
 #%% Option 1: Manual feature engineering
 
 if not TSFRESH:
@@ -165,7 +168,11 @@ else:
         for i, tr in enumerate(st):
             id = pd.Series(np.ones(tr.stats.npts, dtype=int) * i)
             time = pd.Series(tr.times())
-            value = pd.Series(tr.data)
+            if ROLL:
+                # Randomly shuffle waveforms to remove travel time biases
+                value = pd.Series(np.roll(tr.data, np.random.randint(tr.data.size)))
+            else:
+                value = pd.Series(tr.data)
             timeseries = pd.concat(
                 [timeseries, pd.DataFrame(dict(id=id, time=time, x=value))],
                 ignore_index=True,
@@ -190,6 +197,8 @@ else:
 
     # Save as CSV
     filename = 'features_tsfresh.csv'
+    if ROLL:
+        filename = filename.replace('.csv', '_roll.csv')
     if FILTER:
         filename = filename.replace('.csv', '_filtered.csv')
     features.to_csv(WORKING_DIR / 'features' / 'csv' / filename, index=False)
