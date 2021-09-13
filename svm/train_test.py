@@ -9,9 +9,6 @@ from sklearn.model_selection import train_test_split
 from sklearn.utils import resample
 from tsfresh import select_features
 
-# Maximum iterations for SVC classifier
-MAX_ITER = 10000
-
 
 def read_and_preprocess(features_csv_file):
     """Read in a features CSV file and perform basic pre-processing.
@@ -291,7 +288,7 @@ def train_test(
     X_test = preprocessing.scale(X_test)
 
     # Run SVC
-    clf = svm.LinearSVC(max_iter=MAX_ITER)
+    clf = svm.LinearSVC(dual=False)
     clf.fit(X_train, y_train)
 
     # Test SVC
