@@ -61,13 +61,14 @@ def tsfresh_select(features, **selection_kwargs):
     return pd.concat([features.iloc[:, :3], features_filtered], axis='columns')
 
 
-def balance_classes(features, verbose=True):
+def balance_classes(features, random_state=None, verbose=True):
     """Function to adjust for class imbalance by down-sampling the majority class.
 
     See https://elitedatascience.com/imbalanced-classes for more info.
 
     Args:
         features (pandas.DataFrame): Input features (must have a "label" column)
+        random_state: Passed on to resample(), see https://scikit-learn.org/stable/modules/generated/sklearn.utils.resample.html
         verbose (bool): Toggle printing info about balancing
 
     Returns:
@@ -85,7 +86,7 @@ def balance_classes(features, verbose=True):
         majority,
         replace=False,  # Sample w/o replacement
         n_samples=minority.shape[0],  # Match number of waveforms in minority class
-        random_state=None,
+        random_state=random_state,
     )
     features_downsampled = pd.concat([majority_downsampled, minority])
 
