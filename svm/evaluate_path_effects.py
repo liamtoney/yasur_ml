@@ -5,10 +5,11 @@ import colorcet as cc
 import matplotlib.pyplot as plt
 import numpy as np
 from obspy import UTCDateTime
+from sklearn import preprocessing, svm
 
 # TODO: Must add svm/ to path to import, worth making into a package?
 sys.path.append('svm/')
-from train_test import read_and_preprocess, train_test
+from train_test import balance_classes, format_scikit, read_and_preprocess, time_subset
 
 WORKING_DIR = Path.home() / 'work' / 'yasur_ml'
 
@@ -35,22 +36,36 @@ for tmin in [
     # 24 hrs
     tmax = tmin + 24 * 60 * 60
 
+    # Preallocate scores matrix
     scores = np.empty((len(ALL_STATIONS), len(ALL_STATIONS)))
 
-    for i, test_station in enumerate(ALL_STATIONS):
-        for j, train_station in enumerate(ALL_STATIONS):
+    # Temporal subsetting
+    train, test, *_ = time_subset(features, TIME_WINDOW_TYPE, tmin, tmax)
 
-            # TODO: Performance could be improved by using the same trained model for
-            # TODO: each column (i.e., 5 trainings instead of 25)
-            score = train_test(
-                features,
-                train_stations=train_station,
-                test_stations=test_station,
-                time_window_type=TIME_WINDOW_TYPE,
-                tmin=tmin,
-                tmax=tmax,
-            )
-            scores[i, j] = score
+    # Balance classes
+    print('TRAINING')
+    train = balance_classes(train)
+    print('\nTESTING')
+    test = balance_classes(test)
+
+    for j, train_station in enumerate(ALL_STATIONS):
+
+        train_ds = train[train.station == train_station]  # Subset
+        X_train, y_train = format_scikit(train_ds)
+        X_train = preprocessing.scale(X_train)  # Rescale
+
+        # Fit SVC
+        clf = svm.LinearSVC(dual=False)
+        clf.fit(X_train, y_train)
+
+        for i, test_station in enumerate(ALL_STATIONS):
+
+            test_ds = test[test.station == test_station]  # Subset
+            X_test, y_test = format_scikit(test_ds)
+            X_test = preprocessing.scale(X_test)  # Rescale
+
+            # Test SVC
+            scores[i, j] = clf.score(X_test, y_test)
 
     # Make plot
     fig, ax = plt.subplots()
