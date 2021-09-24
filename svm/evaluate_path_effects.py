@@ -16,7 +16,7 @@ WORKING_DIR = Path.home() / 'work' / 'yasur_ml'
 
 # Read in features only once, since it's slow
 features = read_and_preprocess(
-    WORKING_DIR / 'features' / 'csv' / 'features_tsfresh.csv'
+    WORKING_DIR / 'features' / 'csv' / 'features_tsfresh_filtered.csv'
 )
 
 #%% Run function
