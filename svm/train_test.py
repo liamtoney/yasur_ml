@@ -64,10 +64,14 @@ def tsfresh_select(features, **selection_kwargs):
 def balance_classes(features, random_state=None, verbose=True):
     """Function to adjust for class imbalance by down-sampling the majority class.
 
-    See https://elitedatascience.com/imbalanced-classes for more info.
+    See https://elitedatascience.com/imbalanced-classes for more info. This function
+    operates on the "event" level, not on the station level. I.e. the five stations
+    associated with a single event (i.e. having a shared origin time) are not broken
+    apart by the sampling.
 
     Args:
-        features (pandas.DataFrame): Input features (must have a "label" column)
+        features (pandas.DataFrame): Input features (must have "label" and "station"
+            columns)
         random_state: Passed on to resample(), see https://scikit-learn.org/stable/modules/generated/sklearn.utils.resample.html
         verbose (bool): Toggle printing info about balancing
 
@@ -82,12 +86,27 @@ def balance_classes(features, random_state=None, verbose=True):
     dominant_vent = class_counts_before.index[class_counts_before.argmax()]
     majority = features[features.label == dominant_vent]
     minority = features[features.label != dominant_vent]
-    majority_downsampled = resample(
-        majority,
+
+    # When resampling, use only the features associated with a single station - this
+    # treats things on an event level
+    unique_stations = features.station.unique()
+    majority_single_station = majority[majority.station == unique_stations[0]]
+    majority_single_station_downsampled = resample(
+        majority_single_station,
         replace=False,  # Sample w/o replacement
-        n_samples=minority.shape[0],  # Match number of waveforms in minority class
+        n_samples=int(
+            minority.shape[0] / unique_stations.size
+        ),  # Match number of EVENTS in minority class
         random_state=random_state,
     )
+
+    # Now use the event times that remain to index the full features
+    majority_downsampled = majority[
+        majority.time.astype(float).isin(
+            majority_single_station_downsampled.time.astype(float)
+        )
+    ]
+
     features_downsampled = pd.concat([majority_downsampled, minority])
 
     if verbose:
