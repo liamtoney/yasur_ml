@@ -1,3 +1,5 @@
+# isort: skip_file
+
 import sys
 from pathlib import Path
 
@@ -9,8 +11,7 @@ from sklearn import preprocessing, svm
 
 # TODO: Must add svm/ to path to import, worth making into a package?
 sys.path.append('svm/')
-from train_test import (balance_classes, format_scikit, read_and_preprocess,
-                        time_subset)
+from train_test import balance_classes, format_scikit, read_and_preprocess, time_subset
 
 WORKING_DIR = Path.home() / 'work' / 'yasur_ml'
 
