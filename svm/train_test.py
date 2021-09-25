@@ -107,6 +107,17 @@ def balance_classes(features, random_state=None, verbose=True):
         )
     ]
 
+    # Check that each station has the same number of examples (for each vent)
+    assert (
+        len(
+            set(
+                minority.station.value_counts().tolist()
+                + majority_downsampled.station.value_counts().tolist()
+            )  # Takes the unique value; there should just only 1!
+        )
+        == 1
+    )
+
     features_downsampled = pd.concat([majority_downsampled, minority])
 
     if verbose:
