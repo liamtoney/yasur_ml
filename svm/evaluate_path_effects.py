@@ -1,5 +1,6 @@
 # isort: skip_file
 
+import json
 import sys
 from pathlib import Path
 
@@ -19,6 +20,13 @@ WORKING_DIR = Path.home() / 'work' / 'yasur_ml'
 features = read_and_preprocess(
     WORKING_DIR / 'features' / 'csv' / 'features_tsfresh_filtered.csv'
 )
+
+#%% Subset features in-place (optional, only applies for TSFRESH features)
+
+with open(WORKING_DIR / 'features' / 'sfs_top_features.json') as f:
+    top_features = json.load(f)
+
+features = features[features.columns[:3].tolist() + top_features]
 
 #%% Run function
 
