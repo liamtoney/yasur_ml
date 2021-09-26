@@ -81,7 +81,7 @@ else:
 #%% Plot stacks
 
 fig, axes = plt.subplots(
-    nrows=len(STATIONS), ncols=2, sharex=True, sharey=True, figsize=FIGSIZE
+    nrows=len(STATIONS), ncols=2, sharex=True, sharey=False, figsize=FIGSIZE
 )
 
 for vent, axes_col in zip(traces.keys(), axes.T):
@@ -90,11 +90,18 @@ for vent, axes_col in zip(traces.keys(), axes.T):
     for station, ax in zip(traces[vent].keys(), axes_col):
         vs_traces = traces[vent][station][1:, :]  # Removing the first row of NaNs here
 
-        # Stack up all waveforms with original amps (in Pa)
-        stack = vs_traces.sum(axis=0)
-
-        ax.plot(st[0].times(), stack / stack.max(), color=color)  # Normalizing here
-        ax.set_ylim(-1, 1)
+        med = np.percentile(vs_traces, 50, axis=0)
+        ax.plot(st[0].times(), med, color=color, zorder=5)
+        ax.fill_between(
+            st[0].times(),
+            np.percentile(vs_traces, 25, axis=0),
+            np.percentile(vs_traces, 75, axis=0),
+            color=color,
+            linewidth=0,
+            alpha=0.3,
+        )
+        med_max = np.abs(med).max()
+        ax.set_ylim(-2 * med_max, 2 * med_max)  # Normalizing by median
         ax.set_xlim(0, 5)
         ax.set_yticks([])
         ax.set_ylabel(station)
@@ -157,7 +164,7 @@ for st, vent, axes_col in zip([gf_A, gf_C], traces.keys(), axes.T):
 
     for tr, ax in zip(stp, axes_col):
         ax.plot(tr.times(), tr.data, color=color)
-        ax.set_ylim(-1, 1)
+        ax.set_ylim(-2, 2)  # For comparison with median of stack
         ax.set_xlim(0, 5)
         ax.set_yticks([])
         ax.set_ylabel(tr.stats.station)
