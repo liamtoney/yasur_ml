@@ -29,7 +29,7 @@ FMAX = 4
 # Common figsize
 FIGSIZE = (7, 7)
 
-SAVE = True
+SAVE = False
 
 # Define filename for saved traces
 filter_str = '_filtered' if FILTER else ''
