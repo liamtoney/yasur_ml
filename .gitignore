@@ -3,6 +3,7 @@ figures/
 videos/
 label/catalogs/
 features/csv/
+features/selected_names/
 *.nc
 *.pkl
 *.tif
