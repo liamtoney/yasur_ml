@@ -23,7 +23,7 @@ features = read_and_preprocess(
 
 #%% Subset features in-place (optional, only applies for TSFRESH features)
 
-with open(WORKING_DIR / 'features' / 'sfs_top_features.json') as f:
+with open(WORKING_DIR / 'features' / 'selected_names' / 'sfs_top_features.json') as f:
     top_features = json.load(f)
 
 features = features[features.columns[:3].tolist() + top_features]
