@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 
 """
-Read in CSV file corresponding to a catalog, define the peaks of the histograms around
-each vent, and label events based upon proximity to these peaks.
+Read in CSV file corresponding to a catalog, fit a two-component Gaussian mixed model to
+the catalog locations, and label events based upon their inclusion inside the confidence
+ellipses of the two Gaussian distributions.
 """
 
 import json
@@ -12,12 +13,15 @@ from pathlib import Path
 import colorcet as cc
 import matplotlib.dates as mdates
 import matplotlib.pyplot as plt
+import matplotlib.transforms as transforms
 import numpy as np
 import pandas as pd
 import utm
+from matplotlib.patches import Ellipse
 from matplotlib.ticker import PercentFormatter
 from obspy import Stream, UTCDateTime, read
 from rtm import define_grid, produce_dem
+from sklearn import mixture
 
 # Toggle plotting
 PLOT = False
@@ -28,8 +32,8 @@ WORKING_DIR = Path.home() / 'work' / 'yasur_ml'
 # Define which catalog to label
 catalog_csv = WORKING_DIR / 'label' / 'catalogs' / 'height_4_spacing_30_agc_60.csv'
 
-# [m] Maximum distance from vent location estimate to a given event
-MAX_RADIUS = 40
+# Number of standard deviations from mean of distribution to allow for vent association
+N_STD = 2
 
 # Read in entire catalog to pandas DataFrame
 df = pd.read_csv(catalog_csv)
@@ -57,35 +61,116 @@ dem = produce_dem(
     plot_output=False,
 )
 
-#%% Make histogram
+#%% Define confidence ellipse function
 
-# Change registration
-xe = np.hstack([grid.x.values, grid.x.values[-1] + grid.spacing]) - grid.spacing / 2
-ye = np.hstack([grid.y.values, grid.y.values[-1] + grid.spacing]) - grid.spacing / 2
 
-# Compute histogram and assign to DataArray
-h, *_ = np.histogram2d(df.x, df.y, bins=[xe, ye])
-h[h == 0] = np.nan
-hist = grid.copy()
-hist.data = h.T  # Because of NumPy array axis handling
+def confidence_ellipse_from_mean_cov(
+    mean, cov, ax, n_std=3.0, facecolor='none', **kwargs
+):
+    """
+    Create a plot of the covariance confidence ellipse given mean and cov matrix.
+    Modified from https://matplotlib.org/stable/gallery/statistics/confidence_ellipse.html
 
-# Break in half around vent midpoint to define two clusters
-hist_A = hist.where(hist.y < y_0, drop=True)
-hist_C = hist.where(hist.y > y_0, drop=True)
+    Parameters
+    ----------
+    mean : 2D mean (mean_x, mean_y)
+    cov : 2 x 2 cov matrix
+    n_std : float
+        The number of standard deviations to determine the ellipse's radiuses.
+    **kwargs
+        Forwarded to `~matplotlib.patches.Ellipse`
+    Returns
+    -------
+    matplotlib.patches.Ellipse
+    """
 
-# Find maxima for each vent cluster
-A_max = hist_A.where(hist_A == hist_A.max(), drop=True)
-C_max = hist_C.where(hist_C == hist_C.max(), drop=True)
+    pearson = cov[0, 1] / np.sqrt(cov[0, 0] * cov[1, 1])
+    # Using a special case to obtain the eigenvalues of this
+    # two-dimensionl dataset.
+    ell_radius_x = np.sqrt(1 + pearson)
+    ell_radius_y = np.sqrt(1 - pearson)
+    ellipse = Ellipse(
+        (0, 0),
+        width=ell_radius_x * 2,
+        height=ell_radius_y * 2,
+        facecolor=facecolor,
+        **kwargs,
+    )
 
-# Plot
+    # Calculating the standard deviation of x from
+    # the square root of the variance and multiplying
+    # with the given number of standard deviations.
+    scale_x = np.sqrt(cov[0, 0]) * n_std
+
+    # calculating the stdandard deviation of y ...
+    scale_y = np.sqrt(cov[1, 1]) * n_std
+
+    transf = (
+        transforms.Affine2D().rotate_deg(45).scale(scale_x, scale_y).translate(*mean)
+    )
+
+    ellipse.set_transform(transf + ax.transData)
+
+    return ax.add_patch(ellipse)
+
+
+#%% Fit Gaussian mixture model (GMM)
+
+# Format for scikit-learn
+X_train = np.column_stack([df.x, df.y])
+
+# Get UTM locations of the vent DEM minima to initialize the GMM
+vent_utm = {}
+for vent in 'A', 'C':
+    vent_utm[vent] = utm.from_latlon(VENT_LOCS[vent][1], VENT_LOCS[vent][0])[:2]
+
+# Fit a GMM with two components (for the two vents)
+clf = mixture.GaussianMixture(
+    n_components=2, covariance_type='full', means_init=list(vent_utm.values())
+)
+clf.fit(X_train)
+
+# MUST plot since confidence ellipse function is designed to work in plotting context
+fig, ax = plt.subplots()
+ax.scatter(df.x, df.y, s=1, c='black')
+for mean, cov, vent in zip(clf.means_, clf.covariances_, vent_utm.keys()):
+    confidence_ellipse_from_mean_cov(
+        mean, cov, ax, n_std=N_STD, edgecolor=os.environ[f'VENT_{vent}']
+    )
+in_ell = {}  # KEY variable storing whether or not locs are within either vent ellipse
+for ell, vent in zip(ax.patches, vent_utm.keys()):
+    in_ell[vent] = ell.contains_points(
+        ax.transData.transform(np.column_stack([df.x, df.y]))
+    )
+    ax.scatter(
+        df.x[in_ell[vent]], df.y[in_ell[vent]], s=1, c=os.environ[f'VENT_{vent}']
+    )
+    print(f'Vent {vent}: {in_ell[vent].sum()}')
+print('Total: {}'.format(in_ell['A'].sum() + in_ell['C'].sum()))
+ax.set_aspect('equal')
+fig.show()
+
+#%% (OPTIONAL) Plot histogram of catalog with ellipses overlain
+
 if PLOT:
+
+    # Change registration
+    xe = np.hstack([grid.x.values, grid.x.values[-1] + grid.spacing]) - grid.spacing / 2
+    ye = np.hstack([grid.y.values, grid.y.values[-1] + grid.spacing]) - grid.spacing / 2
+
+    # Compute histogram and assign to DataArray
+    h, *_ = np.histogram2d(df.x, df.y, bins=[xe, ye])
+    h[h == 0] = np.nan
+    hist = grid.copy()
+    hist.data = h.T  # Because of NumPy array axis handling
+
     fig, ax = plt.subplots()
     dem.plot.contour(ax=ax, levels=20, colors='black', linewidths=0.5)
     hist.plot.pcolormesh(ax=ax, cmap=cc.m_fire_r, cbar_kwargs=dict(label='# of events'))
-    for loc in (A_max.x.values, A_max.y.values), (C_max.x.values, C_max.y.values):
-        ax.add_artist(plt.Circle(loc, MAX_RADIUS, edgecolor='black', facecolor='none'))
+    for mean, cov in zip(clf.means_, clf.covariances_):
+        confidence_ellipse_from_mean_cov(mean, cov, ax, n_std=N_STD, edgecolor='black')
     ax.set_aspect('equal', adjustable='box')
-    ax.set_title(f'{df.shape[0]} events in catalog, MAX_RADIUS = {MAX_RADIUS} m')
+    ax.set_title(f'{df.shape[0]} events in catalog, N_STD = {N_STD}')
     ax.set_xlabel('Easting (m)')
     ax.set_ylabel('Northing (m)')
 
@@ -101,30 +186,18 @@ if PLOT:
 
     fig.show()
 
-#%% Label based upon proximity to histogram peak
+#%% Label based upon whether location is inside / outside confidence ellipse
 
-
-def within_radius(true_loc, est_loc, radius):
-    return np.linalg.norm(np.array(true_loc) - np.array(est_loc)) < radius
-
-
-vent_locs = []
-for x, y in zip(df.x, df.y):
-
-    at_A = within_radius((A_max.x.values[0], A_max.y.values[0]), (x, y), MAX_RADIUS)
-    at_C = within_radius((C_max.x.values[0], C_max.y.values[0]), (x, y), MAX_RADIUS)
-
-    if at_A and not at_C:
-        vent_locs.append('A')
-    elif at_C and not at_A:
-        vent_locs.append('C')
-    else:  # Either not located or doubly-located
-        vent_locs.append(None)
+# Array of vent labels for each entry in catalog
+vent_locs = np.empty(df.shape[0], dtype=str)
+for vent, in_ell_ind in in_ell.items():
+    vent_locs[in_ell_ind] = vent
+vent_locs[in_ell['A'] & in_ell['C']] = ''  # Doubly-located events should be discarded
 
 df['vent'] = vent_locs
 
 # Remove rows with no location
-df_locs = df[~pd.isnull(df.vent)]
+df_locs = df[df.vent != '']
 
 #%% (OPTIONAL) Make area plot of labeled catalog
 
@@ -226,7 +299,8 @@ for i, row in df_locs.iterrows():
 
     if (i + 1) % 10 == 0:
         st_label.write(
-            str(WORKING_DIR / 'data' / 'labeled' / f'label_{n:03}.pkl'), format='PICKLE'
+            str(WORKING_DIR / 'data' / 'labeled_gmm' / f'label_{n:03}.pkl'),
+            format='PICKLE',
         )
         st_label = Stream()
         print(f'{(i / df_locs.shape[0]) * 100:.1f}%')  # TODO: Goes wayy over 100%, lol
@@ -234,7 +308,7 @@ for i, row in df_locs.iterrows():
 
 # Handle last one
 st_label.write(
-    str(WORKING_DIR / 'data' / 'labeled' / f'label_{n:03}.pkl'), format='PICKLE'
+    str(WORKING_DIR / 'data' / 'labeled_gmm' / f'label_{n:03}.pkl'), format='PICKLE'
 )
 
 print('Done')
