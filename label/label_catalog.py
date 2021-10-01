@@ -198,6 +198,7 @@ df['vent'] = vent_locs
 
 # Remove rows with no location
 df_locs = df[df.vent != '']
+df_locs.reset_index(inplace=True, drop=True)  # Important since iterrows() uses index!
 
 #%% (OPTIONAL) Make area plot of labeled catalog
 
@@ -303,12 +304,13 @@ for i, row in df_locs.iterrows():
             format='PICKLE',
         )
         st_label = Stream()
-        print(f'{(i / df_locs.shape[0]) * 100:.1f}%')  # TODO: Goes wayy over 100%, lol
+        print(f'{((i + 1) / df_locs.shape[0]) * 100:.2f}%')
         n += 1
 
 # Handle last one
-st_label.write(
-    str(WORKING_DIR / 'data' / 'labeled_gmm' / f'label_{n:03}.pkl'), format='PICKLE'
-)
+if st_label.count() > 0:
+    st_label.write(
+        str(WORKING_DIR / 'data' / 'labeled_gmm' / f'label_{n:03}.pkl'), format='PICKLE'
+    )
 
 print('Done')
