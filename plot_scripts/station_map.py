@@ -181,7 +181,7 @@ for vent in 'A', 'C':
         label=f'"Vent {vent}"',
     )
 
-# Plot stations
+# Plot and label stations
 fig.plot(
     *transform(sta_lon, sta_lat),
     style='i0.4c',
@@ -189,9 +189,21 @@ fig.plot(
     color='mediumseagreen',
     label='Station',
 )
-
+fig.text(
+    x=transform(sta_lon, sta_lat)[0],
+    y=transform(sta_lon, sta_lat)[1],
+    text=sta_code,
+    font='white=~1p',
+    justify='LM',
+    D='0.13i/-0.01i',
+)
 fig.legend()
+
+# Plot (a) and (b) tags (hacky, since it uses subplot B's coordinate system...)
+tag_kwargs = dict(y=RADIUS, no_clip=True, justify='TL', font='18p,Helvetica-Bold')
+fig.text(x=-RADIUS - 1625, text='A', **tag_kwargs)
+fig.text(x=-RADIUS - 200, text='B', **tag_kwargs)
 
 fig.show(method='external')
 
-# fig.savefig('/Users/ldtoney/Downloads/station_map.png', dpi=400)
+# fig.savefig(Path(os.environ['YASUR_FIGURE_DIR']) / 'station_map.png', dpi=400)
