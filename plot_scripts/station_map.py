@@ -165,33 +165,24 @@ verts = [
 ]
 fig.plot(data=np.array(verts), straight_line='p', pen='0.75p,black,-')
 
-# Find maxima for each vent cluster
-hist_A = hist.where(hist.y < 0, drop=True)
-hist_C = hist.where(hist.y > 0, drop=True)
-A_max = hist_A.where(hist_A == hist_A.max(), drop=True)
-C_max = hist_C.where(hist_C == hist_C.max(), drop=True)
-
-MAX_RADIUS = 40  # TODO: This is taken from label_catalog.py!
-
-vent_style = f'c{(MAX_RADIUS / RADIUS) * HEIGHT}i'  # Scale the circles to match radius
+# Plot ellipses used for event labeling
 vent_pen = '2p'
-fig.plot(
-    A_max.x.values,
-    A_max.y.values,
-    style=vent_style,
-    pen=vent_pen + ',' + os.environ['VENT_A'],
-)
-fig.plot(
-    C_max.x.values,
-    C_max.y.values,
-    style=vent_style,
-    pen=vent_pen + ',' + os.environ['VENT_C'],
-)
+for vent in 'A', 'C':
 
-# Dummy for legend
-dummy_kwargs = dict(x=-4747, y=-4747, style='c0.3c')
-fig.plot(pen=vent_pen + ',' + os.environ['VENT_A'], label='"Vent A"', **dummy_kwargs)
-fig.plot(pen=vent_pen + ',' + os.environ['VENT_C'], label='"Vent C"', **dummy_kwargs)
+    # Ellipses
+    fig.plot(
+        data=str(WORKING_DIR / 'plot_scripts' / f'{vent}_ellipse.xy'),
+        pen=vent_pen + ',' + os.environ[f'VENT_{vent}'],
+    )
+
+    # Dummy for legend
+    fig.plot(
+        x=-4747,
+        y=-4747,
+        style='c0.3c',
+        pen=vent_pen + ',' + os.environ[f'VENT_{vent}'],
+        label=f'"Vent {vent}"',
+    )
 
 fig.plot(
     *transform(sta_lon, sta_lat),

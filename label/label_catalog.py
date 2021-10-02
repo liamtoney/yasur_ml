@@ -145,6 +145,12 @@ for ell, vent in zip(ax.patches, vent_utm.keys()):
     ax.scatter(
         df.x[in_ell[vent]], df.y[in_ell[vent]], s=1, c=os.environ[f'VENT_{vent}']
     )
+    # Write out text file of verts (m from vent midpoint) for station map
+    verts = ax.transData.inverted().transform(ell.get_verts())
+    verts[:, 0] -= x_0
+    verts[:, 1] -= y_0
+    np.savetxt(WORKING_DIR / 'plot_scripts' / f'{vent}_ellipse.xy', verts, fmt='%.4f')
+
     print(f'Vent {vent}: {in_ell[vent].sum()}')
 print('Total: {}'.format(in_ell['A'].sum() + in_ell['C'].sum()))
 ax.set_aspect('equal')
