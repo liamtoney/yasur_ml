@@ -296,7 +296,7 @@ n = 0
 st_label = Stream()
 for i, row in df_locs.iterrows():
 
-    st = st_full.copy().trim(row.t, row.t + WAVEFORM_DUR)
+    st = st_full.copy().trim(row.t, row.t + WAVEFORM_DUR)  # TODO: This line is slow(?)
     for tr in st:
         tr.stats.vent = row.vent
         tr.stats.event_info = dict(utm_x=row.x, utm_y=row.y, origin_time=row.t)
