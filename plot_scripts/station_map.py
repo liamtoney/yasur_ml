@@ -43,9 +43,6 @@ x_0, y_0, *_ = utm.from_latlon(VENT_LOCS['midpoint'][1], VENT_LOCS['midpoint'][0
 # Radius around vent midpoint to use for region [m]
 RADIUS = 800
 
-# RTM grid search radius [m] (NEED TO UPDATE IF build_catalog.py CHANGES!)
-RTM_RADIUS = 350
-
 # Read in and process DEM to use, command to create was:
 # gdalwarp -t_srs EPSG:32759 -r cubicspline DEM_Union_UAV_161116_sm101.tif DEM_Union_UAV_161116_sm101_UTM.tif
 DEM = WORKING_DIR / 'data' / 'DEM_Union_UAV_161116_sm101_UTM.tif'
@@ -129,12 +126,13 @@ fig.grdcontour(dem, interval=10, annotation='100+u" m"')
 catalog_csv = WORKING_DIR / 'label' / 'catalogs' / 'height_4_spacing_30_agc_60.csv'
 df = pd.read_csv(catalog_csv)
 
-# Define grid (TODO: Needs to be the same as the original RTM grid!)
+# Define grid (TODO: NEED TO UPDATE THIS IF build_catalog.py CHANGES!)
+RTM_RADIUS = 350
 grid = define_grid(
     lon_0=VENT_LOCS['midpoint'][0],
     lat_0=VENT_LOCS['midpoint'][1],
-    x_radius=350,
-    y_radius=350,
+    x_radius=RTM_RADIUS,
+    y_radius=RTM_RADIUS,
     spacing=10,
     projected=True,
 )
@@ -156,6 +154,7 @@ pygmt.makecpt(
 fig.grdview(hist, cmap=True, T='+s')
 fig.colorbar(position=f'JMR+w{HEIGHT}i', frame=f'a100f50+l"# of locations"')
 
+# Plot RTM grid search box
 verts = [
     (-RTM_RADIUS, -RTM_RADIUS),
     (-RTM_RADIUS, RTM_RADIUS),
@@ -168,14 +167,12 @@ fig.plot(data=np.array(verts), straight_line='p', pen='0.75p,black,-')
 # Plot ellipses used for event labeling
 vent_pen = '2p'
 for vent in 'A', 'C':
-
-    # Ellipses
+    # Actual ellipses
     fig.plot(
         data=str(WORKING_DIR / 'plot_scripts' / f'{vent}_ellipse.xy'),
         pen=vent_pen + ',' + os.environ[f'VENT_{vent}'],
     )
-
-    # Dummy for legend
+    # Dummies for legend
     fig.plot(
         x=-4747,
         y=-4747,
@@ -184,6 +181,7 @@ for vent in 'A', 'C':
         label=f'"Vent {vent}"',
     )
 
+# Plot stations
 fig.plot(
     *transform(sta_lon, sta_lat),
     style='i0.4c',
