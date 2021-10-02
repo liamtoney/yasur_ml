@@ -27,7 +27,7 @@ FREQMAX = 4
 TSFRESH = True
 
 # Toggle randomly shifting travel times via np.roll() (TSFRESH only)
-ROLL = False
+ROLL = True
 
 #%% Option 1: Manual feature engineering
 
