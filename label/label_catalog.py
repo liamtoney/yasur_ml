@@ -46,7 +46,7 @@ with open(WORKING_DIR / 'yasur_vent_locs.json') as f:
 # Convert vent midpoint to UTM
 x_0, y_0, *_ = utm.from_latlon(VENT_LOCS['midpoint'][1], VENT_LOCS['midpoint'][0])
 
-# Need to define this for proper histogram binning (MUST MATCH build_catalog.py)
+# Need to define this for proper histogram binning (TODO: NEED TO UPDATE THIS IF build_catalog.py CHANGES!)
 grid = define_grid(
     lon_0=VENT_LOCS['midpoint'][0],
     lat_0=VENT_LOCS['midpoint'][1],
