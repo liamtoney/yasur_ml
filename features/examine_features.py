@@ -64,31 +64,31 @@ fig, axes = plt.subplots(
 )
 
 for ax, feature in zip(axes.flatten(), feature_names):
-    range = None
+    bin_range = None
     if MANUAL_BIN_RANGE:
         if feature == 'fd_peak':
-            range = (0, 6)
+            bin_range = (0, 6)
         elif feature == 'fd_q1':
-            range = (0, 5)
+            bin_range = (0, 5)
         elif feature == 'fd_q2':
-            range = (0, 8)
+            bin_range = (0, 8)
         elif feature == 'fd_q3':
-            range = (0, 12)
+            bin_range = (0, 12)
         elif feature == 'td_kurtosis':
-            range = (-5, 40)
+            bin_range = (-5, 40)
         elif feature == 'td_skewness':
-            range = (-2, 5)
+            bin_range = (-2, 5)
     ax.hist(
         features[features.label == 'A'][feature],
         bins=NBINS,
-        range=range,
+        range=bin_range,
         color=os.environ['VENT_A'],
         label='Vent A',
         alpha=ALPHA,
     )
     ax.hist(
         features[features.label == 'C'][feature],
-        range=range,
+        range=bin_range,
         bins=NBINS,
         color=os.environ['VENT_C'],
         label='Vent C',
