@@ -1,20 +1,27 @@
 #!/usr/bin/env python
 
 import os
+import sys
 from pathlib import Path
 
 import matplotlib.pyplot as plt
 import numpy as np
-import pandas as pd
+
+# TODO: Must add svm/ to path to import, worth making into a package?
+sys.path.append('svm/')
+from train_test import balance_classes, read_and_preprocess
 
 # Define project directory
 WORKING_DIR = Path.home() / 'work' / 'yasur_ml'
 
 # Filename of features CSV to use
-FEATURES_CSV = 'YIF2_features_filtered.csv'
+FEATURES_CSV = 'features_filtered.csv'
 
 # Read in labeled features
-features = pd.read_csv(WORKING_DIR / 'features' / 'csv' / FEATURES_CSV)
+features = read_and_preprocess(WORKING_DIR / 'features' / 'csv' / FEATURES_CSV)
+
+# Balance classes for fair plotting comparison
+features = balance_classes(features)
 
 #%% Plot two features against each other as a scatter plot
 
@@ -47,6 +54,8 @@ feature_names = features.columns[3:]  # Skip first three columns
 
 MANUAL_BIN_RANGE = True
 
+ALPHA = 0.7  # Transparency for histograms (to see overlap)
+
 NCOLS = 3  # Number of subplot columns
 NBINS = 50  # Number of histogram bins
 
@@ -75,6 +84,7 @@ for ax, feature in zip(axes.flatten(), feature_names):
         range=range,
         color=os.environ['VENT_A'],
         label='Vent A',
+        alpha=ALPHA,
     )
     ax.hist(
         features[features.label == 'C'][feature],
@@ -82,6 +92,7 @@ for ax, feature in zip(axes.flatten(), feature_names):
         bins=NBINS,
         color=os.environ['VENT_C'],
         label='Vent C',
+        alpha=ALPHA,
     )
     ax.set_title(feature)
 
