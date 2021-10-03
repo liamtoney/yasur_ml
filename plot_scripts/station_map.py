@@ -70,6 +70,7 @@ def transform(longitude, latitude):
 
 
 pygmt.config(FONT='14p')
+pygmt.config(FORMAT_GEO_MAP='D')
 
 fig = pygmt.Figure()
 
@@ -82,7 +83,7 @@ fig.coast(
     land='lightgrey',
     water='lightblue',
     shorelines=True,
-    frame='af',
+    frame=['WESN', 'af'],
     resolution='f',
 )
 fig.plot(*VENT_LOCS['midpoint'], style='t0.4c', color='red', pen=True)  # Center of (b)
@@ -195,7 +196,7 @@ fig.text(
     text=sta_code,
     font='white=~1p',
     justify='LM',
-    D='0.13i/-0.01i',
+    offset='0.13i/-0.01i',
 )
 fig.legend()
 
