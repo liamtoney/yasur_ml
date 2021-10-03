@@ -35,6 +35,9 @@ def read_and_preprocess(features_csv_file):
     # Remove rows with NaNs
     features.dropna(inplace=True)
 
+    # Reset index
+    features.reset_index(drop=True, inplace=True)
+
     return features
 
 
