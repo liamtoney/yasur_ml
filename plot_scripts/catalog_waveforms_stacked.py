@@ -114,7 +114,9 @@ fig.show()
 
 if SAVE:
     fig.savefig(
-        '/Users/ldtoney/Downloads/stacked_waveforms.png', bbox_inches='tight', dpi=300
+        '/Users/ldtoney/Downloads/vent-station_stacked_waveforms.png',
+        bbox_inches='tight',
+        dpi=300,
     )
 
 #%% Plot GFs
@@ -176,4 +178,6 @@ fig.tight_layout()
 fig.show()
 
 if SAVE:
-    fig.savefig('/Users/ldtoney/Downloads/GFs.png', bbox_inches='tight', dpi=300)
+    fig.savefig(
+        '/Users/ldtoney/Downloads/vent-station_GFs.png', bbox_inches='tight', dpi=300
+    )
