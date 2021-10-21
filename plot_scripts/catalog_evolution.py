@@ -13,7 +13,7 @@ from obspy import UTCDateTime, read
 # Define project directory
 WORKING_DIR = Path.home() / 'work' / 'yasur_ml'
 
-FONT_SIZE = 12  # [pt]
+FONT_SIZE = 14  # [pt]
 plt.rcParams.update({'font.size': FONT_SIZE})
 
 # Toggle plotting fraction of vent A vs. vent C in each window (otherwise plot totals)
@@ -92,7 +92,7 @@ axes[-1].legend(loc='lower right')
 # Plot (a) and (b) tags
 for ax, label in zip(axes, ['A', 'B']):
     ax.text(
-        -0.05,
+        -0.07,
         1,
         label,
         ha='right',
