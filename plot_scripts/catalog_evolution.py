@@ -13,6 +13,9 @@ from obspy import UTCDateTime, read
 # Define project directory
 WORKING_DIR = Path.home() / 'work' / 'yasur_ml'
 
+FONT_SIZE = 12  # [pt]
+plt.rcParams.update({'font.size': FONT_SIZE})
+
 # Toggle plotting fraction of vent A vs. vent C in each window (otherwise plot totals)
 FRACTION = False
 
@@ -75,7 +78,7 @@ axes[1].stackplot(
 if FRACTION:
     axes[1].yaxis.set_major_formatter(PercentFormatter(1))
 else:
-    axes[1].set_ylabel('Number of labeled events')
+    axes[1].set_ylabel('# of labeled events')
 axes[1].autoscale(enable=True, axis='y', tight=True)
 
 # Overall x-axis formatting
@@ -86,6 +89,20 @@ axes[-1].xaxis.set_major_formatter(mdates.ConciseDateFormatter(loc))
 # Add legend
 axes[-1].legend(loc='lower right')
 
+# Plot (a) and (b) tags
+for ax, label in zip(axes, ['A', 'B']):
+    ax.text(
+        -0.05,
+        1,
+        label,
+        ha='right',
+        va='top',
+        transform=ax.transAxes,
+        weight='bold',
+        fontsize=18,
+    )
+
+fig.tight_layout()
 fig.show()
 
 # fig.savefig(Path(os.environ['YASUR_FIGURE_DIR']) / 'catalog_evolution.png', bbox_inches='tight', dpi=300)
