@@ -24,7 +24,7 @@ WINDOW = 60 * 60
 
 # Read in features CSV file, process into a catalog by subsetting to just one station
 # and removing the unneeded features columns
-catalog = pd.read_csv(WORKING_DIR / 'features' / 'csv' / 'features_highpass.csv')
+catalog = pd.read_csv(WORKING_DIR / 'features' / 'csv' / 'features.csv')
 catalog = catalog[catalog.station == 'YIF1'][['time', 'label']]
 catalog.time = [UTCDateTime(t) for t in catalog.time]
 
