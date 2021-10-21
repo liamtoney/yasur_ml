@@ -124,7 +124,10 @@ for vent in 'A', 'C':
 
 # Fit a GMM with two components (for the two vents)
 clf = mixture.GaussianMixture(
-    n_components=2, covariance_type='full', means_init=list(vent_utm.values())
+    n_components=2,
+    covariance_type='full',
+    means_init=list(vent_utm.values()),
+    random_state=47,  # We want reproducible results so the ellipses stay the same!
 )
 clf.fit(X_train)
 
