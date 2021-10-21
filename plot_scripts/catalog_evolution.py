@@ -49,11 +49,13 @@ for t in t_vec:
     else:
         fraction_C.append(0)
 
-# Load in a single station's data and process (takes a while, can comment out for repeat
-# runs)
-tr = read(str(WORKING_DIR / 'data' / '3E_YIF1-5_50hz.pkl')).select(station='YIF3')[0]
-tr.remove_response()
-tr.filter('bandpass', freqmin=0.2, freqmax=4, zerophase=True)
+# Load in a single station's data and process (takes a while, disable for repeat runs)
+if True:
+    tr = read(str(WORKING_DIR / 'data' / '3E_YIF1-5_50hz.pkl')).select(station='YIF3')[
+        0
+    ]
+    tr.remove_response()
+    tr.filter('bandpass', freqmin=0.2, freqmax=4, zerophase=True)
 
 fig, axes = plt.subplots(nrows=2, sharex=True, figsize=(13, 5))
 
