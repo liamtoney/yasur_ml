@@ -261,7 +261,7 @@ if PLOT:
         fraction_A,
         fraction_C,
         colors=(os.environ['VENT_A'], os.environ['VENT_C']),
-        labels=('Vent A', 'Vent C'),
+        labels=('Subcrater S', 'Subcrater N'),
     )
     if FRACTION:
         axes[1].yaxis.set_major_formatter(PercentFormatter(1))
