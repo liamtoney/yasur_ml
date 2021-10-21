@@ -306,7 +306,7 @@ for i, row in df_locs.iterrows():
 
     if (i + 1) % 10 == 0:
         st_label.write(
-            str(WORKING_DIR / 'data' / 'labeled_gmm' / f'label_{n:03}.pkl'),
+            str(WORKING_DIR / 'data' / 'labeled' / f'label_{n:03}.pkl'),
             format='PICKLE',
         )
         st_label = Stream()
@@ -316,7 +316,7 @@ for i, row in df_locs.iterrows():
 # Handle last one
 if st_label.count() > 0:
     st_label.write(
-        str(WORKING_DIR / 'data' / 'labeled_gmm' / f'label_{n:03}.pkl'), format='PICKLE'
+        str(WORKING_DIR / 'data' / 'labeled' / f'label_{n:03}.pkl'), format='PICKLE'
     )
 
 print('Done')
