@@ -179,7 +179,7 @@ for vent in 'A', 'C':
         y=-4747,
         style='c0.3c',
         pen=vent_pen + ',' + os.environ[f'VENT_{vent}'],
-        label=f'"Vent {vent}"',
+        label='"Subcrater {}"'.format('S' if vent == 'A' else 'N'),
     )
 
 # Plot and label stations
