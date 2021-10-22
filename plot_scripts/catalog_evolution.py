@@ -67,7 +67,7 @@ axes[0].plot(tr.times('matplotlib'), tr.data, linewidth=0.5, color='black')
 axes[0].set_ylabel('Pressure (Pa)')
 
 # Subplot 2: Stacked area plot
-t_vec_mpl = [t.matplotlib_date for t in t_vec]
+t_vec_mpl = [(t + (WINDOW / 2)).matplotlib_date for t in t_vec]  # Center in window!
 axes[1].stackplot(
     t_vec_mpl,
     fraction_A,
@@ -82,7 +82,7 @@ else:
 axes[1].autoscale(enable=True, axis='y', tight=True)
 
 # Overall x-axis formatting
-axes[-1].set_xlim(t_start.matplotlib_date, (t_end - WINDOW).matplotlib_date)
+axes[-1].set_xlim(t_vec_mpl[0], t_vec_mpl[-1])  # Bounds of the area plot
 loc = axes[-1].xaxis.set_major_locator(mdates.AutoDateLocator())
 axes[-1].xaxis.set_major_formatter(mdates.ConciseDateFormatter(loc))
 
