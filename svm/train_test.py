@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -37,6 +38,10 @@ def read_and_preprocess(features_csv_file):
 
     # Reset index
     features.reset_index(drop=True, inplace=True)
+
+    # Add filename metadata
+    filename = Path(str(features_csv_file)).stem
+    features.attrs['filename'] = filename
 
     return features
 
