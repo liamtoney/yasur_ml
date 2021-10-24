@@ -1,14 +1,8 @@
-#!/usr/bin/env python
-
 import os
-import sys
 from pathlib import Path
 
 import matplotlib.pyplot as plt
 import numpy as np
-
-# TODO: Must add svm/ to path to import, worth making into a package?
-sys.path.append('svm/')
 from train_test import balance_classes, read_and_preprocess
 
 # Define project directory

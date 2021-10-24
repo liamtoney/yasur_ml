@@ -1,7 +1,4 @@
-# isort: skip_file
-
 import json
-import sys
 from pathlib import Path
 
 import colorcet as cc
@@ -9,9 +6,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 from obspy import UTCDateTime
 from sklearn import preprocessing, svm
-
-# TODO: Must add svm/ to path to import, worth making into a package?
-sys.path.append('svm/')
 from train_test import balance_classes, format_scikit, read_and_preprocess, time_subset
 
 WORKING_DIR = Path.home() / 'work' / 'yasur_ml'

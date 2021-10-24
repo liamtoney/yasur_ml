@@ -1,15 +1,9 @@
-#!/usr/bin/env python
-
 import json
-import sys
 from pathlib import Path
 
 import matplotlib.pyplot as plt
 from sklearn import preprocessing, svm
 from sklearn.feature_selection import RFE, SequentialFeatureSelector
-
-# TODO: Must add svm/ to path to import, worth making into a package?
-sys.path.append('svm/')
 from train_test import balance_classes, format_scikit, read_and_preprocess
 
 # Define project directory
