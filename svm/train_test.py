@@ -1,9 +1,14 @@
 import os
+from collections import defaultdict
 from pathlib import Path
 
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from obspy import UTCDateTime
+from scipy.cluster import hierarchy
+from scipy.spatial.distance import squareform
+from scipy.stats import spearmanr
 from sklearn import preprocessing, svm
 from sklearn.metrics import plot_confusion_matrix
 from sklearn.model_selection import train_test_split
@@ -234,6 +239,116 @@ def time_subset(features, time_window_type, tmin, tmax):
         raise ValueError('Temporal subsetting failed due to dimension mismatch!')
 
     return train, test, tmin, tmax
+
+
+def _plot_correlation(features, dendro_ax, corr_ax, show_names=False, plot_thresh=None):
+    """Called by remove_correlated_features().
+
+    Basically a function version of
+    https://scikit-learn.org/stable/auto_examples/inspection/plot_permutation_importance_multicollinear.html#handling-multicollinear-features
+
+    show_names=True is slow for large numbers of features!
+    """
+
+    X, _ = format_scikit(features)
+
+    # Form correlation matrix and ensure it's symmetric
+    corr = spearmanr(X).correlation
+    corr = (corr + corr.T) / 2
+    np.fill_diagonal(corr, 1)
+
+    # We convert the correlation matrix to a distance matrix before performing
+    # hierarchical clustering using Ward's linkage.
+    distance_matrix = 1 - np.abs(corr)
+    dist_linkage = hierarchy.ward(squareform(distance_matrix))
+
+    # Plot dendrogram of clustered features
+    dendro = hierarchy.dendrogram(
+        dist_linkage,
+        labels=features.columns[3:],
+        no_labels=False if show_names else True,
+        ax=dendro_ax,
+        leaf_rotation=90,
+    )
+    dendro_idx = np.arange(0, len(dendro['ivl']))
+    if plot_thresh:
+        dendro_ax.axhline(plot_thresh, color='black', lw=2, zorder=5)
+        dendro_ax.text(
+            dendro_ax.get_xlim()[1],
+            plot_thresh,
+            f'  {plot_thresh}',
+            weight='bold',
+            va='center',
+            ha='left',
+        )
+
+    # Plot absolute value of correlation between features
+    corr_ax.imshow(
+        np.abs(corr[dendro['leaves'], :][:, dendro['leaves']]),
+        cmap='Greys',
+        vmin=0,
+        vmax=1,
+    )
+    if show_names:
+        corr_ax.set_xticks(dendro_idx)
+        corr_ax.set_yticks(dendro_idx)
+        corr_ax.set_xticklabels(dendro['ivl'], rotation='vertical')
+        corr_ax.set_yticklabels(dendro['ivl'])
+    corr_ax.set_title(f'{X.shape[1]} features')
+
+    return dist_linkage
+
+
+def remove_correlated_features(
+    features, thresh, show_before_names=False, show_after_names=False
+):
+    """Remove features that are correlated by thresholding clusters.
+
+    Args:
+        features (pandas.DataFrame): Input features
+        thresh (int or float): Threshold below which clusters are collapsed to their
+            representative feature; higher value means fewer output features
+        show_before_names (bool): Toggles showing feature names for "before" features
+        show_after_names (bool):  Toggles showing feature names for "after" features
+
+    Returns:
+        pandas.DataFrame: Output features
+    """
+
+    fig, (before_row, after_row) = plt.subplots(nrows=2, ncols=2, figsize=(15, 10))
+
+    # Plot "before" features (and threshold) while obtaining distances
+    dist_linkage = _plot_correlation(
+        features, *before_row, plot_thresh=thresh, show_names=show_before_names
+    )
+
+    # Threshold and select features
+    cluster_ids = hierarchy.fcluster(dist_linkage, thresh, criterion='distance')
+    cluster_id_to_feature_ids = defaultdict(list)
+    for idx, cluster_id in enumerate(cluster_ids):
+        cluster_id_to_feature_ids[cluster_id].append(idx)
+    selected_features = [v[0] for v in cluster_id_to_feature_ids.values()]
+
+    # Form output DataFrame
+    features_reduced = features[
+        features.columns[:3].tolist() + features.columns[3:][selected_features].tolist()
+    ]
+
+    # Plot "after" features
+    _ = _plot_correlation(features_reduced, *after_row, show_names=show_after_names)
+
+    before_row[0].set_title('Before')
+    after_row[0].set_title('After')
+    fig.suptitle(features.attrs['filename'], weight='bold')
+
+    fig.tight_layout()
+    fig.show()
+
+    print(
+        f'# features reduced from {len(features.columns[3:])} to {len(features_reduced.columns[3:])}'
+    )
+
+    return features_reduced
 
 
 def train_test(
