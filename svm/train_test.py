@@ -322,6 +322,10 @@ def remove_correlated_features(
         features, *before_row, plot_thresh=thresh, show_names=show_before_names
     )
 
+    # If thresh is not provided (or 0) set it to negative to ensure no features removed
+    if not thresh:
+        thresh = -1
+
     # Threshold and select features
     cluster_ids = hierarchy.fcluster(dist_linkage, thresh, criterion='distance')
     cluster_id_to_feature_ids = defaultdict(list)
