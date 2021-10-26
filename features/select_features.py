@@ -14,19 +14,19 @@ from train_test import (
 # Define project directory
 WORKING_DIR = Path.home() / 'work' / 'yasur_ml'
 
-# Define # of features to select
-N_FEATURES = 10
-
-#%% Just load features once
-
-FEATURES_CSV = 'features_tsfresh_roll_filtered.csv'
-features_all = read_and_preprocess(WORKING_DIR / 'features' / 'csv' / FEATURES_CSV)
+# Read in features only once, since it's slow
+features_all = read_and_preprocess(
+    WORKING_DIR / 'features' / 'csv' / 'features_tsfresh_roll_filtered.csv'
+)
 
 #%% Remove correlated features (vastly speeds up subsequent feature selection!)
 
 features = remove_correlated_features(features_all, thresh=None)
 
 #%% Pre-process and define function
+
+# Define # of features to select
+N_FEATURES = 10
 
 # Balance classes
 ds = balance_classes(features, verbose=True)
