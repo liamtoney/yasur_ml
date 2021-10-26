@@ -4,7 +4,12 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 from sklearn import preprocessing, svm
 from sklearn.feature_selection import RFE, SequentialFeatureSelector
-from train_test import balance_classes, format_scikit, read_and_preprocess
+from train_test import (
+    balance_classes,
+    format_scikit,
+    read_and_preprocess,
+    remove_correlated_features,
+)
 
 # Define project directory
 WORKING_DIR = Path.home() / 'work' / 'yasur_ml'
@@ -12,7 +17,11 @@ WORKING_DIR = Path.home() / 'work' / 'yasur_ml'
 #%% Just load features once
 
 FEATURES_CSV = 'features_tsfresh_roll_filtered.csv'
-features = read_and_preprocess(WORKING_DIR / 'features' / 'csv' / FEATURES_CSV)
+features_all = read_and_preprocess(WORKING_DIR / 'features' / 'csv' / FEATURES_CSV)
+
+#%% Remove correlated features (vastly speeds up subsequent feature selection!)
+
+features = remove_correlated_features(features_all, thresh=None)
 
 #%% Pre-process and define function
 
@@ -27,7 +36,7 @@ X = preprocessing.scale(X)
 
 
 # Define function to plot top features and export to JSON
-def plot_and_export(selector):
+def plot_and_export(selector, prefix):
 
     top_feature_names = features.columns[3:][selector.get_support()]
 
@@ -39,7 +48,7 @@ def plot_and_export(selector):
         ax.set_title(feature_name)
     fig.show()
 
-    fname = type(selector).__name__ + '_' + FEATURES_CSV.replace('.csv', '.json')
+    fname = prefix + '_' + features.attrs['filename'] + '.json'
     with open(WORKING_DIR / 'features' / 'selected_names' / fname, 'w') as f:
         json.dump(top_feature_names.tolist(), f, indent=2)
 
@@ -47,11 +56,11 @@ def plot_and_export(selector):
 #%% Run RFE
 
 rfe = RFE(estimator=svm.LinearSVC(dual=False), n_features_to_select=10, step=50)
-rfe.fit(X, y)  # Takes a LONG time, could adjust step above to help
+rfe.fit(X, y)
 
 #%% Plot and export RFE results
 
-plot_and_export(rfe)
+plot_and_export(rfe, prefix='RFE')
 
 #%% Run SFS
 
@@ -63,8 +72,8 @@ sfs = SequentialFeatureSelector(
     cv=2,  # Could increase this but would be slower
     n_jobs=-1,
 )
-sfs.fit(X, y)  # Takes a while but not nearly as long as RFE
+sfs.fit(X, y)
 
 #%% Plot and export SFS results
 
-plot_and_export(sfs)
+plot_and_export(sfs, prefix='SFS')
