@@ -8,19 +8,25 @@ from obspy import UTCDateTime
 from sklearn import preprocessing, svm
 from train_test import balance_classes, format_scikit, read_and_preprocess, time_subset
 
+# Define project directory
 WORKING_DIR = Path.home() / 'work' / 'yasur_ml'
 
 # Read in features only once, since it's slow
-features = read_and_preprocess(
-    WORKING_DIR / 'features' / 'csv' / 'features_tsfresh_filtered.csv'
+features_all = read_and_preprocess(
+    WORKING_DIR / 'features' / 'csv' / 'features_tsfresh_roll_filtered.csv'
 )
 
-#%% Subset features in-place (optional, only applies for TSFRESH features)
+#%% Subset features in-place (only applies for TSFRESH features)
 
-with open(WORKING_DIR / 'features' / 'selected_names' / 'sfs_top_features.json') as f:
+with open(
+    WORKING_DIR
+    / 'features'
+    / 'selected_names'
+    / 'SFS_features_tsfresh_roll_filtered.json'
+) as f:
     top_features = json.load(f)
 
-features = features[features.columns[:3].tolist() + top_features]
+features = features_all[features_all.columns[:3].tolist() + top_features]
 
 #%% Run function
 
