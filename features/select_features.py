@@ -14,6 +14,9 @@ from train_test import (
 # Define project directory
 WORKING_DIR = Path.home() / 'work' / 'yasur_ml'
 
+# Define # of features to select
+N_FEATURES = 10
+
 #%% Just load features once
 
 FEATURES_CSV = 'features_tsfresh_roll_filtered.csv'
@@ -55,7 +58,7 @@ def plot_and_export(selector, prefix):
 
 #%% Run RFE
 
-rfe = RFE(estimator=svm.LinearSVC(dual=False), n_features_to_select=10, step=50)
+rfe = RFE(estimator=svm.LinearSVC(dual=False), n_features_to_select=N_FEATURES, step=1)
 rfe.fit(X, y)
 
 #%% Plot and export RFE results
@@ -66,7 +69,7 @@ plot_and_export(rfe, prefix='RFE')
 
 sfs = SequentialFeatureSelector(
     estimator=svm.LinearSVC(dual=False),
-    n_features_to_select=10,
+    n_features_to_select=N_FEATURES,
     direction='forward',
     scoring='accuracy',
     cv=2,  # Could increase this but would be slower
