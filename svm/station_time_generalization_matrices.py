@@ -117,5 +117,8 @@ for i in range(len(ALL_STATIONS)):
             alpha=0.5,
         )
 
+# Add title
+ax.set_title(f'$\mu$ = {scores.mean():.0%}\n$\sigma$ = {scores.std():.1%}', loc='left')
+
 fig.tight_layout()
 fig.show()
