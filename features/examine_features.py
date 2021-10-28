@@ -3,7 +3,8 @@ from pathlib import Path
 
 import matplotlib.pyplot as plt
 import numpy as np
-from train_test import balance_classes, read_and_preprocess
+
+from svm.tools import balance_classes, read_and_preprocess
 
 # Define project directory
 WORKING_DIR = Path.home() / 'work' / 'yasur_ml'

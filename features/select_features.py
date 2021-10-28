@@ -4,7 +4,8 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 from sklearn import preprocessing, svm
 from sklearn.feature_selection import RFE, SequentialFeatureSelector
-from train_test import (
+
+from svm.tools import (
     balance_classes,
     format_scikit,
     read_and_preprocess,
