@@ -5,8 +5,6 @@ Run RTM on chunks of data to assemble a catalog of (x, y, t) stored as a CSV fil
 y are in meters in UTM zone 59S. t is in UTC.
 """
 
-# isort: skip_file
-
 import json
 from datetime import datetime
 from pathlib import Path
