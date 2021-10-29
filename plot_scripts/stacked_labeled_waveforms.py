@@ -7,8 +7,7 @@ from pathlib import Path
 
 import matplotlib.pyplot as plt
 import numpy as np
-import pandas as pd
-from obspy import Stream, Trace, read
+from obspy import read
 
 # Define project directory
 WORKING_DIR = Path.home() / 'work' / 'yasur_ml'
@@ -16,20 +15,18 @@ WORKING_DIR = Path.home() / 'work' / 'yasur_ml'
 # Directory containing labeled waveforms
 labeled_wf_dir = WORKING_DIR / 'data' / 'labeled'
 
+FONT_SIZE = 12  # [pt]
+plt.rcParams.update({'font.size': FONT_SIZE})
+
 # Read in a single Stream from the labeled waveforms to get metadata etc.
 st = read(str(labeled_wf_dir / 'label_000.pkl'))
 STATIONS = sorted(np.unique([tr.stats.station for tr in st]))
 NPTS = st[0].stats.npts
 
 # Toggle filtering the waveforms prior to stacking
-FILTER = False
+FILTER = True
 FMIN = 0.2
 FMAX = 4
-
-# Common figsize
-FIGSIZE = (7, 7)
-
-SAVE = False
 
 # Define filename for saved traces
 filter_str = '_filtered' if FILTER else ''
@@ -54,7 +51,7 @@ if not pickle_filename.exists():
 
         # Process
         st.remove_response()
-
+        st.taper(0.01)
         if FILTER:
             st.filter('bandpass', freqmin=FMIN, freqmax=FMAX, zerophase=True)
 
@@ -81,17 +78,26 @@ else:
 #%% Plot stacks
 
 fig, axes = plt.subplots(
-    nrows=len(STATIONS), ncols=2, sharex=True, sharey=False, figsize=FIGSIZE
+    nrows=len(STATIONS), ncols=2, sharex=True, sharey=False, figsize=(7, 7)
 )
 
 for vent, axes_col in zip(traces.keys(), axes.T):
-    axes_col[0].set_title(f'Vent {vent}')
+    axes_col[0].set_title(
+        f'Subcrater {"S" if vent == "A" else "N"}', fontsize=FONT_SIZE
+    )
     color = os.environ[f'VENT_{vent}']
     for station, ax in zip(traces[vent].keys(), axes_col):
         vs_traces = traces[vent][station][1:, :]  # Removing the first row of NaNs here
 
         med = np.percentile(vs_traces, 50, axis=0)
-        ax.plot(st[0].times(), med, color=color, zorder=5)
+        ax.plot(
+            st[0].times(),
+            med,
+            color=color,
+            zorder=5,
+            solid_capstyle='round',
+            clip_on=False,
+        )
         ax.fill_between(
             st[0].times(),
             np.percentile(vs_traces, 25, axis=0),
@@ -99,85 +105,30 @@ for vent, axes_col in zip(traces.keys(), axes.T):
             color=color,
             linewidth=0,
             alpha=0.3,
+            clip_on=False,
         )
         med_max = np.abs(med).max()
-        ax.set_ylim(-2 * med_max, 2 * med_max)  # Normalizing by median
+        scale = 2.5
+        ax.set_ylim(-scale * med_max, scale * med_max)  # Normalizing by median
         ax.set_xlim(0, 5)
         ax.set_yticks([])
-        ax.set_ylabel(station)
+        if vent == 'A':
+            ax.text(1.05, 0.49, station, va='center', ha='left', transform=ax.transAxes)
+            ax.yaxis.set_label_position('right')
+
+        for side in 'left', 'right', 'top', 'bottom':
+            ax.spines[side].set_visible(False)
+
+    for ax in axes_col[:-1]:
+        ax.tick_params(axis='x', which='both', length=0)
 
     axes_col[-1].set_xlabel('Time (s)')
+    axes_col[-1].spines['bottom'].set_visible(True)
+    axes_col[-1].xaxis.set_tick_params(direction='in', pad=5)
 
-fig.suptitle('Stacked waveforms')
 fig.tight_layout()
+plt.subplots_adjust(hspace=0)
+
 fig.show()
 
-if SAVE:
-    fig.savefig(
-        '/Users/ldtoney/Downloads/vent-station_stacked_waveforms.png',
-        bbox_inches='tight',
-        dpi=300,
-    )
-
-#%% Plot GFs
-
-# Define GF directory
-gf_dir = WORKING_DIR / 'label' / 'gf'
-
-
-# Function to read in GF text files from David and produce a Stream w/ timing info
-def read_gf(filename, vent):
-    with open(filename) as f:
-        header = f.readline().strip('#').strip().split(' ')
-    gf_df = pd.read_csv(filename, delim_whitespace=True, comment='#', names=header)
-    delta = gf_df.tvec[1] - gf_df.tvec[0]
-    traces = [
-        Trace(
-            data=gf_df[station].values,
-            header=dict(station=station, sampling_rate=1 / delta, vent=vent),
-        )
-        for station in gf_df.columns[:-1]
-    ]
-    return Stream(traces)
-
-
-# Read in text files
-gf_A = read_gf(gf_dir / 'VentA_gf.txt', vent='A')
-gf_C = read_gf(gf_dir / 'VentC_gf.txt', vent='C')
-
-fig, axes = plt.subplots(
-    nrows=len(STATIONS), ncols=2, sharex=True, sharey=True, figsize=FIGSIZE
-)
-
-for st, vent, axes_col in zip([gf_A, gf_C], traces.keys(), axes.T):
-
-    # Remove YIF6
-    for tr in st.select(station='YIF6'):
-        st.remove(tr)
-
-    axes_col[0].set_title(f'Vent {st[0].stats.vent}')
-    color = os.environ[f'VENT_{st[0].stats.vent}']
-
-    # Process the Stream
-    stp = st.copy()
-    if FILTER:
-        stp.filter('bandpass', freqmin=FMIN, freqmax=FMAX, zerophase=True)
-    stp.normalize()
-
-    for tr, ax in zip(stp, axes_col):
-        ax.plot(tr.times(), tr.data, color=color)
-        ax.set_ylim(-2, 2)  # For comparison with median of stack
-        ax.set_xlim(0, 5)
-        ax.set_yticks([])
-        ax.set_ylabel(tr.stats.station)
-
-    axes_col[-1].set_xlabel('Time (s)')
-
-fig.suptitle('GFs')
-fig.tight_layout()
-fig.show()
-
-if SAVE:
-    fig.savefig(
-        '/Users/ldtoney/Downloads/vent-station_GFs.png', bbox_inches='tight', dpi=300
-    )
+# fig.savefig(Path(os.environ['YASUR_FIGURE_DIR']) / 'stacked_labeled_waveforms.png', bbox_inches='tight', dpi=300)
