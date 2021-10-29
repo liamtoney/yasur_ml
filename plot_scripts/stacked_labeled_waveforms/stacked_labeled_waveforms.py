@@ -81,7 +81,7 @@ else:
     with pickle_filename.open('rb') as f:
         traces = pickle.load(f)
 
-#%% Plot stacks
+#%% Create plot
 
 fig, axes = plt.subplots(
     nrows=len(STATIONS), ncols=2, sharex=True, sharey=False, figsize=(7, 7)
