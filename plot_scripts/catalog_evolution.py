@@ -7,7 +7,6 @@ import matplotlib.dates as mdates
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from matplotlib.ticker import PercentFormatter
 from obspy import UTCDateTime, read
 
 # Define project directory
@@ -15,9 +14,6 @@ WORKING_DIR = Path.home() / 'work' / 'yasur_ml'
 
 FONT_SIZE = 14  # [pt]
 plt.rcParams.update({'font.size': FONT_SIZE})
-
-# Toggle plotting fraction of vent A vs. vent C in each window (otherwise plot totals)
-FRACTION = False
 
 # [s] Rolling window duration
 WINDOW = 60 * 60
@@ -41,8 +37,6 @@ fraction_C = []
 for t in t_vec:
     catalog_hr = catalog[(catalog.time >= t) & (catalog.time < t + WINDOW)]
     vcounts = catalog_hr.label.value_counts()
-    if FRACTION:
-        vcounts /= vcounts.sum()
     if hasattr(vcounts, 'A'):
         fraction_A.append(vcounts.A)
     else:
@@ -52,19 +46,28 @@ for t in t_vec:
     else:
         fraction_C.append(0)
 
-# Load in a single station's data and process (takes a while, disable for repeat runs)
-if True:
-    tr = read(str(WORKING_DIR / 'data' / '3E_YIF1-5_50hz.pkl')).select(station='YIF3')[
-        0
-    ]
-    tr.remove_response()
-    tr.filter('bandpass', freqmin=0.2, freqmax=4, zerophase=True)
+# Load in a single station's data and process (takes a while)
+tr = read(str(WORKING_DIR / 'data' / '3E_YIF1-5_50hz.pkl')).select(station='YIF3')[0]
+tr.remove_response()
+tr.filter('bandpass', freqmin=0.2, freqmax=4, zerophase=True)
+
+#%% Create plot
 
 fig, axes = plt.subplots(nrows=2, sharex=True, figsize=(13, 5))
 
 # Subplot 1: Waveform
-axes[0].plot(tr.times('matplotlib'), tr.data, linewidth=0.5, color='black')
+tr_trim = tr.copy().trim(t_vec[0] + (WINDOW / 2), t_vec[-1] + (WINDOW / 2))
+axes[0].plot(
+    tr_trim.times('matplotlib'),
+    tr_trim.data,
+    linewidth=0.5,
+    color='black',
+    clip_on=False,
+    solid_capstyle='round',
+)
 axes[0].set_ylabel('Pressure (Pa)')
+axes[0].set_ylim(-500, 500)
+axes[0].tick_params(axis='x', which='both', bottom=False)
 
 # Subplot 2: Stacked area plot
 t_vec_mpl = [(t + (WINDOW / 2)).matplotlib_date for t in t_vec]  # Center in window!
@@ -74,20 +77,41 @@ axes[1].stackplot(
     fraction_C,
     colors=(os.environ['VENT_A'], os.environ['VENT_C']),
     labels=('Subcrater S', 'Subcrater N'),
+    clip_on=False,
 )
-if FRACTION:
-    axes[1].yaxis.set_major_formatter(PercentFormatter(1))
-else:
-    axes[1].set_ylabel('# of labeled events')
-axes[1].autoscale(enable=True, axis='y', tight=True)
+axes[1].set_ylabel('# of labeled events')
+axes[1].set_ylim(0, 70)
+axes[1].yaxis.set_minor_locator(plt.MultipleLocator(10))
+
+# Remove spines
+for side in 'bottom', 'top', 'right':
+    axes[0].spines[side].set_visible(False)
+for side in 'top', 'right':
+    axes[1].spines[side].set_visible(False)
 
 # Overall x-axis formatting
 axes[-1].set_xlim(t_vec_mpl[0], t_vec_mpl[-1])  # Bounds of the area plot
-loc = axes[-1].xaxis.set_major_locator(mdates.AutoDateLocator())
-axes[-1].xaxis.set_major_formatter(mdates.ConciseDateFormatter(loc))
+loc = axes[-1].xaxis.set_major_locator(mdates.DayLocator())
+axes[-1].xaxis.set_major_formatter(mdates.DateFormatter('%-d %B'))
+axes[-1].xaxis.set_minor_locator(mdates.HourLocator(range(0, 24, 12)))
 
 # Add legend
-axes[-1].legend(loc='lower right')
+axes[-1].legend(loc='lower right', framealpha=0.6, fancybox=False, edgecolor='none')
+
+# Make connected gridlines
+for ax in axes:
+    ax.patch.set_alpha(0)
+grid_ax = fig.add_subplot(1, 1, 1, zorder=-1, sharex=axes[-1])
+for spine in grid_ax.spines.values():
+    spine.set_visible(False)
+grid_ax.tick_params(
+    which='both',
+    left=False,
+    labelleft=False,
+    bottom=False,
+    labelbottom=False,
+)
+grid_ax.grid(which='both', axis='x', linestyle=':')
 
 # Plot (a) and (b) tags
 for ax, label in zip(axes, ['A', 'B']):
