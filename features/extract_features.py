@@ -16,14 +16,14 @@ WORKING_DIR = Path.home() / 'work' / 'yasur_ml'
 labeled_wf_dir = WORKING_DIR / 'data' / 'labeled'
 
 # Toggle bandpass filtering of data
-FILTER = False
+FILTER = True
 
 # Bandpass filter corners [Hz]
 FREQMIN = 0.2
 FREQMAX = 4
 
 # Toggle randomly shifting travel times via np.roll()
-ROLL = False
+ROLL = True
 
 # Specify 'manual' or 'tsfresh' feature set
 SET_TYPE = 'tsfresh'
