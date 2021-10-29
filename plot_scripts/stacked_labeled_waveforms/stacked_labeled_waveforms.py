@@ -6,6 +6,7 @@ import pickle
 from pathlib import Path
 
 import matplotlib.pyplot as plt
+import matplotlib.transforms as transforms
 import numpy as np
 from obspy import read
 
@@ -117,22 +118,24 @@ for vent, axes_col in zip(traces.keys(), axes.T):
         ax.set_ylim(-scale * med_max, scale * med_max)  # Normalizing by median
         ax.set_xlim(0, 5)
         ax.set_yticks([])
-        if vent == 'A':
-            ax.text(1.05, 0.49, station, va='center', ha='left', transform=ax.transAxes)
-            ax.yaxis.set_label_position('right')
 
-        for side in 'left', 'right', 'top', 'bottom':
-            ax.spines[side].set_visible(False)
+        # Label stations (only need to do this for one column)
+        if vent == 'A':
+            trans = transforms.blended_transform_factory(fig.transFigure, ax.transAxes)
+            ax.text(0.5, 0.49, station, va='center', ha='center', transform=trans)
+
+        for spine in ax.spines.values():
+            spine.set_visible(False)
 
     for ax in axes_col[:-1]:
-        ax.tick_params(axis='x', which='both', length=0)
+        ax.tick_params(axis='x', which='both', bottom=False)
 
     axes_col[-1].set_xlabel('Time (s)')
     axes_col[-1].spines['bottom'].set_visible(True)
     axes_col[-1].xaxis.set_tick_params(direction='in', pad=5)
 
 fig.tight_layout()
-plt.subplots_adjust(hspace=0)
+plt.subplots_adjust(hspace=0, wspace=0.25)
 
 fig.show()
 
