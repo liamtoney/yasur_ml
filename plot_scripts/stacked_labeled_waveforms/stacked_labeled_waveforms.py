@@ -16,7 +16,7 @@ WORKING_DIR = Path.home() / 'work' / 'yasur_ml'
 # Directory containing labeled waveforms
 labeled_wf_dir = WORKING_DIR / 'data' / 'labeled'
 
-FONT_SIZE = 12  # [pt]
+FONT_SIZE = 14  # [pt]
 plt.rcParams.update({'font.size': FONT_SIZE})
 
 # Read in a single Stream from the labeled waveforms to get metadata etc.
@@ -84,7 +84,7 @@ else:
 #%% Create plot
 
 fig, axes = plt.subplots(
-    nrows=len(STATIONS), ncols=2, sharex=True, sharey=False, figsize=(7, 7)
+    nrows=len(STATIONS), ncols=2, sharex=True, sharey=False, figsize=(6.5, 6.5)
 )
 
 for vent, axes_col in zip(traces.keys(), axes.T):
@@ -117,12 +117,14 @@ for vent, axes_col in zip(traces.keys(), axes.T):
         scale = 2.5
         ax.set_ylim(-scale * med_max, scale * med_max)  # Normalizing by median
         ax.set_xlim(0, 5)
+        ax.xaxis.set_minor_locator(plt.MultipleLocator(1))
         ax.set_yticks([])
 
         # Label stations (only need to do this for one column)
         if vent == 'A':
             trans = transforms.blended_transform_factory(fig.transFigure, ax.transAxes)
-            ax.text(0.5, 0.49, station, va='center', ha='center', transform=trans)
+            X_LOC = 0.503  # TODO: MANUAL ADJUSTMENT TO TRULY CENTER
+            ax.text(X_LOC, 0.49, station, va='center', ha='center', transform=trans)
 
         for spine in ax.spines.values():
             spine.set_visible(False)
@@ -132,10 +134,10 @@ for vent, axes_col in zip(traces.keys(), axes.T):
 
     axes_col[-1].set_xlabel('Time (s)')
     axes_col[-1].spines['bottom'].set_visible(True)
-    axes_col[-1].xaxis.set_tick_params(direction='in', pad=5)
+    axes_col[-1].xaxis.set_tick_params(which='both', direction='in', pad=5)
 
 fig.tight_layout()
-plt.subplots_adjust(hspace=0, wspace=0.25)
+plt.subplots_adjust(hspace=0, wspace=0.3)
 
 fig.show()
 
