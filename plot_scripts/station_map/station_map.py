@@ -170,7 +170,7 @@ vent_pen = '2p'
 for vent in 'A', 'C':
     # Actual ellipses
     fig.plot(
-        data=str(WORKING_DIR / 'plot_scripts' / f'{vent}_ellipse.xy'),
+        data=str(WORKING_DIR / 'plot_scripts' / 'station_map' / f'{vent}_ellipse.xy'),
         pen=vent_pen + ',' + os.environ[f'VENT_{vent}'],
     )
     # Dummies for legend

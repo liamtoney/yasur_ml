@@ -150,7 +150,11 @@ for ell, vent in zip(ax.patches, vent_utm.keys()):
     verts = ax.transData.inverted().transform(ell.get_verts())
     verts[:, 0] -= x_0
     verts[:, 1] -= y_0
-    np.savetxt(WORKING_DIR / 'plot_scripts' / f'{vent}_ellipse.xy', verts, fmt='%.4f')
+    np.savetxt(
+        WORKING_DIR / 'plot_scripts' / 'station_map' / f'{vent}_ellipse.xy',
+        verts,
+        fmt='%.4f',
+    )
 
     print(f'Vent {vent}: {in_ell[vent].sum()}')
 print('Total: {}'.format(in_ell['A'].sum() + in_ell['C'].sum()))

@@ -30,7 +30,12 @@ FMAX = 4
 
 # Define filename for saved traces
 filter_str = '_filtered' if FILTER else ''
-pickle_filename = WORKING_DIR / 'plot_scripts' / f'traces_dict{filter_str}.pkl'
+pickle_filename = (
+    WORKING_DIR
+    / 'plot_scripts'
+    / 'stacked_labeled_waveforms'
+    / f'traces_dict{filter_str}.pkl'
+)
 
 # Only read in the files and stack if we NEED to, since this takes a while!
 if not pickle_filename.exists():
