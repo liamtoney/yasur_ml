@@ -14,20 +14,24 @@ WORKING_DIR = Path.home() / 'work' / 'yasur_ml'
 
 # Read in features only once, since it's slow
 features_all = read_and_preprocess(
-    WORKING_DIR / 'features' / 'csv' / 'features_tsfresh_roll_filtered.csv'
+    WORKING_DIR / 'features' / 'csv' / 'manual_filter_roll.csv'
 )
 
-#%% Subset features in-place (only applies for TSFRESH features)
+#%% Subset features (only applies for TSFRESH features)
 
-with open(
-    WORKING_DIR
-    / 'features'
-    / 'selected_names'
-    / 'SFS_features_tsfresh_roll_filtered.json'
-) as f:
-    top_features = json.load(f)
+is_tsfresh = 'tsfresh' in features_all.attrs['filename']
 
-features = features_all[features_all.columns[:3].tolist() + top_features]
+if is_tsfresh:
+    with open(
+        WORKING_DIR
+        / 'features'
+        / 'selected_names'
+        / 'SFS_features_tsfresh_roll_filtered.json'
+    ) as f:
+        top_features = json.load(f)
+    features = features_all[features_all.columns[:3].tolist() + top_features]
+else:
+    features = features_all
 
 #%% Run function
 
