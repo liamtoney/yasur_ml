@@ -4,6 +4,7 @@ from pathlib import Path
 import colorcet as cc
 import matplotlib.pyplot as plt
 import numpy as np
+from matplotlib.ticker import PercentFormatter
 from obspy import UTCDateTime
 from sklearn import preprocessing, svm
 
@@ -35,6 +36,9 @@ else:
 
 #%% Run function
 
+# Define number of runs [= random calls to balance_classes()] to perform and average
+RUNS = 10
+
 ALL_STATIONS = [f'YIF{n}' for n in range(1, 6)]
 
 ALL_DAYS = [
@@ -52,55 +56,68 @@ scores = np.empty((len(ALL_STATIONS), len(ALL_DAYS)))
 # Iterate over days
 for j, tmin in enumerate(ALL_DAYS):
 
+    print(tmin.strftime('%-d %B'))
+
     # 24 hrs
     tmax = tmin + 24 * 60 * 60
 
     # Temporal subsetting
     train, test, *_ = time_subset(features, 'test', tmin, tmax)
 
-    # Balance classes
-    print('TRAINING')
-    train = balance_classes(train)
-    print('\nTESTING')
-    test = balance_classes(test)
+    # Preallocate scores for this day
+    station_scores = np.empty((len(ALL_STATIONS), RUNS))
 
-    # Iterate over test stations
-    for i, test_station in enumerate(ALL_STATIONS):
+    # Perform this loop RUNS times
+    for k in range(RUNS):
 
-        # Training subset
-        train_ds = train[train.station != test_station]  # Subset
-        X_train, y_train = format_scikit(train_ds)
-        X_train = preprocessing.scale(X_train)  # Rescale
+        if RUNS > 1:
+            print(f'\t{k + 1}/{RUNS}')
 
-        # Testing subset
-        test_ds = test[test.station == test_station]  # Subset
-        X_test, y_test = format_scikit(test_ds)
-        X_test = preprocessing.scale(X_test)  # Rescale
+        # Balance classes (RANDOM!)
+        train_bal = balance_classes(train, verbose=False)
+        test_bal = balance_classes(test, verbose=False)
 
-        # Fit SVC
-        clf = svm.LinearSVC(dual=False)
-        clf.fit(X_train, y_train)
+        # Iterate over test stations
+        for i, test_station in enumerate(ALL_STATIONS):
 
-        # Test SVC
-        scores[i, j] = clf.score(X_test, y_test)
+            # Training subset
+            train_ds = train_bal[train_bal.station != test_station]  # Subset
+            X_train, y_train = format_scikit(train_ds)
+            X_train = preprocessing.scale(X_train)  # Rescale
+
+            # Testing subset
+            test_ds = test_bal[test_bal.station == test_station]  # Subset
+            X_test, y_test = format_scikit(test_ds)
+            X_test = preprocessing.scale(X_test)  # Rescale
+
+            # Fit SVC
+            clf = svm.LinearSVC(dual=False)
+            clf.fit(X_train, y_train)
+
+            # Test SVC
+            station_scores[i, k] = clf.score(X_test, y_test)
+
+    scores[:, j] = station_scores.mean(axis=1)  # Take mean of the RUNS runs
 
 # Make plot
 fig, ax = plt.subplots()
 im = ax.imshow(scores, cmap=cc.m_diverging_bwr_20_95_c54_r, vmin=0, vmax=1)
 ax.set_xticks(range(len(ALL_DAYS)))
 ax.set_yticks(range(len(ALL_STATIONS)))
-ax.set_xticklabels([d.strftime('%m/%d') for d in ALL_DAYS])
+ax.set_xticklabels([d.strftime('%-d\n%B') for d in ALL_DAYS])
 ax.set_yticklabels(ALL_STATIONS)
 ax.set_xlabel('Test day', weight='bold', labelpad=10)
 ax.set_ylabel('Test station', weight='bold', labelpad=5)
 ax.xaxis.set_ticks_position('top')
 ax.xaxis.set_label_position('top')
 
-# Colorbar formatting
-cbar = fig.colorbar(im, label='Score (%)')
-ticks = cbar.get_ticks()
-cbar.set_ticks(ticks)
-cbar.set_ticklabels([f'{t * 100:.0f}' for t in ticks])
+# Colorbar
+fig.colorbar(
+    im,
+    label='Accuracy score',
+    ticks=plt.MultipleLocator(0.25),  # So 50% is shown!
+    format=PercentFormatter(xmax=1),
+)
 
 # Add text
 for i in range(len(ALL_STATIONS)):
