@@ -5,6 +5,7 @@
 /features/csv/
 /features/selected_names/
 /sklearn_sandbox.ipynb
+/*.egg-info/
 *.nc
 *.pkl
 *.tif

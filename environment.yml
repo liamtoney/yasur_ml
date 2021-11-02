@@ -23,3 +23,4 @@ dependencies:
       - --editable ${HOME}/work/python_util
       - --editable ${HOME}/repos/waveform_collection
       - --editable ${HOME}/repos/rtm
+      - --editable ${HOME}/work/yasur_ml
