@@ -4,30 +4,39 @@ from pathlib import Path
 import colorcet as cc
 import matplotlib.pyplot as plt
 import numpy as np
+from matplotlib.ticker import PercentFormatter
 from obspy import UTCDateTime
 from sklearn import preprocessing, svm
 
 from svm.tools import balance_classes, format_scikit, read_and_preprocess, time_subset
 
+# Define project directory
 WORKING_DIR = Path.home() / 'work' / 'yasur_ml'
 
 # Read in features only once, since it's slow
-features = read_and_preprocess(
-    WORKING_DIR / 'features' / 'csv' / 'features_tsfresh_filtered.csv'
+features_all = read_and_preprocess(
+    WORKING_DIR / 'features' / 'csv' / 'tsfresh_filter.csv'
 )
 
-#%% Subset features in-place (optional, only applies for TSFRESH features)
+#%% Subset features (OPTIONAL; only applies for TSFRESH features)
 
-with open(WORKING_DIR / 'features' / 'selected_names' / 'sfs_top_features.json') as f:
-    top_features = json.load(f)
+SUBSET = False
 
-features = features[features.columns[:3].tolist() + top_features]
+if SUBSET:
+    with open(
+        WORKING_DIR
+        / 'features'
+        / 'selected_names'
+        / f'SFS_{features_all.attrs["filename"]}_10_r00.json'
+    ) as f:
+        top_features = json.load(f)
+    features = features_all[features_all.columns[:3].tolist() + top_features]
+else:
+    features = features_all
 
 #%% Run function
 
 ALL_STATIONS = [f'YIF{n}' for n in range(1, 6)]
-
-TIME_WINDOW_TYPE = 'test'
 
 for tmin in [
     UTCDateTime(2016, 7, 27),
@@ -45,7 +54,7 @@ for tmin in [
     scores = np.empty((len(ALL_STATIONS), len(ALL_STATIONS)))
 
     # Temporal subsetting
-    train, test, *_ = time_subset(features, TIME_WINDOW_TYPE, tmin, tmax)
+    train, test, *_ = time_subset(features, 'test', tmin, tmax)
 
     # Balance classes
     print('TRAINING')
@@ -79,27 +88,18 @@ for tmin in [
     ax.set_yticks(range(len(ALL_STATIONS)))
     ax.set_xticklabels(ALL_STATIONS)
     ax.set_yticklabels(ALL_STATIONS)
-    ax.set_xlabel('TRAIN', weight='bold', labelpad=10)
-    ax.set_ylabel('TEST', weight='bold', labelpad=5)
+    ax.set_xlabel('Train station', weight='bold', labelpad=10)
+    ax.set_ylabel('Test station', weight='bold', labelpad=5)
     ax.xaxis.set_ticks_position('top')
     ax.xaxis.set_label_position('top')
 
-    # Handle time limits
-    if tmin < features.time.min():
-        tmin = features.time.min()
-    if tmax > features.time.max():
-        tmax = features.time.max()
-    fmt = '%Y-%m-%d %H:%M'
-    ax.set_title(
-        f'{TIME_WINDOW_TYPE.capitalize()}ing window: {tmin.strftime(fmt)} – {tmax.strftime(fmt)}',
-        pad=20,
+    # Colorbar
+    fig.colorbar(
+        im,
+        label='Accuracy score',
+        ticks=plt.MultipleLocator(0.25),  # So 50% is shown!
+        format=PercentFormatter(xmax=1),
     )
-
-    # Colorbar formatting
-    cbar = fig.colorbar(im, label='Score (%)')
-    ticks = cbar.get_ticks()
-    cbar.set_ticks(ticks)
-    cbar.set_ticklabels([f'{t * 100:.0f}' for t in ticks])
 
     # Add text
     for i in range(len(ALL_STATIONS)):
@@ -120,6 +120,12 @@ for tmin in [
                 fontsize=8,
                 alpha=0.5,
             )
+
+    # Add titles
+    ax.set_title(
+        f'$\mu$ = {scores.mean():.0%}\n$\sigma$ = {scores.std():.1%}', loc='left'
+    )
+    ax.set_title('Testing\n{}'.format(tmin.strftime('%-d %B')), loc='right')
 
     fig.tight_layout()
     fig.show()
