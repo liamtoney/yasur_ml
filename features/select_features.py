@@ -59,8 +59,17 @@ def plot_and_export(selector, prefix):
         ax.set_title(feature_name)
     fig.show()
 
-    fname = f'{prefix}_{features.attrs["filename"]}_{N_FEATURES}.json'
-    with open(WORKING_DIR / 'features' / 'selected_names' / fname, 'w') as f:
+    # Save, incrementing filename to avoid overwriting previous runs
+    template = str(
+        WORKING_DIR
+        / 'features'
+        / 'selected_names'
+        / f'{prefix}_{features.attrs["filename"]}_{N_FEATURES}_r{{:02}}.json'
+    )
+    run_no = 0
+    while Path(template.format(run_no)).exists():
+        run_no += 1
+    with open(template.format(run_no)) as f:
         json.dump(top_feature_names.tolist(), f, indent=2)
 
 
