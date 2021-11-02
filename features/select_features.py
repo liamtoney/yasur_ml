@@ -69,7 +69,7 @@ def plot_and_export(selector, prefix):
     run_no = 0
     while Path(template.format(run_no)).exists():
         run_no += 1
-    with open(template.format(run_no)) as f:
+    with open(template.format(run_no), 'w') as f:
         json.dump(top_feature_names.tolist(), f, indent=2)
 
 
