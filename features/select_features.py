@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import json
 from pathlib import Path
 
@@ -17,12 +19,17 @@ WORKING_DIR = Path.home() / 'work' / 'yasur_ml'
 
 # Read in features only once, since it's slow
 features_all = read_and_preprocess(
-    WORKING_DIR / 'features' / 'csv' / 'features_tsfresh_roll_filtered.csv'
+    WORKING_DIR / 'features' / 'csv' / 'tsfresh_filter_roll.csv'
 )
 
 #%% Remove correlated features (vastly speeds up subsequent feature selection!)
 
-features = remove_correlated_features(features_all, thresh=None)
+PRUNE_FEATURES = False
+
+if PRUNE_FEATURES:
+    features = remove_correlated_features(features_all, thresh=1)
+else:
+    features = features_all
 
 #%% Pre-process and define function
 
@@ -30,7 +37,7 @@ features = remove_correlated_features(features_all, thresh=None)
 N_FEATURES = 10
 
 # Balance classes
-ds = balance_classes(features, verbose=True)
+ds = balance_classes(features, verbose=True, random_state=47)
 
 # Format dataset for use with scikit-learn
 X, y = format_scikit(ds)
@@ -52,28 +59,36 @@ def plot_and_export(selector, prefix):
         ax.set_title(feature_name)
     fig.show()
 
-    fname = prefix + '_' + features.attrs['filename'] + '.json'
+    fname = f'{prefix}_{features.attrs["filename"]}_{N_FEATURES}.json'
     with open(WORKING_DIR / 'features' / 'selected_names' / fname, 'w') as f:
         json.dump(top_feature_names.tolist(), f, indent=2)
 
 
 #%% Run RFE
 
-rfe = RFE(estimator=svm.LinearSVC(dual=False), n_features_to_select=N_FEATURES, step=1)
+print('Running RFE')
+rfe = RFE(
+    estimator=svm.LinearSVC(dual=False),
+    n_features_to_select=N_FEATURES,
+    step=0.1,
+    verbose=1,
+)
 rfe.fit(X, y)
 
 #%% Plot and export RFE results
 
 plot_and_export(rfe, prefix='RFE')
+print('Done')
 
 #%% Run SFS
 
+print('Running SFS')
 sfs = SequentialFeatureSelector(
     estimator=svm.LinearSVC(dual=False),
     n_features_to_select=N_FEATURES,
     direction='forward',
     scoring='accuracy',
-    cv=2,  # Could increase this but would be slower
+    cv=5,  # Could increase this but would be slower
     n_jobs=-1,
 )
 sfs.fit(X, y)
@@ -81,3 +96,4 @@ sfs.fit(X, y)
 #%% Plot and export SFS results
 
 plot_and_export(sfs, prefix='SFS')
+print('Done')
