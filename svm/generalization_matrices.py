@@ -24,7 +24,7 @@ is_tsfresh = 'tsfresh' in features_all.attrs['filename']
 
 if is_tsfresh:
     with open(
-        WORKING_DIR / 'features' / 'selected_names' / 'SFS_tsfresh_filter_roll.json'
+        WORKING_DIR / 'features' / 'selected_names' / 'SFS_tsfresh_filter_roll_10.json'
     ) as f:
         top_features = json.load(f)
     features = features_all[features_all.columns[:3].tolist() + top_features]
