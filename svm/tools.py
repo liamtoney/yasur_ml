@@ -36,8 +36,8 @@ def read_and_preprocess(features_csv_file):
         if np.unique(features[column]).size == 1:
             features.drop(columns=[column], inplace=True)
 
-    # Remove rows with NaNs
-    features.dropna(inplace=True)
+    # Remove columns containing any number of NaNs
+    features.dropna(axis='columns', how='any', inplace=True)
 
     # Reset index
     features.reset_index(drop=True, inplace=True)
