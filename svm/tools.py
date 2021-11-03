@@ -28,16 +28,14 @@ def read_and_preprocess(features_feather_file):
     # Read in labeled features
     features = pd.read_feather(features_feather_file)
 
-    # Convert times to UTCDateTime
-    features.time = [UTCDateTime(t) for t in features.time]
-
-    # Remove constant features
-    for column in features.columns:
-        if np.unique(features[column]).size == 1:
-            features.drop(columns=[column], inplace=True)
-
     # Remove columns containing any number of NaNs
     features.dropna(axis='columns', how='any', inplace=True)
+
+    # Remove constant features
+    features = features.loc[:, features.nunique() != 1]
+
+    # Convert times to UTCDateTime
+    features.time = features.time.map(lambda t: UTCDateTime(t))
 
     # Reset index
     features.reset_index(drop=True, inplace=True)
