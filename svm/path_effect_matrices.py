@@ -36,6 +36,9 @@ else:
 
 #%% Run function
 
+# Toggle plotting mean / std for ALL entries or just the diagonal
+DIAGONAL_METRICS = True
+
 ALL_STATIONS = [f'YIF{n}' for n in range(1, 6)]
 
 for tmin in [
@@ -122,9 +125,11 @@ for tmin in [
             )
 
     # Add titles
-    ax.set_title(
-        f'$\mu$ = {scores.mean():.0%}\n$\sigma$ = {scores.std():.1%}', loc='left'
-    )
+    if DIAGONAL_METRICS:
+        title = f'$\mu_\mathrm{{diag}}$ = {scores.diagonal().mean():.0%}\n$\sigma_\mathrm{{diag}}$ = {scores.diagonal().std():.1%}'
+    else:
+        title = f'$\mu$ = {scores.mean():.0%}\n$\sigma$ = {scores.std():.1%}'
+    ax.set_title(title, loc='left')
     ax.set_title('Testing\n{}'.format(tmin.strftime('%-d %B')), loc='right')
 
     fig.tight_layout()
