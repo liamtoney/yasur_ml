@@ -14,19 +14,19 @@ from sklearn.utils import resample
 from tsfresh import select_features
 
 
-def read_and_preprocess(features_csv_file):
-    """Read in a features CSV file and perform basic pre-processing.
+def read_and_preprocess(features_feather_file):
+    """Read in a features Feather file and perform basic pre-processing.
 
     Args:
-        features_csv_file (str or Path): Full path to input features CSV file (must have
-            a "time" column)
+        features_feather_file (str or Path): Full path to input features Feather file
+            (must have a "time" column)
 
     Returns:
         pandas.DataFrame: Output features
     """
 
     # Read in labeled features
-    features = pd.read_csv(features_csv_file)
+    features = pd.read_feather(features_feather_file)
 
     # Convert times to UTCDateTime
     features.time = [UTCDateTime(t) for t in features.time]
@@ -43,7 +43,7 @@ def read_and_preprocess(features_csv_file):
     features.reset_index(drop=True, inplace=True)
 
     # Add filename metadata
-    filename = Path(str(features_csv_file)).stem
+    filename = Path(str(features_feather_file)).stem
     features.attrs['filename'] = filename
 
     return features

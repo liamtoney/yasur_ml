@@ -15,7 +15,7 @@ WORKING_DIR = Path.home() / 'work' / 'yasur_ml'
 
 # Read in features only once, since it's slow
 features_all = read_and_preprocess(
-    WORKING_DIR / 'features' / 'csv' / 'tsfresh_filter.csv'
+    WORKING_DIR / 'features' / 'feather' / 'tsfresh_filter.feather'
 )
 
 #%% Subset features (OPTIONAL; only applies for TSFRESH features)

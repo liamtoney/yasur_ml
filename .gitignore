@@ -2,7 +2,7 @@
 /figures/
 /videos/
 /label/catalogs/
-/features/csv/
+/features/feather/
 /features/selected_names/
 /sklearn_sandbox.ipynb
 /*.egg-info/

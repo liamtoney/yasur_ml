@@ -18,9 +18,9 @@ plt.rcParams.update({'font.size': FONT_SIZE})
 # [s] Rolling window duration
 WINDOW = 60 * 60
 
-# Read in features CSV file, process into a catalog by subsetting to just one station
-# and removing the unneeded features columns
-catalog = pd.read_csv(WORKING_DIR / 'features' / 'csv' / 'manual.csv')
+# Read in features file, process into a catalog by subsetting to just one station and
+# removing the unneeded features columns
+catalog = pd.read_feather(WORKING_DIR / 'features' / 'feather' / 'manual.feather')
 catalog = catalog[catalog.station == 'YIF1'][['time', 'label']]
 catalog.time = [UTCDateTime(t) for t in catalog.time]
 

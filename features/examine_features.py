@@ -9,11 +9,11 @@ from svm.tools import balance_classes, read_and_preprocess
 # Define project directory
 WORKING_DIR = Path.home() / 'work' / 'yasur_ml'
 
-# Filename of features CSV to use
-FEATURES_CSV = 'features_filtered.csv'
+# Filename of features to use
+FEATURES_FILE = 'manual_filter.feather'
 
 # Read in labeled features
-features = read_and_preprocess(WORKING_DIR / 'features' / 'csv' / FEATURES_CSV)
+features = read_and_preprocess(WORKING_DIR / 'features' / 'feather' / FEATURES_FILE)
 
 # Balance classes for fair plotting comparison
 features = balance_classes(features)

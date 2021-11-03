@@ -153,10 +153,10 @@ for file in sorted(labeled_wf_dir.glob('label_???.pkl')):
     # Append to main DataFrame
     features = pd.concat([features, features_st], ignore_index=True)
 
-# Save as CSV
-filename = f'{SET_TYPE}.csv'
+# Save as Feather file
+filename = f'{SET_TYPE}.feather'
 if FILTER:
-    filename = filename.replace('.csv', '_filter.csv')
+    filename = filename.replace('.feather', '_filter.feather')
 if ROLL:
-    filename = filename.replace('.csv', '_roll.csv')
-features.to_csv(WORKING_DIR / 'features' / 'csv' / filename, index=False)
+    filename = filename.replace('.feather', '_roll.feather')
+features.to_feather(WORKING_DIR / 'features' / 'feather' / filename, index=False)

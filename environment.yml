@@ -13,6 +13,7 @@ dependencies:
   - isort
   - obspy
   - pip
+  - pyarrow
   - pygmt
   - rasterio
   - scikit-learn
