@@ -6,7 +6,8 @@ import numpy as np
 import utm
 import xarray as xr
 from matplotlib.ticker import MultipleLocator
-from obspy import read
+from obspy import UTCDateTime
+from obspy.clients.fdsn import Client
 
 # Define project directory
 WORKING_DIR = Path.home() / 'work' / 'yasur_ml'
@@ -17,13 +18,17 @@ with open(WORKING_DIR / 'yasur_vent_locs.json') as f:
 
 ELEVATION_LIMITS = (100, 400)  # [m] Limits for all plots
 
-# UTM (need to adjust to show all stations)
+# UTM axis limits (need to adjust to show all stations)
 XLIM = (336800, 337500)
 YLIM = (7839600, 7840300)
 
+# Define new color cycle based on entries 3–7 in "New Tableau 10", see
+# https://www.tableau.com/about/blog/2016/7/colors-upgrade-tableau-10-56782
+COLOR_CYCLE = ['#e15759', '#76b7b2', '#59a14f', '#edc948', '#b07aa1']
+
 # gdalwarp -t_srs EPSG:32759 -r cubicspline DEM_WGS84.tif DEM_WGS84_UTM.tif
-DEM_FILE = WORKING_DIR / 'data' / 'DEM_WGS84_UTM.tif'
-# DEM_FILE = WORKING_DIR / 'data' / 'DEM_Union_UAV_161116_sm101_UTM.tif'
+DEM_FILE = WORKING_DIR / 'data' / 'DEM_WGS84_UTM.tif'  # ~15 cm res
+# DEM_FILE = WORKING_DIR / 'data' / 'DEM_Union_UAV_161116_sm101_UTM.tif'  # ~2 m res
 
 # Read in full-res DEM, clip to extent to reduce size
 dem = xr.open_rasterio(DEM_FILE).squeeze()
@@ -60,11 +65,18 @@ fig_dem.show()
 x_A, y_A, *_ = utm.from_latlon(*VENT_LOCS['A'][::-1])
 x_C, y_C, *_ = utm.from_latlon(*VENT_LOCS['C'][::-1])
 
-# Station locations in UTM, read from labeled waveform file
+# Station locations in UTM
+net = Client('IRIS').get_stations(
+    network='3E',
+    station='YIF1,YIF2,YIF3,YIF4,YIF5',
+    starttime=UTCDateTime(2016, 1, 1),
+    endtime=UTCDateTime(2016, 12, 31),
+    level='station',
+)[0]
 STATION_COORDS = {}
-for tr in read(str(WORKING_DIR / 'data' / 'labeled' / 'label_000.pkl'))[:5]:
-    x, y, *_ = utm.from_latlon(tr.stats.latitude, tr.stats.longitude)
-    STATION_COORDS[tr.stats.station] = x, y
+for sta in net:
+    x, y, *_ = utm.from_latlon(sta.latitude, sta.longitude)
+    STATION_COORDS[sta.code] = x, y
 
 # Actually interpolate!
 profiles_A = []
@@ -90,6 +102,7 @@ station_marker_kwargs = dict(marker='v', edgecolor='black', zorder=5)
 # Plot profiles as groups of lines
 fig, axes = plt.subplots(ncols=2, sharey=True)
 for ax, profiles in zip(axes, [profiles_A, profiles_C]):
+    ax.set_prop_cycle(color=COLOR_CYCLE)
     for p, name in zip(profiles, STATION_COORDS.keys()):
         h = np.hstack(
             [0, np.cumsum(np.linalg.norm([np.diff(p.x), np.diff(p.y)], axis=0))]
@@ -104,14 +117,15 @@ for ax, profiles in zip(axes, [profiles_A, profiles_C]):
     ax.set_xlim(0, 450)
     ax.set_xlabel('Horizontal distance (m)')
     ax.xaxis.set_minor_locator(MultipleLocator(50))  # Minor ticks every 50 m
-axes[0].set_title('Vent A')
-axes[1].set_title('Vent C')
+axes[0].set_title('Subcrater S')
+axes[1].set_title('Subcrater N')
 axes[0].set_ylabel('Elevation (m)')
 axes[1].legend()
 fig.tight_layout()
 fig.show()
 
 # Plot profiles on DEM
+ax_dem.set_prop_cycle(color=COLOR_CYCLE)
 for pA, pC in zip(profiles_A, profiles_C):
     l = ax_dem.plot(pA.x.values, pA.y.values)
     ax_dem.plot(pC.x.values, pC.y.values, color=l[0].get_color())
