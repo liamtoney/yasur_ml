@@ -37,7 +37,7 @@ else:
 N_FEATURES = 10
 
 # Balance classes
-ds = balance_classes(features, verbose=True, random_state=47)
+ds = balance_classes(features, verbose=True, random_state=None)
 
 # Format dataset for use with scikit-learn
 X, y = format_scikit(ds)
