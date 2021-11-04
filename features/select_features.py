@@ -2,6 +2,7 @@
 
 import json
 from pathlib import Path
+from time import time
 
 import matplotlib.pyplot as plt
 from sklearn import preprocessing, svm
@@ -76,6 +77,7 @@ def plot_and_export(selector, prefix):
 #%% Run RFE
 
 print('Running RFE')
+t1 = time()
 rfe = RFE(
     estimator=svm.LinearSVC(dual=False),
     n_features_to_select=N_FEATURES,
@@ -87,11 +89,13 @@ rfe.fit(X, y)
 #%% Plot and export RFE results
 
 plot_and_export(rfe, prefix='RFE')
-print('Done')
+t2 = time()
+print(f'Done (elapsed time: {(t2 - t1) / 60:.0f} min)')
 
 #%% Run SFS
 
 print('Running SFS')
+t1 = time()
 sfs = SequentialFeatureSelector(
     estimator=svm.LinearSVC(dual=False),
     n_features_to_select=N_FEATURES,
@@ -105,4 +109,5 @@ sfs.fit(X, y)
 #%% Plot and export SFS results
 
 plot_and_export(sfs, prefix='SFS')
-print('Done')
+t2 = time()
+print(f'Done (elapsed time: {(t2 - t1) / 60:.0f} min)')
