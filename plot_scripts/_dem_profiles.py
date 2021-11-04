@@ -50,7 +50,7 @@ hs.plot.imshow(
     cmap='Greys_r',
     add_colorbar=False,
     add_labels=False,
-    alpha=0.6,
+    alpha=0.6,  # Balance between rich contrast and swamping the station markers / lines
 )
 ax_dem.set_aspect('equal')
 ax_dem.ticklabel_format(style='plain', useOffset=False)
@@ -129,7 +129,8 @@ for ax, profiles in zip(axes, [profiles_A, profiles_C]):
         linewidth=plt.rcParams['grid.linewidth'],
         linestyle=':',
         zorder=-1,
-        alpha=0.5,  # TODO MAKE THIS THE SAME FOR ALL GRIDS IN PAPER?
+        alpha=0.5,
+        clip_on=False,
     )
     for x in np.arange(*ax.get_xlim(), minor_int):
         ax.axvline(x=x, **grid_params)
