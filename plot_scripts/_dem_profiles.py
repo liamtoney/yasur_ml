@@ -116,12 +116,27 @@ for ax, profiles in zip(axes, [profiles_A, profiles_C]):
         ax.scatter(
             h[-1], p[-1], color=l[0].get_color(), label=name, **station_marker_kwargs
         )
-    ax.scatter(0, p[0], label='Vent', clip_on=False, **vent_marker_kwargs)
+    ax.scatter(0, p[0], label='Subcrater', clip_on=False, **vent_marker_kwargs)
     ax.set_aspect('equal')
-    ax.set_ylim(100, 400)
-    ax.set_xlim(0, 450)
     ax.set_xlabel('Horizontal distance (m)')
-    ax.xaxis.set_minor_locator(MultipleLocator(50))  # Minor ticks every 50 m
+    minor_int = 50  # [m]
+    ax.xaxis.set_minor_locator(MultipleLocator(minor_int))
+    ax.yaxis.set_minor_locator(MultipleLocator(minor_int))
+    ax.set_xlim(0, 450)
+    ax.set_ylim(100, 400)
+    grid_params = dict(
+        color=plt.rcParams['grid.color'],
+        linewidth=plt.rcParams['grid.linewidth'],
+        linestyle=':',
+        zorder=-1,
+        alpha=0.5,  # TODO MAKE THIS THE SAME FOR ALL GRIDS IN PAPER?
+    )
+    for x in np.arange(*ax.get_xlim(), minor_int):
+        ax.axvline(x=x, **grid_params)
+    for y in np.arange(*ax.get_ylim(), minor_int):
+        ax.axhline(y=y, **grid_params)
+    for side in 'right', 'top':
+        ax.spines[side].set_visible(False)
 axes[0].set_title('Subcrater S')
 axes[1].set_title('Subcrater N')
 axes[0].set_ylabel('Elevation (m)')
