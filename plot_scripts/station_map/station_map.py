@@ -160,7 +160,7 @@ pygmt.makecpt(
     cmap='inferno', reverse=True, series=[hist.min().values, hist.max().values]
 )
 fig.grdview(hist, cmap=True, T='+s')
-fig.colorbar(position=f'JMR+w{HEIGHT}i', frame=f'a100f50+l"# of locations"')
+fig.colorbar(position=f'JMR+w{HEIGHT}i', frame=f'a100f50+l"# of located events"')
 
 # Plot RTM grid search box
 verts = [
