@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import utm
 import xarray as xr
+from matplotlib.colors import LightSource
 from matplotlib.ticker import MultipleLocator
 from obspy import UTCDateTime
 from obspy.clients.fdsn import Client
@@ -15,8 +16,6 @@ WORKING_DIR = Path.home() / 'work' / 'yasur_ml'
 # Load vent locs
 with open(WORKING_DIR / 'yasur_vent_locs.json') as f:
     VENT_LOCS = json.load(f)
-
-ELEVATION_LIMITS = (100, 400)  # [m] Limits for all plots
 
 # UTM axis limits (need to adjust to show all stations)
 XLIM = (336800, 337500)
@@ -37,15 +36,21 @@ dem = dem.where(
     (dem.x >= XLIM[0]) & (dem.x <= XLIM[1]) & (dem.y >= YLIM[0]) & (dem.y <= YLIM[1])
 )
 
+# Create hillshade
+ls = LightSource()
+hs = dem.copy()
+hs.data = ls.hillshade(
+    dem.data, dx=np.abs(np.diff(dem.x).mean()), dy=np.abs(np.diff(dem.y).mean())
+)
+
 # Plot DEM
 fig_dem, ax_dem = plt.subplots()
-dem.plot.imshow(
+hs.plot.imshow(
     ax=ax_dem,
     cmap='Greys_r',
-    cbar_kwargs=dict(label='Elevation (m)'),
+    add_colorbar=False,
     add_labels=False,
-    vmin=ELEVATION_LIMITS[0],
-    vmax=ELEVATION_LIMITS[1],
+    alpha=0.6,
 )
 ax_dem.set_aspect('equal')
 ax_dem.ticklabel_format(style='plain', useOffset=False)
@@ -113,7 +118,7 @@ for ax, profiles in zip(axes, [profiles_A, profiles_C]):
         )
     ax.scatter(0, p[0], label='Vent', clip_on=False, **vent_marker_kwargs)
     ax.set_aspect('equal')
-    ax.set_ylim(*ELEVATION_LIMITS)
+    ax.set_ylim(100, 400)
     ax.set_xlim(0, 450)
     ax.set_xlabel('Horizontal distance (m)')
     ax.xaxis.set_minor_locator(MultipleLocator(50))  # Minor ticks every 50 m
