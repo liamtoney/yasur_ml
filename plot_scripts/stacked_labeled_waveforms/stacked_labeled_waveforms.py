@@ -87,7 +87,7 @@ fig, axes = plt.subplots(
     nrows=len(STATIONS), ncols=2, sharex=True, sharey=False, figsize=(6.5, 6.5)
 )
 
-for vent, axes_col in zip(traces.keys(), axes.T):
+for i, (vent, axes_col) in enumerate(zip(traces.keys(), axes.T)):
     axes_col[0].set_title(
         f'Subcrater {"S" if vent == "A" else "N"}', fontsize=FONT_SIZE
     )
@@ -132,9 +132,32 @@ for vent, axes_col in zip(traces.keys(), axes.T):
     for ax in axes_col[:-1]:
         ax.tick_params(axis='x', which='both', bottom=False)
 
+    # Add gridlines
+    for ax in axes_col:
+        ax.patch.set_alpha(0)
+    grid_ax = fig.add_subplot(1, 2, i + 1, zorder=-1, sharex=axes_col[-1])
+    for spine in grid_ax.spines.values():
+        spine.set_visible(False)
+    grid_ax.tick_params(
+        which='both',
+        left=False,
+        labelleft=False,
+        bottom=False,
+        labelbottom=False,
+    )
+    for x in np.arange(1, 5):
+        grid_ax.axvline(
+            x=x,
+            linestyle=':',
+            zorder=-1,
+            color=plt.rcParams['grid.color'],
+            linewidth=plt.rcParams['grid.linewidth'],
+            alpha=0.5,
+            clip_on=False,
+        )
+
     axes_col[-1].set_xlabel('Time (s)')
     axes_col[-1].spines['bottom'].set_visible(True)
-    axes_col[-1].xaxis.set_tick_params(which='both', direction='in', pad=5)
 
 fig.tight_layout()
 plt.subplots_adjust(hspace=0, wspace=0.3)
