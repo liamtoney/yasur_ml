@@ -88,9 +88,6 @@ fig, axes = plt.subplots(
 )
 
 for i, (vent, axes_col) in enumerate(zip(traces.keys(), axes.T)):
-    axes_col[0].set_title(
-        f'Subcrater {"S" if vent == "A" else "N"}', fontsize=FONT_SIZE
-    )
     color = os.environ[f'VENT_{vent}']
     for station, ax in zip(traces[vent].keys(), axes_col):
         vs_traces = traces[vent][station][1:, :]  # Removing the first row of NaNs here
@@ -158,6 +155,19 @@ for i, (vent, axes_col) in enumerate(zip(traces.keys(), axes.T)):
 
     axes_col[-1].set_xlabel('Time (s)')
     axes_col[-1].spines['bottom'].set_visible(True)
+
+# Plot (a) and (b) tags
+for ax, label in zip(axes[0, :], ['A', 'B']):
+    ax.text(
+        -0.01,
+        1,
+        label,
+        ha='left',
+        va='top',
+        transform=ax.transAxes,
+        weight='bold',
+        fontsize=18,
+    )
 
 fig.tight_layout()
 plt.subplots_adjust(hspace=0, wspace=0.3)
