@@ -86,7 +86,14 @@ fig.coast(
     frame=['WESN', 'af'],
     resolution='f',
 )
-fig.plot(*VENT_LOCS['midpoint'], style='t0.4c', color='red', pen=True)  # Center of (b)
+inset_pen_color = '#e15759'
+fig.plot(
+    x=VENT_LOCS['midpoint'][0],
+    y=VENT_LOCS['midpoint'][1],
+    style='t0.4c',
+    color=inset_pen_color,
+    pen=True,
+)  # Center of (b)
 fig.shift_origin(xshift='1.6i', yshift='4.1i')  # For globe inset
 fig.coast(
     region='g',
@@ -107,7 +114,7 @@ verts = [
     (VANUATU_REGION[1], VANUATU_REGION[2]),
     (VANUATU_REGION[0], VANUATU_REGION[2]),
 ]
-fig.plot(data=np.array(verts), straight_line='p', pen='1p,red')
+fig.plot(data=np.array(verts), straight_line='p', pen=f'1p,{inset_pen_color}')
 
 # (b) Station map
 fig.shift_origin(xshift='3.5i', yshift='-4.11i')
@@ -184,10 +191,11 @@ for vent in 'A', 'C':
 
 # Plot and label stations
 fig.plot(
-    *transform(sta_lon, sta_lat),
+    x=transform(sta_lon, sta_lat)[0],
+    y=transform(sta_lon, sta_lat)[1],
     style='i0.4c',
     pen='0.75p',
-    color='mediumseagreen',
+    color='#59a14f',
     label='Station',
 )
 fig.text(
