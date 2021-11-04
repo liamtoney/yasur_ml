@@ -111,7 +111,7 @@ grid_ax.tick_params(
     bottom=False,
     labelbottom=False,
 )
-grid_ax.grid(which='both', axis='x', linestyle=':')
+grid_ax.grid(which='both', axis='x', linestyle=':', alpha=0.5)
 
 # Plot (a) and (b) tags
 for ax, label in zip(axes, ['A', 'B']):
