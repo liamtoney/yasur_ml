@@ -195,7 +195,7 @@ fig.plot(
     y=transform(sta_lon, sta_lat)[1],
     style='i0.4c',
     pen='0.75p',
-    color='#59a14f',
+    color='gray30',
     label='Station',
 )
 fig.text(
