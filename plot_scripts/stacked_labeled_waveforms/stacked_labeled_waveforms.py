@@ -3,6 +3,7 @@
 import copy
 import os
 import pickle
+import subprocess
 from pathlib import Path
 
 import matplotlib.pyplot as plt
@@ -172,5 +173,7 @@ for ax, label in zip(axes[0, :], ['A', 'B']):
 fig.tight_layout()
 fig.subplots_adjust(hspace=0, wspace=0.3)
 fig.show()
+
+_ = subprocess.run(['open', os.environ['YASUR_FIGURE_DIR']])
 
 # fig.savefig(Path(os.environ['YASUR_FIGURE_DIR']) / 'stacked_labeled_waveforms.png', bbox_inches='tight', dpi=300)

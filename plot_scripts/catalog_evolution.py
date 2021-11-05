@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import os
+import subprocess
 from pathlib import Path
 
 import matplotlib.dates as mdates
@@ -128,5 +129,7 @@ for ax, label in zip(axes, ['A', 'B']):
 
 fig.tight_layout()
 fig.show()
+
+_ = subprocess.run(['open', os.environ['YASUR_FIGURE_DIR']])
 
 # fig.savefig(Path(os.environ['YASUR_FIGURE_DIR']) / 'catalog_evolution.png', bbox_inches='tight', dpi=300)

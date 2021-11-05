@@ -2,6 +2,7 @@
 
 import json
 import os
+import subprocess
 from pathlib import Path
 
 import numpy as np
@@ -214,5 +215,7 @@ fig.text(x=-RADIUS - 1625, text='A', **tag_kwargs)
 fig.text(x=-RADIUS - 200, text='B', **tag_kwargs)
 
 fig.show(method='external')
+
+_ = subprocess.run(['open', os.environ['YASUR_FIGURE_DIR']])
 
 # fig.savefig(Path(os.environ['YASUR_FIGURE_DIR']) / 'station_map.png', dpi=400)
