@@ -50,7 +50,7 @@ hs.plot.imshow(
     cmap='Greys_r',
     add_colorbar=False,
     add_labels=False,
-    alpha=0.6,  # Balance between rich contrast and swamping the station markers / lines
+    alpha=0.4,  # Balance between rich contrast and swamping the station markers / lines
 )
 ax_dem.set_aspect('equal')
 ax_dem.ticklabel_format(style='plain', useOffset=False)
@@ -107,15 +107,12 @@ station_marker_kwargs = dict(marker='v', edgecolor='black', zorder=5)
 # Plot profiles as groups of lines
 fig, axes = plt.subplots(ncols=2, sharey=True)
 for ax, profiles in zip(axes, [profiles_A, profiles_C]):
-    ax.set_prop_cycle(color=COLOR_CYCLE)
-    for p, name in zip(profiles, STATION_COORDS.keys()):
+    for p, name, color in zip(profiles, STATION_COORDS.keys(), COLOR_CYCLE):
         h = np.hstack(
             [0, np.cumsum(np.linalg.norm([np.diff(p.x), np.diff(p.y)], axis=0))]
         )
-        l = ax.plot(h, p)
-        ax.scatter(
-            h[-1], p[-1], color=l[0].get_color(), label=name, **station_marker_kwargs
-        )
+        ax.plot(h, p, color=color)
+        ax.scatter(h[-1], p[-1], color=color, label=name, **station_marker_kwargs)
     ax.scatter(0, p[0], label='Subcrater', clip_on=False, **vent_marker_kwargs)
     ax.set_aspect('equal')
     ax.set_xlabel('Horizontal distance (m)')
@@ -145,13 +142,59 @@ axes[1].legend()
 fig.tight_layout()
 fig.show()
 
-# Plot profiles on DEM
-ax_dem.set_prop_cycle(color=COLOR_CYCLE)
-for pA, pC in zip(profiles_A, profiles_C):
-    l = ax_dem.plot(pA.x.values, pA.y.values)
-    ax_dem.plot(pC.x.values, pC.y.values, color=l[0].get_color())
-for name, station_coord in STATION_COORDS.items():
-    ax_dem.scatter(*station_coord, **station_marker_kwargs)
+# Hard-coded numbers controlling where along profile the distance text is placed,
+# ranging from 0 (at subcrater) to 1 (at station)
+PROF_FRAC = dict(
+    YIF1=dict(A=0.13, C=0.18),
+    YIF2=dict(A=0.75, C=0.5),
+    YIF3=dict(A=0.5, C=0.73),
+    YIF4=dict(A=0.5, C=0.5),
+    YIF5=dict(A=0.5, C=0.5),
+)
+GAP_HALF_WIDTH = 30  # [m] Half of the width of the gap in the line (where text goes)
+
+# Plot horizontal profiles on DEM, adding text denoting distances
+for pA, pC, prof_frac, color in zip(
+    profiles_A, profiles_C, PROF_FRAC.values(), COLOR_CYCLE
+):
+
+    for profile, vent in zip([pA, pC], ['A', 'C']):
+
+        # Convert profile x and y into masked arrays
+        p_x = np.ma.array(profile.x.values)
+        p_y = np.ma.array(profile.y.values)
+
+        # Calculate full and component-wise lengths
+        xlen = p_x[-1] - p_x[0]
+        ylen = p_y[-1] - p_y[0]
+        length = np.linalg.norm([xlen, ylen])
+
+        center_ind = int(prof_frac[vent] * N)  # Convert fraction to index along profile
+        ext_ind = int(GAP_HALF_WIDTH * N / length)  # Convert gap length to index
+
+        # Mask profile arrays - masked entries don't get plotted!
+        p_slice = slice(center_ind - ext_ind, center_ind + ext_ind)
+        p_x[p_slice] = np.ma.masked
+        p_y[p_slice] = np.ma.masked
+
+        # Plot horizontal profile w/ gaps
+        ax_dem.plot(p_x, p_y, color=color, linewidth=1)
+
+        # Plot angled text showing distance along each path in meters
+        ax_dem.text(
+            p_x.data[center_ind],
+            p_y.data[center_ind],
+            f'{length:.0f} m',
+            rotation=np.rad2deg(np.arctan(ylen / xlen)),
+            va='center',
+            ha='center',
+            color=color,
+            weight='bold',
+            fontsize='6.5',
+        )
+
+for (name, station_coord), color in zip(STATION_COORDS.items(), COLOR_CYCLE):
+    ax_dem.scatter(*station_coord, color=color, **station_marker_kwargs)
     ax_dem.text(*station_coord, s='  ' + name, va='center')
 ax_dem.scatter(x_A, y_A, **vent_marker_kwargs)
 ax_dem.scatter(x_C, y_C, **vent_marker_kwargs)
