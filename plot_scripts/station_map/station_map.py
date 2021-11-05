@@ -127,7 +127,12 @@ fig.grdimage(
     cmap='white',
     shading=True,
     projection=f'X{HEIGHT}i',
-    frame=['a500f100', 'x+l"Easting (m)"', 'y+l"Northing (m)"', 'WSen'],
+    frame=[
+        'a500f100',
+        'x+l"Easting from grid center (m)"',
+        'y+l"Northing from grid center (m)"',
+        'WSen',
+    ],
 )
 fig.grdcontour(dem, interval=10, annotation='100+u" m"')
 
