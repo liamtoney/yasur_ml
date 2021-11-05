@@ -1,7 +1,6 @@
 import json
 from pathlib import Path
 
-import colorcet as cc
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.ticker import PercentFormatter
@@ -17,6 +16,10 @@ WORKING_DIR = Path.home() / 'work' / 'yasur_ml'
 features_all = read_and_preprocess(
     WORKING_DIR / 'features' / 'feather' / 'tsfresh_filter.feather'
 )
+
+# Define new color cycle based on entries 3–7 in "New Tableau 10", see
+# https://www.tableau.com/about/blog/2016/7/colors-upgrade-tableau-10-56782
+COLOR_CYCLE = ['#e15759', '#76b7b2', '#59a14f', '#edc948', '#b07aa1']
 
 #%% Subset features (OPTIONAL; only applies for TSFRESH features)
 
@@ -86,15 +89,20 @@ for tmin in [
 
     # Make plot
     fig, ax = plt.subplots()
-    im = ax.imshow(scores, cmap=cc.m_diverging_bwr_20_95_c54_r, vmin=0, vmax=1)
+    im = ax.imshow(scores, cmap='Greys', vmin=0, vmax=1)
     ax.set_xticks(range(len(ALL_STATIONS)))
     ax.set_yticks(range(len(ALL_STATIONS)))
     ax.set_xticklabels(ALL_STATIONS)
     ax.set_yticklabels(ALL_STATIONS)
-    ax.set_xlabel('Train station', weight='bold', labelpad=10)
-    ax.set_ylabel('Test station', weight='bold', labelpad=5)
     ax.xaxis.set_ticks_position('top')
     ax.xaxis.set_label_position('top')
+    for xtl, ytl, color in zip(ax.get_xticklabels(), ax.get_yticklabels(), COLOR_CYCLE):
+        xtl.set_color(color)
+        ytl.set_color(color)
+        xtl.set_weight('bold')
+        ytl.set_weight('bold')
+    ax.set_xlabel('Train station', weight='bold', labelpad=10)
+    ax.set_ylabel('Test station', weight='bold', labelpad=7)
 
     # Colorbar
     fig.colorbar(
@@ -109,7 +117,7 @@ for tmin in [
         for j in range(len(ALL_STATIONS)):
             this_score = scores[i, j]
             # Choose the best text color for contrast
-            if this_score >= 0.7 or this_score <= 0.3:
+            if this_score > 0.5:
                 color = 'white'
             else:
                 color = 'black'
@@ -121,7 +129,7 @@ for tmin in [
                 va='center',
                 color=color,
                 fontsize=8,
-                alpha=0.5,
+                alpha=0.7,
             )
 
     # Add titles
