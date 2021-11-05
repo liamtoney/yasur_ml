@@ -170,8 +170,7 @@ for ax, label in zip(axes[0, :], ['A', 'B']):
     )
 
 fig.tight_layout()
-plt.subplots_adjust(hspace=0, wspace=0.3)
-
+fig.subplots_adjust(hspace=0, wspace=0.3)
 fig.show()
 
 # fig.savefig(Path(os.environ['YASUR_FIGURE_DIR']) / 'stacked_labeled_waveforms.png', bbox_inches='tight', dpi=300)
