@@ -32,8 +32,8 @@ for sta in net:
 
 # Determine DEM plot axis limits from station coords, add additional padding [m]
 sta_x, sta_y = np.array(list(STATION_COORDS.values())).T
-dem_xlim = (sta_x.min() - 70, sta_x.max() + 30)
-dem_ylim = (sta_y.min() - 30, sta_y.max() + 20)
+dem_xlim = np.array([sta_x.min() - 70, sta_x.max() + 30])
+dem_ylim = np.array([sta_y.min() - 30, sta_y.max() + 20])
 
 # Define new color cycle based on entries 3–7 in "New Tableau 10", see
 # https://www.tableau.com/about/blog/2016/7/colors-upgrade-tableau-10-56782
@@ -45,6 +45,10 @@ DEM_FILE = WORKING_DIR / 'data' / 'DEM_WGS84_UTM.tif'  # ~15 cm res
 
 # Common linewidth for profile lines
 PROFILE_LW = 1
+
+# Common major and minor tick intervals for plots [m]
+MAJOR_INT = 100
+MINOR_INT = 50
 
 CRATER_LABEL_ADJ = -0.9  # [m] Tweak vertical position of subcrater label letter
 
@@ -78,6 +82,22 @@ ax_dem.set_aspect('equal')
 ax_dem.set_xlim(dem_xlim)
 ax_dem.set_ylim(dem_ylim)
 ax_dem.axis('off')
+
+# Create box around plot starting with (0, 0) at the bottom left (HACKY)
+box_ax = fig_dem.add_subplot(1, 1, 1, zorder=10)
+box_ax.patch.set_alpha(0)
+box_ax.set_aspect('equal')
+box_ax.set_xlim(dem_xlim - dem_xlim[0])
+box_ax.set_ylim(dem_ylim - dem_ylim[0])
+box_ax.xaxis.set_major_locator(MultipleLocator(MAJOR_INT))
+box_ax.yaxis.set_major_locator(MultipleLocator(MAJOR_INT))
+box_ax.xaxis.set_minor_locator(MultipleLocator(MINOR_INT))
+box_ax.yaxis.set_minor_locator(MultipleLocator(MINOR_INT))
+box_ax.xaxis.set_ticks_position('both')
+box_ax.yaxis.set_ticks_position('both')
+box_ax.set_xlabel('Easting (m)')
+box_ax.set_ylabel('Northing (m)')
+
 fig_dem.tight_layout()
 fig_dem.show()
 
@@ -121,12 +141,10 @@ for ax, profiles, crater in zip(axes, [profiles_A, profiles_C], ['S', 'N']):
     ax.text(0, p[0] + CRATER_LABEL_ADJ, crater, clip_on=False, **vent_text_kwargs)
     ax.set_aspect('equal')
     ax.set_xlabel('Horizontal distance (m)')
-    major_int = 100  # [m]
-    ax.xaxis.set_major_locator(MultipleLocator(major_int))
-    ax.yaxis.set_major_locator(MultipleLocator(major_int))
-    minor_int = 50  # [m]
-    ax.xaxis.set_minor_locator(MultipleLocator(minor_int))
-    ax.yaxis.set_minor_locator(MultipleLocator(minor_int))
+    ax.xaxis.set_major_locator(MultipleLocator(MAJOR_INT))
+    ax.yaxis.set_major_locator(MultipleLocator(MAJOR_INT))
+    ax.xaxis.set_minor_locator(MultipleLocator(MINOR_INT))
+    ax.yaxis.set_minor_locator(MultipleLocator(MINOR_INT))
     ax.set_xlim(0, 450)
     ax.set_ylim(100, 400)
     grid_params = dict(
@@ -137,9 +155,9 @@ for ax, profiles, crater in zip(axes, [profiles_A, profiles_C], ['S', 'N']):
         alpha=0.5,
         clip_on=False,
     )
-    for x in np.arange(*ax.get_xlim(), minor_int):
+    for x in np.arange(*ax.get_xlim(), MINOR_INT):
         ax.axvline(x=x, **grid_params)
-    for y in np.arange(*ax.get_ylim(), minor_int):
+    for y in np.arange(*ax.get_ylim(), MINOR_INT):
         ax.axhline(y=y, **grid_params)
     for side in 'right', 'top':
         ax.spines[side].set_visible(False)
