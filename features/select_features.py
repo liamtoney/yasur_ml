@@ -81,7 +81,7 @@ t1 = time()
 rfe = RFE(
     estimator=svm.LinearSVC(dual=False),
     n_features_to_select=N_FEATURES,
-    step=0.1,
+    step=0.1,  # Remove this fraction of features at every iteration
     verbose=1,
 )
 rfe.fit(X, y)
