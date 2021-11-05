@@ -17,9 +17,23 @@ WORKING_DIR = Path.home() / 'work' / 'yasur_ml'
 with open(WORKING_DIR / 'yasur_vent_locs.json') as f:
     VENT_LOCS = json.load(f)
 
-# UTM axis limits (need to adjust to show all stations)
-XLIM = (336800, 337500)
-YLIM = (7839600, 7840300)
+# Load station locations in UTM
+net = Client('IRIS').get_stations(
+    network='3E',
+    station='YIF1,YIF2,YIF3,YIF4,YIF5',
+    starttime=UTCDateTime(2016, 1, 1),
+    endtime=UTCDateTime(2016, 12, 31),
+    level='station',
+)[0]
+STATION_COORDS = {}
+for sta in net:
+    x, y, *_ = utm.from_latlon(sta.latitude, sta.longitude)
+    STATION_COORDS[sta.code] = x, y
+
+# Determine DEM plot axis limits from station coords, add additional padding [m]
+sta_x, sta_y = np.array(list(STATION_COORDS.values())).T
+dem_xlim = (sta_x.min() - 70, sta_x.max() + 30)
+dem_ylim = (sta_y.min() - 30, sta_y.max() + 20)
 
 # Define new color cycle based on entries 3–7 in "New Tableau 10", see
 # https://www.tableau.com/about/blog/2016/7/colors-upgrade-tableau-10-56782
@@ -29,11 +43,17 @@ COLOR_CYCLE = ['#e15759', '#76b7b2', '#59a14f', '#edc948', '#b07aa1']
 DEM_FILE = WORKING_DIR / 'data' / 'DEM_WGS84_UTM.tif'  # ~15 cm res
 # DEM_FILE = WORKING_DIR / 'data' / 'DEM_Union_UAV_161116_sm101_UTM.tif'  # ~2 m res
 
+# Common linewidth for profile lines
+PROFILE_LW = 1
+
 # Read in full-res DEM, clip to extent to reduce size
 dem = xr.open_rasterio(DEM_FILE).squeeze()
 dem = dem.where(dem != dem.nodatavals)  # Set no data values to NaN
 dem = dem.where(
-    (dem.x >= XLIM[0]) & (dem.x <= XLIM[1]) & (dem.y >= YLIM[0]) & (dem.y <= YLIM[1])
+    (dem.x >= dem_xlim[0])
+    & (dem.x <= dem_xlim[1])
+    & (dem.y >= dem_ylim[0])
+    & (dem.y <= dem_ylim[1])
 )
 
 # Create hillshade
@@ -53,35 +73,15 @@ hs.plot.imshow(
     alpha=0.4,  # Balance between rich contrast and swamping the station markers / lines
 )
 ax_dem.set_aspect('equal')
-ax_dem.ticklabel_format(style='plain', useOffset=False)
-ax_dem.set_xlabel('UTM easting (m)')
-ax_dem.set_ylabel('UTM northing (m)')
-ax_dem.set_xlim(XLIM)
-ax_dem.set_ylim(YLIM)
-ax_dem.xaxis.set_ticks_position('both')
-ax_dem.yaxis.set_ticks_position('both')
-for label in ax_dem.get_xticklabels():
-    label.set_rotation(30)
-    label.set_ha('right')
+ax_dem.set_xlim(dem_xlim)
+ax_dem.set_ylim(dem_ylim)
+ax_dem.axis('off')
 fig_dem.tight_layout()
 fig_dem.show()
 
 # Vent locations in UTM
 x_A, y_A, *_ = utm.from_latlon(*VENT_LOCS['A'][::-1])
 x_C, y_C, *_ = utm.from_latlon(*VENT_LOCS['C'][::-1])
-
-# Station locations in UTM
-net = Client('IRIS').get_stations(
-    network='3E',
-    station='YIF1,YIF2,YIF3,YIF4,YIF5',
-    starttime=UTCDateTime(2016, 1, 1),
-    endtime=UTCDateTime(2016, 12, 31),
-    level='station',
-)[0]
-STATION_COORDS = {}
-for sta in net:
-    x, y, *_ = utm.from_latlon(sta.latitude, sta.longitude)
-    STATION_COORDS[sta.code] = x, y
 
 # Actually interpolate!
 profiles_A = []
@@ -111,7 +111,7 @@ for ax, profiles in zip(axes, [profiles_A, profiles_C]):
         h = np.hstack(
             [0, np.cumsum(np.linalg.norm([np.diff(p.x), np.diff(p.y)], axis=0))]
         )
-        ax.plot(h, p, color=color)
+        ax.plot(h, p, color=color, linewidth=PROFILE_LW)
         ax.scatter(h[-1], p[-1], color=color, label=name, **station_marker_kwargs)
     ax.scatter(0, p[0], label='Subcrater', clip_on=False, **vent_marker_kwargs)
     ax.set_aspect('equal')
@@ -154,7 +154,7 @@ PROF_FRAC = dict(
     YIF4=dict(A=0.5, C=0.5),
     YIF5=dict(A=0.5, C=0.5),
 )
-GAP_HALF_WIDTH = 30  # [m] Half of the width of the gap in the line (where text goes)
+GAP_HALF_WIDTH = 25  # [m] Half of the width of the gap in the line (where text goes)
 
 # Plot horizontal profiles on DEM, adding text denoting distances
 for pA, pC, prof_frac, color in zip(
@@ -181,7 +181,7 @@ for pA, pC, prof_frac, color in zip(
         p_y[p_slice] = np.ma.masked
 
         # Plot horizontal profile w/ gaps
-        ax_dem.plot(p_x, p_y, color=color, linewidth=1)
+        ax_dem.plot(p_x, p_y, color=color, linewidth=PROFILE_LW)
 
         # Plot angled text showing distance along each path in meters
         ax_dem.text(
@@ -198,10 +198,9 @@ for pA, pC, prof_frac, color in zip(
 
 for (name, station_coord), color in zip(STATION_COORDS.items(), COLOR_CYCLE):
     ax_dem.scatter(*station_coord, color=color, **station_marker_kwargs)
-    ax_dem.text(*station_coord, s='  ' + name, va='center')
 ax_dem.scatter(x_A, y_A, **vent_marker_kwargs)
 ax_dem.scatter(x_C, y_C, **vent_marker_kwargs)
 fig_dem.show()
 
-# fig_dem.savefig('/Users/ldtoney/Downloads/profiles_dem.png', bbox_inches='tight', dpi=300)
-# fig.savefig('/Users/ldtoney/Downloads/profiles_lines.png', bbox_inches='tight', dpi=300)
+# fig_dem.savefig('/Users/ldtoney/Downloads/b.png', bbox_inches='tight', dpi=300)
+# fig.savefig('/Users/ldtoney/Downloads/c_d.png', bbox_inches='tight', dpi=300)
