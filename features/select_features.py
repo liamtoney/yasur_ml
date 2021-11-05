@@ -23,7 +23,8 @@ features_all = read_and_preprocess(
     WORKING_DIR / 'features' / 'feather' / 'tsfresh_filter_roll.feather'
 )
 
-#%% Remove correlated features (vastly speeds up subsequent feature selection!)
+#%% Remove correlated features (vastly speeds up subsequent feature selection, but seems
+# to HURT accuracies, use with caution!)
 
 PRUNE_FEATURES = False
 
@@ -102,7 +103,7 @@ sfs = SequentialFeatureSelector(
     direction='forward',
     scoring='accuracy',
     cv=5,  # Could increase this but would be slower
-    n_jobs=-1,
+    n_jobs=-1,  # Spread cross-validation runs across all available cores
 )
 sfs.fit(X, y)
 
