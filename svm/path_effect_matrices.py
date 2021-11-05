@@ -39,6 +39,9 @@ else:
 
 #%% Run function
 
+# Define number of runs [= random calls to balance_classes()] to perform and average
+RUNS = 5
+
 # Toggle plotting mean / std for ALL entries or just the diagonal
 DIAGONAL_METRICS = True
 
@@ -53,39 +56,48 @@ for tmin in [
     UTCDateTime(2016, 8, 1),
 ]:
 
+    print(tmin.strftime('%-d %B'))
+
     # 24 hrs
     tmax = tmin + 24 * 60 * 60
-
-    # Preallocate scores matrix
-    scores = np.empty((len(ALL_STATIONS), len(ALL_STATIONS)))
 
     # Temporal subsetting
     train, test, *_ = time_subset(features, 'test', tmin, tmax)
 
-    # Balance classes
-    print('TRAINING')
-    train = balance_classes(train)
-    print('\nTESTING')
-    test = balance_classes(test)
+    # Preallocate scores for this day
+    run_scores = np.empty((len(ALL_STATIONS), len(ALL_STATIONS), RUNS))
 
-    for j, train_station in enumerate(ALL_STATIONS):
+    # Perform this loop RUNS times
+    for k in range(RUNS):
 
-        train_ds = train[train.station == train_station]  # Subset
-        X_train, y_train = format_scikit(train_ds)
-        X_train = preprocessing.scale(X_train)  # Rescale
+        if RUNS > 1:
+            print(f'\t{k + 1}/{RUNS}')
 
-        # Fit SVC
-        clf = svm.LinearSVC(dual=False)
-        clf.fit(X_train, y_train)
+        # Balance classes (RANDOM!)
+        train_bal = balance_classes(train, verbose=False)
+        test_bal = balance_classes(test, verbose=False)
 
-        for i, test_station in enumerate(ALL_STATIONS):
+        for j, train_station in enumerate(ALL_STATIONS):
 
-            test_ds = test[test.station == test_station]  # Subset
-            X_test, y_test = format_scikit(test_ds)
-            X_test = preprocessing.scale(X_test)  # Rescale
+            train_ds = train_bal[train_bal.station == train_station]  # Subset
+            X_train, y_train = format_scikit(train_ds)
+            X_train = preprocessing.scale(X_train)  # Rescale
 
-            # Test SVC
-            scores[i, j] = clf.score(X_test, y_test)
+            # Fit SVC
+            clf = svm.LinearSVC(dual=False)
+            clf.fit(X_train, y_train)
+
+            for i, test_station in enumerate(ALL_STATIONS):
+
+                test_ds = test_bal[test_bal.station == test_station]  # Subset
+                X_test, y_test = format_scikit(test_ds)
+                X_test = preprocessing.scale(X_test)  # Rescale
+
+                # Test SVC
+                run_scores[i, j, k] = clf.score(X_test, y_test)
+
+    print(run_scores[0, 0, :])
+    scores = run_scores.mean(axis=2)  # Take mean of the RUNS runs
 
     # Make plot
     fig, ax = plt.subplots()
