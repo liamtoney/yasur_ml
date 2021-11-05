@@ -116,6 +116,9 @@ for ax, profiles in zip(axes, [profiles_A, profiles_C]):
     ax.scatter(0, p[0], label='Subcrater', clip_on=False, **vent_marker_kwargs)
     ax.set_aspect('equal')
     ax.set_xlabel('Horizontal distance (m)')
+    major_int = 100  # [m]
+    ax.xaxis.set_major_locator(MultipleLocator(major_int))
+    ax.yaxis.set_major_locator(MultipleLocator(major_int))
     minor_int = 50  # [m]
     ax.xaxis.set_minor_locator(MultipleLocator(minor_int))
     ax.yaxis.set_minor_locator(MultipleLocator(minor_int))
@@ -138,8 +141,8 @@ for ax, profiles in zip(axes, [profiles_A, profiles_C]):
 axes[0].set_title('Subcrater S')
 axes[1].set_title('Subcrater N')
 axes[0].set_ylabel('Elevation (m)')
-axes[1].legend()
 fig.tight_layout()
+fig.subplots_adjust(wspace=0.2)
 fig.show()
 
 # Hard-coded numbers controlling where along profile the distance text is placed,
