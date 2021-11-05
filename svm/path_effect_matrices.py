@@ -96,7 +96,6 @@ for tmin in [
                 # Test SVC
                 run_scores[i, j, k] = clf.score(X_test, y_test)
 
-    print(run_scores[0, 0, :])
     scores = run_scores.mean(axis=2)  # Take mean of the RUNS runs
 
     # Make plot
