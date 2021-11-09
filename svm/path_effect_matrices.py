@@ -45,6 +45,9 @@ RUNS = 5
 # Toggle plotting mean / std for ALL entries or just the diagonal
 DIAGONAL_METRICS = True
 
+# Toggle exporting 5 x 5 scores matrices for plotting outside this script
+EXPORT_SCORES = True
+
 ALL_STATIONS = [f'YIF{n}' for n in range(1, 6)]
 
 for tmin in [
@@ -97,6 +100,12 @@ for tmin in [
                 run_scores[i, j, k] = clf.score(X_test, y_test)
 
     scores = run_scores.mean(axis=2)  # Take mean of the RUNS runs
+
+    if EXPORT_SCORES:
+        day_str = tmin.strftime('%Y-%m-%d')
+        np.save(
+            WORKING_DIR / 'plot_scripts' / 'path_effects' / f'{day_str}.npy', scores
+        )
 
     # Make plot
     fig, ax = plt.subplots()

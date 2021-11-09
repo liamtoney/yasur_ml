@@ -50,6 +50,9 @@ PROFILE_LW = 1
 MAJOR_INT = 100
 MINOR_INT = 50
 
+# Load scores to plot for panel (a)
+scores = np.load(WORKING_DIR / 'plot_scripts' / 'path_effects' / '2016-08-01.npy')
+
 # Read in full-res DEM, clip to extent to reduce size
 dem = xr.open_rasterio(DEM_FILE).squeeze()
 dem = dem.where(dem != dem.nodatavals)  # Set no data values to NaN

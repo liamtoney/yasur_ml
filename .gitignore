@@ -11,4 +11,5 @@
 *.tif
 *.gsheet
 *.gdoc
+*.npy
 .DS_Store
