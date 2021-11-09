@@ -50,8 +50,6 @@ PROFILE_LW = 1
 MAJOR_INT = 100
 MINOR_INT = 50
 
-CRATER_LABEL_ADJ = -0.9  # [m] Tweak vertical position of subcrater label letter
-
 # Read in full-res DEM, clip to extent to reduce size
 dem = xr.open_rasterio(DEM_FILE).squeeze()
 dem = dem.where(dem != dem.nodatavals)  # Set no data values to NaN
@@ -126,11 +124,9 @@ for station_coord in STATION_COORDS.values():
 vent_marker_kwargs = dict(color='white', edgecolor='black', zorder=5)
 station_marker_kwargs = dict(marker='v', edgecolor='black', zorder=5)
 
-vent_text_kwargs = dict(ha='center', va='center', fontsize=4, weight='bold', zorder=6)
-
 # Plot profiles as groups of lines
 fig, axes = plt.subplots(ncols=2, sharey=True)
-for ax, profiles, crater in zip(axes, [profiles_A, profiles_C], ['S', 'N']):
+for ax, profiles in zip(axes, [profiles_A, profiles_C]):
     for p, name, color in zip(profiles, STATION_COORDS.keys(), COLOR_CYCLE):
         h = np.hstack(
             [0, np.cumsum(np.linalg.norm([np.diff(p.x), np.diff(p.y)], axis=0))]
@@ -138,7 +134,6 @@ for ax, profiles, crater in zip(axes, [profiles_A, profiles_C], ['S', 'N']):
         ax.plot(h, p, color=color, linewidth=PROFILE_LW)
         ax.scatter(h[-1], p[-1], color=color, label=name, **station_marker_kwargs)
     ax.scatter(0, p[0], label='Subcrater', clip_on=False, **vent_marker_kwargs)
-    ax.text(0, p[0] + CRATER_LABEL_ADJ, crater, clip_on=False, **vent_text_kwargs)
     ax.set_aspect('equal')
     ax.set_xlabel('Horizontal distance (m)')
     ax.xaxis.set_major_locator(MultipleLocator(MAJOR_INT))
@@ -161,6 +156,8 @@ for ax, profiles, crater in zip(axes, [profiles_A, profiles_C], ['S', 'N']):
         ax.axhline(y=y, **grid_params)
     for side in 'right', 'top':
         ax.spines[side].set_visible(False)
+axes[0].set_title('Subcrater S')
+axes[1].set_title('Subcrater N')
 axes[0].set_ylabel('Elevation (m)')
 fig.tight_layout()
 fig.subplots_adjust(wspace=0.2)
@@ -220,9 +217,7 @@ for pA, pC, prof_frac, color in zip(
 for (name, station_coord), color in zip(STATION_COORDS.items(), COLOR_CYCLE):
     ax_dem.scatter(*station_coord, color=color, **station_marker_kwargs)
 ax_dem.scatter(x_A, y_A, **vent_marker_kwargs)
-ax_dem.text(x_A, y_A + CRATER_LABEL_ADJ, 'S', **vent_text_kwargs)
 ax_dem.scatter(x_C, y_C, **vent_marker_kwargs)
-ax_dem.text(x_C, y_C + CRATER_LABEL_ADJ, 'N', **vent_text_kwargs)
 fig_dem.show()
 
 # fig_dem.savefig('/Users/ldtoney/Downloads/b.png', bbox_inches='tight', dpi=300)
