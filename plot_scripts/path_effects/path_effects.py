@@ -1,4 +1,6 @@
 import json
+import os
+import subprocess
 from pathlib import Path
 
 import matplotlib.pyplot as plt
@@ -6,7 +8,7 @@ import numpy as np
 import utm
 import xarray as xr
 from matplotlib.colors import LightSource
-from matplotlib.ticker import MultipleLocator
+from matplotlib.ticker import MultipleLocator, PercentFormatter
 from obspy import UTCDateTime
 from obspy.clients.fdsn import Client
 
@@ -50,8 +52,15 @@ PROFILE_LW = 1
 MAJOR_INT = 100
 MINOR_INT = 50
 
+# Define new color cycle based on entries 3–7 in "New Tableau 10", see
+# https://www.tableau.com/about/blog/2016/7/colors-upgrade-tableau-10-56782
+COLOR_CYCLE = ['#e15759', '#76b7b2', '#59a14f', '#edc948', '#b07aa1']
+
+ALL_STATIONS = [f'YIF{n}' for n in range(1, 6)]
+
 # Load scores to plot for panel (a)
-scores = np.load(WORKING_DIR / 'plot_scripts' / 'path_effects' / '2016-08-01.npy')
+SCORE_FILE = '2016-08-01.npy'
+scores = np.load(WORKING_DIR / 'plot_scripts' / 'path_effects' / SCORE_FILE)
 
 # Read in full-res DEM, clip to extent to reduce size
 dem = xr.open_rasterio(DEM_FILE).squeeze()
@@ -70,43 +79,11 @@ hs.data = ls.hillshade(
     dem.data, dx=np.abs(np.diff(dem.x).mean()), dy=np.abs(np.diff(dem.y).mean())
 )
 
-# Plot DEM
-fig_dem, ax_dem = plt.subplots()
-hs.plot.imshow(
-    ax=ax_dem,
-    cmap='Greys_r',
-    add_colorbar=False,
-    add_labels=False,
-    alpha=0.4,  # Balance between rich contrast and swamping the station markers / lines
-)
-ax_dem.set_aspect('equal')
-ax_dem.set_xlim(dem_xlim)
-ax_dem.set_ylim(dem_ylim)
-ax_dem.axis('off')
-
-# Create box around plot starting with (0, 0) at the bottom left (HACKY)
-box_ax = fig_dem.add_subplot(1, 1, 1, zorder=10)
-box_ax.patch.set_alpha(0)
-box_ax.set_aspect('equal')
-box_ax.set_xlim(dem_xlim - dem_xlim[0])
-box_ax.set_ylim(dem_ylim - dem_ylim[0])
-box_ax.xaxis.set_major_locator(MultipleLocator(MAJOR_INT))
-box_ax.yaxis.set_major_locator(MultipleLocator(MAJOR_INT))
-box_ax.xaxis.set_minor_locator(MultipleLocator(MINOR_INT))
-box_ax.yaxis.set_minor_locator(MultipleLocator(MINOR_INT))
-box_ax.xaxis.set_ticks_position('both')
-box_ax.yaxis.set_ticks_position('both')
-box_ax.set_xlabel('Easting (m)')
-box_ax.set_ylabel('Northing (m)')
-
-fig_dem.tight_layout()
-fig_dem.show()
-
 # Vent locations in UTM
 x_A, y_A, *_ = utm.from_latlon(*VENT_LOCS['A'][::-1])
 x_C, y_C, *_ = utm.from_latlon(*VENT_LOCS['C'][::-1])
 
-# Actually interpolate!
+# Calculate vertical profiles
 profiles_A = []
 profiles_C = []
 N = 500  # Number of points in profile (overkill!)
@@ -124,46 +101,117 @@ for station_coord in STATION_COORDS.values():
     )
     profiles_C.append(profile_C)
 
-vent_marker_kwargs = dict(color='white', edgecolor='black', zorder=5)
-station_marker_kwargs = dict(marker='v', edgecolor='black', zorder=5)
+#%% Plot
 
-# Plot profiles as groups of lines
-fig, axes = plt.subplots(ncols=2, sharey=True)
-for ax, profiles in zip(axes, [profiles_A, profiles_C]):
-    for p, name, color in zip(profiles, STATION_COORDS.keys(), COLOR_CYCLE):
-        h = np.hstack(
-            [0, np.cumsum(np.linalg.norm([np.diff(p.x), np.diff(p.y)], axis=0))]
+fig = plt.figure(figsize=(5.5, 7), constrained_layout=True)
+gs = fig.add_gridspec(nrows=2, ncols=2)
+
+# --------------------------------------------------------------------------------------
+# Panel (a)
+# --------------------------------------------------------------------------------------
+ax1 = fig.add_subplot(gs[0, 0])
+
+im = ax1.imshow(scores, cmap='Greys', vmin=0, vmax=1)
+ax1.set_xticks(range(len(ALL_STATIONS)))
+ax1.set_yticks(range(len(ALL_STATIONS)))
+ax1.set_xticklabels(ALL_STATIONS)
+ax1.set_yticklabels(ALL_STATIONS)
+ax1.xaxis.set_ticks_position('top')
+ax1.xaxis.set_label_position('top')
+for xtl, ytl, color in zip(ax1.get_xticklabels(), ax1.get_yticklabels(), COLOR_CYCLE):
+    xtl.set_color(color)
+    ytl.set_color(color)
+    xtl.set_weight('bold')
+    ytl.set_weight('bold')
+ax1.set_xlabel('Train station', labelpad=10)
+ax1.set_ylabel('Test station', labelpad=7)
+
+# Colorbar
+fig.colorbar(
+    im,
+    ax=ax1,
+    location='bottom',
+    label='Accuracy score',
+    ticks=plt.MultipleLocator(0.25),  # So 50% is shown!
+    format=PercentFormatter(xmax=1),
+)
+
+# Add text
+for i in range(len(ALL_STATIONS)):
+    for j in range(len(ALL_STATIONS)):
+        this_score = scores[i, j]
+        # Choose the best text color for contrast
+        if this_score > 0.5:
+            color = 'white'
+        else:
+            color = 'black'
+        ax1.text(
+            j,  # column = x
+            i,  # row = y
+            s=f'{this_score * 100:.0f}',
+            ha='center',
+            va='center',
+            color=color,
+            fontsize=8,
+            alpha=0.7,
         )
-        ax.plot(h, p, color=color, linewidth=PROFILE_LW)
-        ax.scatter(h[-1], p[-1], color=color, label=name, **station_marker_kwargs)
-    ax.scatter(0, p[0], label='Subcrater', clip_on=False, **vent_marker_kwargs)
-    ax.set_aspect('equal')
-    ax.xaxis.set_major_locator(MultipleLocator(MAJOR_INT))
-    ax.yaxis.set_major_locator(MultipleLocator(MAJOR_INT))
-    ax.xaxis.set_minor_locator(MultipleLocator(MINOR_INT))
-    ax.yaxis.set_minor_locator(MultipleLocator(MINOR_INT))
-    ax.set_xlim(0, 450)
-    ax.set_ylim(100, 400)
-    grid_params = dict(
-        color=plt.rcParams['grid.color'],
-        linewidth=plt.rcParams['grid.linewidth'],
-        linestyle=':',
-        zorder=-1,
-        alpha=0.5,
-        clip_on=False,
-    )
-    for x in np.arange(*ax.get_xlim(), MINOR_INT):
-        ax.axvline(x=x, **grid_params)
-    for y in np.arange(*ax.get_ylim(), MINOR_INT):
-        ax.axhline(y=y, **grid_params)
-    for side in 'right', 'top':
-        ax.spines[side].set_visible(False)
-axes[0].set_xlabel('Distance from subcrater S (m)')
-axes[1].set_xlabel('Distance from subcrater N (m)')
-axes[0].set_ylabel('Elevation (m)')
-fig.tight_layout()
-fig.subplots_adjust(wspace=0.2)
-fig.show()
+
+# Add titles
+mean = scores.diagonal().mean()
+std = scores.diagonal().std()
+left_title = f'$\mu_\mathrm{{diag}}$ = {mean:.0%}\n$\sigma_\mathrm{{diag}}$ = {std:.1%}'
+ax1.set_title(left_title, loc='left', fontsize=plt.rcParams['font.size'])
+
+tmin = UTCDateTime(SCORE_FILE.rstrip('.npy'))
+right_title = 'Testing\n{}'.format(tmin.strftime('%-d %B'))
+ax1.set_title(right_title, loc='right', fontsize=plt.rcParams['font.size'])
+
+# --------------------------------------------------------------------------------------
+# Panel (b)
+# --------------------------------------------------------------------------------------
+ax2 = fig.add_subplot(gs[0, 1])
+
+# Plot DEM
+hs.plot.imshow(
+    ax=ax2,
+    cmap='Greys_r',
+    add_colorbar=False,
+    add_labels=False,
+    alpha=0.4,  # Balance between rich contrast and swamping the station markers / lines
+)
+ax2.set_aspect('equal')
+ax2.set_xlim(dem_xlim)
+ax2.set_ylim(dem_ylim)
+ax2.axis('off')
+
+# Add north arrow
+x = 0.15
+y = 0.9
+arrow_length = 0.13
+ax2.annotate(
+    'N',
+    xy=(x, y),
+    xytext=(x, y - arrow_length),
+    ha='center',
+    arrowprops=dict(
+        edgecolor='none',
+        facecolor='black',
+        arrowstyle='wedge,tail_width=0.6',
+    ),
+    xycoords='axes fraction',
+    weight='bold',
+)
+
+# Create box around plot starting with (0, 0) at the bottom left (HACKY)
+box_ax = fig.add_subplot(2, 2, 2, zorder=10)
+box_ax.patch.set_alpha(0)
+box_ax.set_aspect('equal')
+box_ax.set_xlim(dem_xlim - dem_xlim[0])
+box_ax.set_ylim(dem_ylim - dem_ylim[0])
+box_ax.set_yticks([])
+box_ax.xaxis.set_major_locator(MultipleLocator(MAJOR_INT))
+box_ax.xaxis.set_minor_locator(MultipleLocator(MINOR_INT))
+box_ax.axis('off')  # Comment out to show x-axis ticks
 
 # Hard-coded numbers controlling where along profile the distance text is placed,
 # ranging from 0 (at subcrater) to 1 (at station)
@@ -174,7 +222,7 @@ PROF_FRAC = dict(
     YIF4=dict(A=0.5, C=0.5),
     YIF5=dict(A=0.5, C=0.5),
 )
-GAP_HALF_WIDTH = 25  # [m] Half of the width of the gap in the line (where text goes)
+GAP_HALF_WIDTH = 33  # [m] Half of the width of the gap in the line (where text goes)
 
 # Plot horizontal profiles on DEM, adding text denoting distances
 for pA, pC, prof_frac, color in zip(
@@ -201,10 +249,10 @@ for pA, pC, prof_frac, color in zip(
         p_y[p_slice] = np.ma.masked
 
         # Plot horizontal profile w/ gaps
-        ax_dem.plot(p_x, p_y, color=color, linewidth=PROFILE_LW)
+        ax2.plot(p_x, p_y, color=color, linewidth=PROFILE_LW)
 
         # Plot angled text showing distance along each path in meters
-        ax_dem.text(
+        ax2.text(
             p_x.data[center_ind],
             p_y.data[center_ind],
             f'{length:.0f} m',
@@ -213,14 +261,59 @@ for pA, pC, prof_frac, color in zip(
             ha='center',
             color=color,
             weight='bold',
-            fontsize='6.5',
+            fontsize='5',
         )
 
-for (name, station_coord), color in zip(STATION_COORDS.items(), COLOR_CYCLE):
-    ax_dem.scatter(*station_coord, color=color, **station_marker_kwargs)
-ax_dem.scatter(x_A, y_A, **vent_marker_kwargs)
-ax_dem.scatter(x_C, y_C, **vent_marker_kwargs)
-fig_dem.show()
+vent_marker_kwargs = dict(color='white', edgecolor='black', zorder=5)
+station_marker_kwargs = dict(marker='v', edgecolor='black', zorder=5)
 
-# fig_dem.savefig('/Users/ldtoney/Downloads/b.png', bbox_inches='tight', dpi=300)
-# fig.savefig('/Users/ldtoney/Downloads/c_d.png', bbox_inches='tight', dpi=300)
+for (name, station_coord), color in zip(STATION_COORDS.items(), COLOR_CYCLE):
+    ax2.scatter(*station_coord, color=color, **station_marker_kwargs)
+ax2.scatter(x_A, y_A, **vent_marker_kwargs)
+ax2.scatter(x_C, y_C, **vent_marker_kwargs)
+
+# --------------------------------------------------------------------------------------
+# Panels (c,d)
+# --------------------------------------------------------------------------------------
+ax3 = fig.add_subplot(gs[1, 0])
+ax4 = fig.add_subplot(gs[1, 1], sharey=ax3)
+
+for ax, profiles in zip([ax3, ax4], [profiles_A, profiles_C]):
+    for p, name, color in zip(profiles, STATION_COORDS.keys(), COLOR_CYCLE):
+        h = np.hstack(
+            [0, np.cumsum(np.linalg.norm([np.diff(p.x), np.diff(p.y)], axis=0))]
+        )
+        ax.plot(h, p, color=color, linewidth=PROFILE_LW)
+        ax.scatter(h[-1], p[-1], color=color, label=name, **station_marker_kwargs)
+    ax.scatter(0, p[0], label='Subcrater', clip_on=False, **vent_marker_kwargs)
+    ax.set_aspect('equal')
+    ax.xaxis.set_major_locator(MultipleLocator(MAJOR_INT))
+    ax.yaxis.set_major_locator(MultipleLocator(MAJOR_INT))
+    ax.xaxis.set_minor_locator(MultipleLocator(MINOR_INT))
+    ax.yaxis.set_minor_locator(MultipleLocator(MINOR_INT))
+    ax.set_xlim(box_ax.get_xlim())
+    ax.set_ylim(100, 400)
+    grid_params = dict(
+        color=plt.rcParams['grid.color'],
+        linewidth=plt.rcParams['grid.linewidth'],
+        linestyle=':',
+        zorder=-1,
+        alpha=0.5,
+        clip_on=False,
+    )
+    for x in np.arange(*ax.get_xlim(), MINOR_INT):
+        ax.axvline(x=x, **grid_params)
+    for y in np.arange(*ax.get_ylim(), MINOR_INT):
+        ax.axhline(y=y, **grid_params)
+    for side in 'right', 'top':
+        ax.spines[side].set_visible(False)
+
+ax3.set_xlabel('Distance from subcrater S (m)')
+ax4.set_xlabel('Distance from subcrater N (m)')
+ax3.set_ylabel('Elevation (m)')
+
+fig.show()
+
+_ = subprocess.run(['open', os.environ['YASUR_FIGURE_DIR']])
+
+# fig.savefig(Path(os.environ['YASUR_FIGURE_DIR']) / 'path_effects.png', bbox_inches='tight', dpi=300)
