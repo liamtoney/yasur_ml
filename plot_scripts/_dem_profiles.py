@@ -135,7 +135,6 @@ for ax, profiles in zip(axes, [profiles_A, profiles_C]):
         ax.scatter(h[-1], p[-1], color=color, label=name, **station_marker_kwargs)
     ax.scatter(0, p[0], label='Subcrater', clip_on=False, **vent_marker_kwargs)
     ax.set_aspect('equal')
-    ax.set_xlabel('Horizontal distance (m)')
     ax.xaxis.set_major_locator(MultipleLocator(MAJOR_INT))
     ax.yaxis.set_major_locator(MultipleLocator(MAJOR_INT))
     ax.xaxis.set_minor_locator(MultipleLocator(MINOR_INT))
@@ -156,8 +155,8 @@ for ax, profiles in zip(axes, [profiles_A, profiles_C]):
         ax.axhline(y=y, **grid_params)
     for side in 'right', 'top':
         ax.spines[side].set_visible(False)
-axes[0].set_title('Subcrater S')
-axes[1].set_title('Subcrater N')
+axes[0].set_xlabel('Distance from subcrater S (m)')
+axes[1].set_xlabel('Distance from subcrater N (m)')
 axes[0].set_ylabel('Elevation (m)')
 fig.tight_layout()
 fig.subplots_adjust(wspace=0.2)
