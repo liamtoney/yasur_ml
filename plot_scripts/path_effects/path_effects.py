@@ -287,7 +287,7 @@ for ax, profiles in zip([ax3, ax4], [profiles_A, profiles_C]):
     ax.yaxis.set_major_locator(MultipleLocator(MAJOR_INT))
     ax.xaxis.set_minor_locator(MultipleLocator(MINOR_INT))
     ax.yaxis.set_minor_locator(MultipleLocator(MINOR_INT))
-    ax.set_xlim(0, np.diff(ax2.get_xlim())[0])
+    ax.set_xlim(0, np.diff(ax2.get_xlim())[0])  # Initially set xlim equal to DEM
     ax.set_ylim(100, 400)
     grid_params = dict(
         color=plt.rcParams['grid.color'],
