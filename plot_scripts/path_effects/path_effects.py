@@ -108,7 +108,7 @@ for station_coord in STATION_COORDS.values():
 #%% Plot
 
 fig = plt.figure(figsize=(10.5, 13.5))
-gs = fig.add_gridspec(nrows=3, ncols=2, height_ratios=[2, 0.1, 2])
+gs = fig.add_gridspec(nrows=3, ncols=2, height_ratios=[3, 0.1, 3])
 
 # --------------------------------------------------------------------------------------
 # Panel (a)
@@ -304,9 +304,11 @@ for ax, profiles in zip([ax3, ax4], [profiles_A, profiles_C]):
     for side in 'right', 'top':
         ax.spines[side].set_visible(False)
 
-ax3.set_xlabel('Distance from subcrater S (m)', labelpad=10)
-ax4.set_xlabel('Distance from subcrater N (m)', labelpad=10)
-ax3.set_ylabel('Elevation (m)', labelpad=10)
+pad = 10
+ax3.set_xlabel('Distance from subcrater S (m)', labelpad=pad)
+ax4.set_xlabel('Distance from subcrater N (m)', labelpad=pad)
+ax3.set_ylabel('Elevation (m)', labelpad=15)
+ax4.tick_params(which='both', labelleft=False)
 
 # --------------------------------------------------------------------------------------
 # Adjustments
@@ -324,34 +326,22 @@ ax2.set_position([pos2.x0, pos1.ymax - pos2.height, pos2.width, pos2.height])
 # Adjust ax3, ax4
 for ax in ax3, ax4:
     pos = ax.get_position()
-    ax.set_position([pos.x0, pos.y0 + 0.12, pos.width, pos.height])  # Shift upwards
+    ax.set_position(pos)  # Lock
     ax.set_xlim(CD_XLIM)
-
-
-# TODO REMOVE
-if False:
-    box_ax = fig.add_subplot(gs[:1, 1], zorder=10)
-    box_ax.patch.set_alpha(0)
-    box_ax.set_aspect('equal')
-    box_ax.set_xlim(dem_xlim - dem_xlim[0])
-    box_ax.set_ylim(dem_ylim - dem_ylim[0])
-    box_ax.set_yticks([])
-    box_ax.xaxis.set_major_locator(MultipleLocator(MAJOR_INT))
-    box_ax.xaxis.set_minor_locator(MultipleLocator(MINOR_INT))
-    box_ax.set_position(ax2.get_position())
-
+yoff = 0.12
+pos3 = ax3.get_position()
+ax3.set_position([pos1.xmax - pos3.width, pos3.y0 + yoff, pos3.width, pos3.height])
+pos4 = ax4.get_position()
+ax4.set_position([pos2.x0, pos4.y0 + yoff, pos4.width, pos4.height])
 
 # Plot (a), (b), (c), (d) tags
+text_kwargs = dict(x=-0.075, y=1, ha='right', weight='bold', fontsize=18)
 t3_trans = transforms.blended_transform_factory(ax1.transAxes, ax3.transAxes)
 t4_trans = transforms.blended_transform_factory(ax2.transAxes, ax4.transAxes)
-
-text_kwargs = dict(ha='right', va='top', weight='bold', fontsize=18)
-col1_x = -0.2
-col2_x = -0.1
-ax1.text(col1_x, 1, 'A', transform=ax1.transAxes, **text_kwargs)
-ax2.text(col2_x, 1, 'B', transform=ax2.transAxes, **text_kwargs)
-ax3.text(col1_x, 1, 'C', transform=t3_trans, **text_kwargs)
-ax4.text(col2_x, 1, 'D', transform=t4_trans, **text_kwargs)
+ax1.text(s='A', va='bottom', transform=ax1.transAxes, **text_kwargs)
+ax2.text(s='B', va='bottom', transform=ax2.transAxes, **text_kwargs)
+ax3.text(s='C', va='top', transform=t3_trans, **text_kwargs)
+ax4.text(s='D', va='top', transform=t4_trans, **text_kwargs)
 
 fig.show()
 
