@@ -207,17 +207,6 @@ ax2.annotate(
     weight='bold',
 )
 
-# Create box around plot starting with (0, 0) at the bottom left (HACKY)
-box_ax = fig.add_subplot(gs[:1, 1], zorder=10)
-box_ax.patch.set_alpha(0)
-box_ax.set_aspect('equal')
-box_ax.set_xlim(dem_xlim - dem_xlim[0])
-box_ax.set_ylim(dem_ylim - dem_ylim[0])
-box_ax.set_yticks([])
-box_ax.xaxis.set_major_locator(MultipleLocator(MAJOR_INT))
-box_ax.xaxis.set_minor_locator(MultipleLocator(MINOR_INT))
-box_ax.axis('off')  # Comment out to show x-axis ticks
-
 # Hard-coded numbers controlling where along profile the distance text is placed,
 # ranging from 0 (at subcrater) to 1 (at station)
 PROF_FRAC = dict(
@@ -298,7 +287,7 @@ for ax, profiles in zip([ax3, ax4], [profiles_A, profiles_C]):
     ax.yaxis.set_major_locator(MultipleLocator(MAJOR_INT))
     ax.xaxis.set_minor_locator(MultipleLocator(MINOR_INT))
     ax.yaxis.set_minor_locator(MultipleLocator(MINOR_INT))
-    ax.set_xlim(box_ax.get_xlim())
+    ax.set_xlim(0, np.diff(ax2.get_xlim())[0])
     ax.set_ylim(100, 400)
     grid_params = dict(
         color=plt.rcParams['grid.color'],
@@ -319,29 +308,38 @@ ax3.set_xlabel('Distance from subcrater S (m)', labelpad=10)
 ax4.set_xlabel('Distance from subcrater N (m)', labelpad=10)
 ax3.set_ylabel('Elevation (m)', labelpad=10)
 
-# Finnicky axis repositioning
-pos1 = ax1.get_position()
-for ax in ax2, box_ax:
-    pos = ax.get_position()
-    pos = [pos.x0, pos1.ymax - pos.height, pos.width, pos.height]
-    ax.set_position(pos)
-pos2 = ax2.get_position()
-posc = cax.get_position()
-cax.set_position([pos1.x0, pos1.y0 - (2.5 * posc.height), posc.width, posc.height])
+# --------------------------------------------------------------------------------------
+# Adjustments
+# --------------------------------------------------------------------------------------
 
+# Adjust cax
+pos1 = ax1.get_position()
+cbar = cax.get_position()
+cax.set_position([pos1.x0, pos1.y0 - (2.5 * cbar.height), cbar.width, cbar.height])
+
+# Adjust ax2
+pos2 = ax2.get_position()
+ax2.set_position([pos2.x0, pos1.ymax - pos2.height, pos2.width, pos2.height])
+
+# Adjust ax3, ax4
 for ax in ax3, ax4:
     pos = ax.get_position()
-    ax.set_position(pos)
+    ax.set_position([pos.x0, pos.y0 + 0.12, pos.width, pos.height])  # Shift upwards
     ax.set_xlim(CD_XLIM)
-pos1 = ax1.get_position()
-pos2 = ax2.get_position()
-pos3 = ax3.get_position()
-pos4 = ax4.get_position()
-yoff = 0.12
-pos3 = [pos3.x0, pos3.y0 + yoff, pos3.width, pos3.height]
-ax3.set_position(pos3)
-pos4 = [pos4.x0, pos4.y0 + yoff, pos4.width, pos4.height]
-ax4.set_position(pos4)
+
+
+# TODO REMOVE
+if False:
+    box_ax = fig.add_subplot(gs[:1, 1], zorder=10)
+    box_ax.patch.set_alpha(0)
+    box_ax.set_aspect('equal')
+    box_ax.set_xlim(dem_xlim - dem_xlim[0])
+    box_ax.set_ylim(dem_ylim - dem_ylim[0])
+    box_ax.set_yticks([])
+    box_ax.xaxis.set_major_locator(MultipleLocator(MAJOR_INT))
+    box_ax.xaxis.set_minor_locator(MultipleLocator(MINOR_INT))
+    box_ax.set_position(ax2.get_position())
+
 
 # Plot (a), (b), (c), (d) tags
 t3_trans = transforms.blended_transform_factory(ax1.transAxes, ax3.transAxes)
@@ -350,10 +348,10 @@ t4_trans = transforms.blended_transform_factory(ax2.transAxes, ax4.transAxes)
 text_kwargs = dict(ha='right', va='top', weight='bold', fontsize=18)
 col1_x = -0.2
 col2_x = -0.1
-t1 = ax1.text(col1_x, 1, 'A', transform=ax1.transAxes, **text_kwargs)
-t2 = ax2.text(col2_x, 1, 'B', transform=ax2.transAxes, **text_kwargs)
-t3 = ax3.text(col1_x, 1, 'C', transform=t3_trans, **text_kwargs)
-t4 = ax4.text(col2_x, 1, 'D', transform=t4_trans, **text_kwargs)
+ax1.text(col1_x, 1, 'A', transform=ax1.transAxes, **text_kwargs)
+ax2.text(col2_x, 1, 'B', transform=ax2.transAxes, **text_kwargs)
+ax3.text(col1_x, 1, 'C', transform=t3_trans, **text_kwargs)
+ax4.text(col2_x, 1, 'D', transform=t4_trans, **text_kwargs)
 
 fig.show()
 
