@@ -161,15 +161,11 @@ for i in range(len(ALL_STATIONS)):
             alpha=0.7,
         )
 
-# Add titles
+# Print mean and std of scores
 mean = scores.diagonal().mean()
 std = scores.diagonal().std()
-left_title = f'$\mu_\mathrm{{diag}}$ = {mean:.0%}\n$\sigma_\mathrm{{diag}}$ = {std:.1%}'
-ax1.set_title(left_title, loc='left', fontsize=plt.rcParams['font.size'])
-
-tmin = UTCDateTime(SCORE_FILE.rstrip('.npy'))
-right_title = 'Testing\n{}'.format(tmin.strftime('%-d %B'))
-ax1.set_title(right_title, loc='right', fontsize=plt.rcParams['font.size'])
+print(f'mean_diag = {mean:.0%}')
+print(f'std_diag = {std:.1%}')
 
 # --------------------------------------------------------------------------------------
 # Panel (b)
