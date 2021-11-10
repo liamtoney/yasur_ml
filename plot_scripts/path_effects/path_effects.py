@@ -12,6 +12,9 @@ from matplotlib.ticker import MultipleLocator, PercentFormatter
 from obspy import UTCDateTime
 from obspy.clients.fdsn import Client
 
+FONT_SIZE = 14  # [pt]
+plt.rcParams.update({'font.size': FONT_SIZE})
+
 # Define project directory
 WORKING_DIR = Path.home() / 'work' / 'yasur_ml'
 
@@ -103,8 +106,8 @@ for station_coord in STATION_COORDS.values():
 
 #%% Plot
 
-fig = plt.figure(figsize=(5.5, 7), constrained_layout=True)
-gs = fig.add_gridspec(nrows=2, ncols=2)
+fig = plt.figure(figsize=(10.5, 13.5))
+gs = fig.add_gridspec(nrows=3, ncols=2, height_ratios=[2, 0.1, 2])
 
 # --------------------------------------------------------------------------------------
 # Panel (a)
@@ -127,10 +130,11 @@ ax1.set_xlabel('Train station', labelpad=10)
 ax1.set_ylabel('Test station', labelpad=7)
 
 # Colorbar
+cax = fig.add_subplot(gs[1, 0])
 fig.colorbar(
     im,
-    ax=ax1,
-    location='bottom',
+    cax=cax,
+    orientation='horizontal',
     label='Accuracy score',
     ticks=plt.MultipleLocator(0.25),  # So 50% is shown!
     format=PercentFormatter(xmax=1),
@@ -169,7 +173,7 @@ ax1.set_title(right_title, loc='right', fontsize=plt.rcParams['font.size'])
 # --------------------------------------------------------------------------------------
 # Panel (b)
 # --------------------------------------------------------------------------------------
-ax2 = fig.add_subplot(gs[0, 1])
+ax2 = fig.add_subplot(gs[:1, 1])
 
 # Plot DEM
 hs.plot.imshow(
@@ -203,7 +207,7 @@ ax2.annotate(
 )
 
 # Create box around plot starting with (0, 0) at the bottom left (HACKY)
-box_ax = fig.add_subplot(2, 2, 2, zorder=10)
+box_ax = fig.add_subplot(gs[:1, 1], zorder=10)
 box_ax.patch.set_alpha(0)
 box_ax.set_aspect('equal')
 box_ax.set_xlim(dem_xlim - dem_xlim[0])
@@ -275,8 +279,8 @@ ax2.scatter(x_C, y_C, **vent_marker_kwargs)
 # --------------------------------------------------------------------------------------
 # Panels (c,d)
 # --------------------------------------------------------------------------------------
-ax3 = fig.add_subplot(gs[1, 0])
-ax4 = fig.add_subplot(gs[1, 1], sharey=ax3)
+ax3 = fig.add_subplot(gs[2, 0], sharex=box_ax)
+ax4 = fig.add_subplot(gs[2, 1], sharex=box_ax, sharey=ax3)
 
 for ax, profiles in zip([ax3, ax4], [profiles_A, profiles_C]):
     for p, name, color in zip(profiles, STATION_COORDS.keys(), COLOR_CYCLE):
