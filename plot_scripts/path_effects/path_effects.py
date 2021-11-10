@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import utm
 import xarray as xr
+from matplotlib import transforms
 from matplotlib.colors import LightSource
 from matplotlib.ticker import MultipleLocator, PercentFormatter
 from obspy import UTCDateTime
@@ -49,7 +50,7 @@ DEM_FILE = WORKING_DIR / 'data' / 'DEM_WGS84_UTM.tif'  # ~15 cm res
 # DEM_FILE = WORKING_DIR / 'data' / 'DEM_Union_UAV_161116_sm101_UTM.tif'  # ~2 m res
 
 # Common linewidth for profile lines
-PROFILE_LW = 1
+PROFILE_LW = 1.5
 
 # Common major and minor tick intervals for plots [m]
 MAJOR_INT = 100
@@ -191,7 +192,7 @@ ax2.axis('off')
 # Add north arrow
 x = 0.15
 y = 0.9
-arrow_length = 0.13
+arrow_length = 0.1
 ax2.annotate(
     'N',
     xy=(x, y),
@@ -226,7 +227,7 @@ PROF_FRAC = dict(
     YIF4=dict(A=0.5, C=0.5),
     YIF5=dict(A=0.5, C=0.5),
 )
-GAP_HALF_WIDTH = 33  # [m] Half of the width of the gap in the line (where text goes)
+GAP_HALF_WIDTH = 30  # [m] Half of the width of the gap in the line (where text goes)
 
 # Plot horizontal profiles on DEM, adding text denoting distances
 for pA, pC, prof_frac, color in zip(
@@ -265,11 +266,11 @@ for pA, pC, prof_frac, color in zip(
             ha='center',
             color=color,
             weight='bold',
-            fontsize='5',
+            fontsize='8',
         )
 
-vent_marker_kwargs = dict(color='white', edgecolor='black', zorder=5)
-station_marker_kwargs = dict(marker='v', edgecolor='black', zorder=5)
+vent_marker_kwargs = dict(s=80, color='white', edgecolor='black', zorder=5)
+station_marker_kwargs = dict(s=80, marker='v', edgecolor='black', zorder=5)
 
 for (name, station_coord), color in zip(STATION_COORDS.items(), COLOR_CYCLE):
     ax2.scatter(*station_coord, color=color, **station_marker_kwargs)
@@ -279,8 +280,10 @@ ax2.scatter(x_C, y_C, **vent_marker_kwargs)
 # --------------------------------------------------------------------------------------
 # Panels (c,d)
 # --------------------------------------------------------------------------------------
-ax3 = fig.add_subplot(gs[2, 0], sharex=box_ax)
-ax4 = fig.add_subplot(gs[2, 1], sharex=box_ax, sharey=ax3)
+ax3 = fig.add_subplot(gs[2, 0])
+ax4 = fig.add_subplot(gs[2, 1], sharey=ax3)
+
+CD_XLIM = (0, 450)  # [m]
 
 for ax, profiles in zip([ax3, ax4], [profiles_A, profiles_C]):
     for p, name, color in zip(profiles, STATION_COORDS.keys(), COLOR_CYCLE):
@@ -305,16 +308,52 @@ for ax, profiles in zip([ax3, ax4], [profiles_A, profiles_C]):
         alpha=0.5,
         clip_on=False,
     )
-    for x in np.arange(*ax.get_xlim(), MINOR_INT):
+    for x in np.arange(*CD_XLIM, MINOR_INT):
         ax.axvline(x=x, **grid_params)
     for y in np.arange(*ax.get_ylim(), MINOR_INT):
         ax.axhline(y=y, **grid_params)
     for side in 'right', 'top':
         ax.spines[side].set_visible(False)
 
-ax3.set_xlabel('Distance from subcrater S (m)')
-ax4.set_xlabel('Distance from subcrater N (m)')
-ax3.set_ylabel('Elevation (m)')
+ax3.set_xlabel('Distance from subcrater S (m)', labelpad=10)
+ax4.set_xlabel('Distance from subcrater N (m)', labelpad=10)
+ax3.set_ylabel('Elevation (m)', labelpad=10)
+
+# Finnicky axis repositioning
+pos1 = ax1.get_position()
+for ax in ax2, box_ax:
+    pos = ax.get_position()
+    pos = [pos.x0, pos1.ymax - pos.height, pos.width, pos.height]
+    ax.set_position(pos)
+pos2 = ax2.get_position()
+posc = cax.get_position()
+cax.set_position([pos1.x0, pos1.y0 - (2.5 * posc.height), posc.width, posc.height])
+
+for ax in ax3, ax4:
+    pos = ax.get_position()
+    ax.set_position(pos)
+    ax.set_xlim(CD_XLIM)
+pos1 = ax1.get_position()
+pos2 = ax2.get_position()
+pos3 = ax3.get_position()
+pos4 = ax4.get_position()
+yoff = 0.12
+pos3 = [pos3.x0, pos3.y0 + yoff, pos3.width, pos3.height]
+ax3.set_position(pos3)
+pos4 = [pos4.x0, pos4.y0 + yoff, pos4.width, pos4.height]
+ax4.set_position(pos4)
+
+# Plot (a), (b), (c), (d) tags
+t3_trans = transforms.blended_transform_factory(ax1.transAxes, ax3.transAxes)
+t4_trans = transforms.blended_transform_factory(ax2.transAxes, ax4.transAxes)
+
+text_kwargs = dict(ha='right', va='top', weight='bold', fontsize=18)
+col1_x = -0.2
+col2_x = -0.1
+t1 = ax1.text(col1_x, 1, 'A', transform=ax1.transAxes, **text_kwargs)
+t2 = ax2.text(col2_x, 1, 'B', transform=ax2.transAxes, **text_kwargs)
+t3 = ax3.text(col1_x, 1, 'C', transform=t3_trans, **text_kwargs)
+t4 = ax4.text(col2_x, 1, 'D', transform=t4_trans, **text_kwargs)
 
 fig.show()
 
