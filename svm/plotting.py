@@ -1,11 +1,12 @@
 import colorcet as cc
 import matplotlib.pyplot as plt
+from matplotlib.axes import Axes
 from matplotlib.ticker import PercentFormatter
 
 from svm import ALL_DAYS, ALL_STATIONS
 
 
-def plot_generalization_matrix(scores, fig, ax):
+def plot_generalization_matrix(scores, fig, ax, colorbar=True):
 
     im = ax.imshow(scores, cmap=cc.m_diverging_bwr_20_95_c54_r, vmin=0, vmax=1)
     ax.set_xticks(range(len(ALL_DAYS)))
@@ -17,14 +18,24 @@ def plot_generalization_matrix(scores, fig, ax):
     ax.xaxis.set_ticks_position('top')
     ax.xaxis.set_label_position('top')
 
-    # Colorbar
-    fig.colorbar(
-        im,
-        ax=ax,
-        label='Accuracy score',
-        ticks=plt.MultipleLocator(0.25),  # So 50% is shown!
-        format=PercentFormatter(xmax=1),
-    )
+    # Colorbar handling
+    if isinstance(colorbar, Axes):
+        im_ax = None
+        cax = colorbar
+    elif colorbar is True:
+        im_ax = ax
+        cax = None
+    else:  # If colorbar is not an Axes instance or True, then no colorbar!
+        cax = False
+    if cax is not False:
+        fig.colorbar(
+            im,
+            ax=im_ax,
+            cax=cax,
+            label='Accuracy score',
+            ticks=plt.MultipleLocator(0.25),  # So 50% is shown!
+            format=PercentFormatter(xmax=1),
+        )
 
     # Add text
     for i in range(len(ALL_STATIONS)):
