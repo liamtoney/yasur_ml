@@ -103,6 +103,9 @@ def plot_generalization_matrix(scores):
 # Define number of runs [= random calls to balance_classes()] to perform and average
 RUNS = 10
 
+# Toggle exporting 5 x 6 scores matrices for plotting outside this script
+EXPORT_SCORES = True
+
 # Preallocate scores matrix
 scores = np.empty((len(ALL_STATIONS), len(ALL_DAYS)))
 
@@ -151,6 +154,12 @@ for j, tmin in enumerate(ALL_DAYS):
             station_scores[i, k] = clf.score(X_test, y_test)
 
     scores[:, j] = station_scores.mean(axis=1)  # Take mean of the RUNS runs
+
+if EXPORT_SCORES:
+    features_file = features.attrs['filename']
+    np.save(
+        WORKING_DIR / 'plot_scripts' / 'generalization' / f'{features_file}.npy', scores
+    )
 
 # Make plot
 plot_generalization_matrix(scores)
