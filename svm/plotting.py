@@ -1,4 +1,3 @@
-import colorcet as cc
 import matplotlib.pyplot as plt
 from matplotlib.axes import Axes
 from matplotlib.ticker import PercentFormatter
@@ -19,7 +18,7 @@ def plot_generalization_matrix(scores, fig, ax, colorbar=True, show_stats=True):
             figure vs. just printing the info
     """
 
-    im = ax.imshow(scores, cmap=cc.m_diverging_bwr_20_95_c54_r, vmin=0, vmax=1)
+    im = ax.imshow(scores, cmap='BrBG', vmin=0, vmax=1)
     ax.set_xticks(range(len(ALL_DAYS)))
     ax.set_yticks(range(len(ALL_STATIONS)))
     ax.set_xticklabels([d.strftime('%-d\n%B') for d in ALL_DAYS])
