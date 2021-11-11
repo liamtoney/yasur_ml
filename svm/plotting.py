@@ -78,10 +78,25 @@ def plot_generalization_matrix(scores, fig, ax, colorbar=True, show_stats=True):
         print(f'std_diag = {std:.1%}')
 
 
-def plot_path_effect_matrix(scores, day, diagonal_metrics=True):
+def plot_path_effect_matrix(
+    scores, fig, ax, day, colorbar=True, show_stats=True, diagonal_metrics=True
+):
+    """Make a plot of a 5 x 5 path effect matrix.
 
-    # Make plot
-    fig, ax = plt.subplots()
+    Args:
+        scores (numpy.ndarray): Array (5 rows, 5 columns) of scores
+        fig (Figure): Existing Matplotlib figure to plot into
+        ax (Axes): Existing Matplotlib axes to plot into
+        day (UTCDateTime): Testing day for the scores (will be formated as a date)
+        colorbar (bool or Axes): True to automatically place colorbar, False for no
+            colorbar, or place into the provided Axes instance (if Axes, orientation
+            is set to horizontal!)
+        show_stats (bool): Toggle showing score mean and standard deviation and testing
+            day on the figure vs. just printing the info
+        diagonal_metrics (bool): If True, plot mean and standard deviation for diagonal;
+            otherwise, plot for entire 5 x 5 matrix
+    """
+
     im = ax.imshow(scores, cmap='Greys', vmin=0, vmax=1)
     ax.set_xticks(range(len(ALL_STATIONS)))
     ax.set_yticks(range(len(ALL_STATIONS)))
@@ -94,16 +109,30 @@ def plot_path_effect_matrix(scores, day, diagonal_metrics=True):
         ytl.set_color(color)
         xtl.set_weight('bold')
         ytl.set_weight('bold')
-    ax.set_xlabel('Train station', weight='bold', labelpad=10)
-    ax.set_ylabel('Test station', weight='bold', labelpad=7)
+    ax.set_xlabel('Train station', labelpad=10)
+    ax.set_ylabel('Test station', labelpad=7)
 
-    # Colorbar
-    fig.colorbar(
-        im,
-        label='Accuracy score',
-        ticks=plt.MultipleLocator(0.25),  # So 50% is shown!
-        format=PercentFormatter(xmax=1),
-    )
+    # Colorbar handling
+    im_ax = None
+    cax = None
+    orientation = None
+    if isinstance(colorbar, Axes):
+        cax = colorbar
+        orientation = 'horizontal'
+    elif colorbar is True:
+        im_ax = ax
+    else:  # If colorbar is not an Axes instance or True, then no colorbar!
+        cax = False
+    if cax is not False:
+        fig.colorbar(
+            im,
+            ax=im_ax,
+            cax=cax,
+            orientation=orientation,
+            label='Accuracy score',
+            ticks=plt.MultipleLocator(0.25),  # So 50% is shown!
+            format=PercentFormatter(xmax=1),
+        )
 
     # Add text
     for i in range(len(ALL_STATIONS)):
@@ -125,13 +154,22 @@ def plot_path_effect_matrix(scores, day, diagonal_metrics=True):
                 alpha=0.7,
             )
 
-    # Add titles
+    # Show or print stats
     if diagonal_metrics:
-        title = f'$\mu_\mathrm{{diag}}$ = {scores.diagonal().mean():.0%}\n$\sigma_\mathrm{{diag}}$ = {scores.diagonal().std():.1%}'
+        mean = scores.diagonal().mean()
+        std = scores.diagonal().std()
+        title = (
+            f'$\mu_\mathrm{{diag}}$ = {mean:.0%}\n$\sigma_\mathrm{{diag}}$ = {std:.1%}'
+        )
     else:
-        title = f'$\mu$ = {scores.mean():.0%}\n$\sigma$ = {scores.std():.1%}'
-    ax.set_title(title, loc='left')
-    ax.set_title('Testing\n{}'.format(day.strftime('%-d %B')), loc='right')
-
-    fig.tight_layout()
-    fig.show()
+        mean = scores.mean()
+        std = scores.std()
+        title = f'$\mu$ = {mean:.0%}\n$\sigma$ = {std:.1%}'
+    if show_stats:
+        ax.set_title(title, loc='left')
+        ax.set_title('Testing\n{}'.format(day.strftime('%-d %B')), loc='right')
+    else:
+        print('Testing {}'.format(day.strftime('%-d %B')))
+        subscript = '_diag' if diagonal_metrics else ''
+        print(f'mean{subscript} = {mean:.0%}')
+        print(f'std{subscript} = {std:.1%}')

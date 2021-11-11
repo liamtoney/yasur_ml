@@ -9,11 +9,12 @@ import utm
 import xarray as xr
 from matplotlib import transforms
 from matplotlib.colors import LightSource
-from matplotlib.ticker import MultipleLocator, PercentFormatter
+from matplotlib.ticker import MultipleLocator
 from obspy import UTCDateTime
 from obspy.clients.fdsn import Client
 
-from svm import ALL_STATIONS, COLOR_CYCLE
+from svm import COLOR_CYCLE
+from svm.plotting import plot_path_effect_matrix
 
 FONT_SIZE = 14  # [pt]
 plt.rcParams.update({'font.size': FONT_SIZE})
@@ -106,58 +107,17 @@ gs = fig.add_gridspec(nrows=3, ncols=2, height_ratios=[3, 0.1, 3])
 # Panel (a)
 # --------------------------------------------------------------------------------------
 ax1 = fig.add_subplot(gs[0, 0])
-
-im = ax1.imshow(scores, cmap='Greys', vmin=0, vmax=1)
-ax1.set_xticks(range(len(ALL_STATIONS)))
-ax1.set_yticks(range(len(ALL_STATIONS)))
-ax1.set_xticklabels(ALL_STATIONS)
-ax1.set_yticklabels(ALL_STATIONS)
-ax1.xaxis.set_ticks_position('top')
-ax1.xaxis.set_label_position('top')
-for xtl, ytl, color in zip(ax1.get_xticklabels(), ax1.get_yticklabels(), COLOR_CYCLE):
-    xtl.set_color(color)
-    ytl.set_color(color)
-    xtl.set_weight('bold')
-    ytl.set_weight('bold')
-ax1.set_xlabel('Train station', labelpad=10)
-ax1.set_ylabel('Test station', labelpad=7)
-
-# Colorbar
 cax = fig.add_subplot(gs[1, 0])
-fig.colorbar(
-    im,
-    cax=cax,
-    orientation='horizontal',
-    label='Accuracy score',
-    ticks=plt.MultipleLocator(0.25),  # So 50% is shown!
-    format=PercentFormatter(xmax=1),
+
+plot_path_effect_matrix(
+    scores,
+    fig,
+    ax1,
+    day=UTCDateTime(SCORE_FILE.rstrip('.npy')),
+    colorbar=cax,
+    show_stats=False,
+    diagonal_metrics=True,
 )
-
-# Add text
-for i in range(len(ALL_STATIONS)):
-    for j in range(len(ALL_STATIONS)):
-        this_score = scores[i, j]
-        # Choose the best text color for contrast
-        if this_score > 0.5:
-            color = 'white'
-        else:
-            color = 'black'
-        ax1.text(
-            j,  # column = x
-            i,  # row = y
-            s=f'{this_score * 100:.0f}',
-            ha='center',
-            va='center',
-            color=color,
-            fontsize=8,
-            alpha=0.7,
-        )
-
-# Print mean and std of scores
-mean = scores.diagonal().mean()
-std = scores.diagonal().std()
-print(f'mean_diag = {mean:.0%}')
-print(f'std_diag = {std:.1%}')
 
 # --------------------------------------------------------------------------------------
 # Panel (b)

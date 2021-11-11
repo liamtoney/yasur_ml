@@ -1,6 +1,7 @@
 import json
 from pathlib import Path
 
+import matplotlib.pyplot as plt
 import numpy as np
 from sklearn import preprocessing, svm
 
@@ -94,4 +95,9 @@ for tmin in ALL_DAYS:
         )
 
     # Make plot
-    plot_path_effect_matrix(scores, day=tmin, diagonal_metrics=DIAGONAL_METRICS)
+    fig, ax = plt.subplots()
+    plot_path_effect_matrix(
+        scores, fig, ax, day=tmin, diagonal_metrics=DIAGONAL_METRICS
+    )
+    fig.tight_layout()
+    fig.show()
