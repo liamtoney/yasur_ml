@@ -6,7 +6,7 @@ from matplotlib.ticker import PercentFormatter
 from svm import ALL_DAYS, ALL_STATIONS
 
 
-def plot_generalization_matrix(scores, fig, ax, colorbar=True):
+def plot_generalization_matrix(scores, fig, ax, colorbar=True, show_stats=True):
 
     im = ax.imshow(scores, cmap=cc.m_diverging_bwr_20_95_c54_r, vmin=0, vmax=1)
     ax.set_xticks(range(len(ALL_DAYS)))
@@ -57,7 +57,11 @@ def plot_generalization_matrix(scores, fig, ax, colorbar=True):
                 alpha=0.5,
             )
 
-    # Add title
-    ax.set_title(
-        f'$\mu$ = {scores.mean():.0%}\n$\sigma$ = {scores.std():.1%}', loc='left'
-    )
+    # Show or print stats
+    mean = scores.mean()
+    std = scores.std()
+    if show_stats:
+        ax.set_title(f'$\mu$ = {mean:.0%}\n$\sigma$ = {std:.1%}', loc='left')
+    else:
+        print(f'mean_diag = {mean:.0%}')
+        print(f'std_diag = {std:.1%}')
