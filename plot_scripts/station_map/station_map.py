@@ -199,9 +199,8 @@ for vent in 'A', 'C':
 fig.plot(
     x=transform(sta_lon, sta_lat)[0],
     y=transform(sta_lon, sta_lat)[1],
-    style='i0.4c',
-    pen='0.75p',
-    color='gray30',
+    style='i0.45c',
+    color='black',
     label='Station',
 )
 fig.text(
