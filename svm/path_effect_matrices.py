@@ -6,7 +6,7 @@ import numpy as np
 from matplotlib.ticker import PercentFormatter
 from sklearn import preprocessing, svm
 
-from svm import ALL_DAYS, ALL_STATIONS
+from svm import ALL_DAYS, ALL_STATIONS, COLOR_CYCLE
 from svm.tools import balance_classes, format_scikit, read_and_preprocess, time_subset
 
 # Define project directory
@@ -16,10 +16,6 @@ WORKING_DIR = Path.home() / 'work' / 'yasur_ml'
 features_all = read_and_preprocess(
     WORKING_DIR / 'features' / 'feather' / 'tsfresh_filter.feather'
 )
-
-# Define new color cycle based on entries 3–7 in "New Tableau 10", see
-# https://www.tableau.com/about/blog/2016/7/colors-upgrade-tableau-10-56782
-COLOR_CYCLE = ['#e15759', '#76b7b2', '#59a14f', '#edc948', '#b07aa1']
 
 #%% Subset features (OPTIONAL; only applies for TSFRESH features)
 

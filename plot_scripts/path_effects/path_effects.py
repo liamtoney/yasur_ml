@@ -13,7 +13,7 @@ from matplotlib.ticker import MultipleLocator, PercentFormatter
 from obspy import UTCDateTime
 from obspy.clients.fdsn import Client
 
-from svm import ALL_STATIONS
+from svm import ALL_STATIONS, COLOR_CYCLE
 
 FONT_SIZE = 14  # [pt]
 plt.rcParams.update({'font.size': FONT_SIZE})
@@ -53,10 +53,6 @@ PROFILE_LW = 1.5
 # Common major and minor tick intervals for plots [m]
 MAJOR_INT = 100
 MINOR_INT = 50
-
-# Define new color cycle based on entries 3–7 in "New Tableau 10", see
-# https://www.tableau.com/about/blog/2016/7/colors-upgrade-tableau-10-56782
-COLOR_CYCLE = ['#e15759', '#76b7b2', '#59a14f', '#edc948', '#b07aa1']
 
 # Load scores to plot for panel (a)
 SCORE_FILE = '2016-08-01.npy'
