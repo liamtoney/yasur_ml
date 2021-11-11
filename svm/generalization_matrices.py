@@ -18,6 +18,17 @@ features_all = read_and_preprocess(
     WORKING_DIR / 'features' / 'feather' / 'tsfresh_filter_roll.feather'
 )
 
+ALL_STATIONS = [f'YIF{n}' for n in range(1, 6)]
+
+ALL_DAYS = [
+    UTCDateTime(2016, 7, 27),
+    UTCDateTime(2016, 7, 28),
+    UTCDateTime(2016, 7, 29),
+    UTCDateTime(2016, 7, 30),
+    UTCDateTime(2016, 7, 31),
+    UTCDateTime(2016, 8, 1),
+]
+
 #%% Subset features (only applies for TSFRESH features)
 
 is_tsfresh = 'tsfresh' in features_all.attrs['filename']
@@ -34,21 +45,63 @@ if is_tsfresh:
 else:
     features = features_all
 
+#%% Define plotting function
+
+
+def plot_generalization_matrix(scores):
+
+    fig, ax = plt.subplots()
+    im = ax.imshow(scores, cmap=cc.m_diverging_bwr_20_95_c54_r, vmin=0, vmax=1)
+    ax.set_xticks(range(len(ALL_DAYS)))
+    ax.set_yticks(range(len(ALL_STATIONS)))
+    ax.set_xticklabels([d.strftime('%-d\n%B') for d in ALL_DAYS])
+    ax.set_yticklabels(ALL_STATIONS)
+    ax.set_xlabel('Test day', weight='bold', labelpad=10)
+    ax.set_ylabel('Test station', weight='bold', labelpad=5)
+    ax.xaxis.set_ticks_position('top')
+    ax.xaxis.set_label_position('top')
+
+    # Colorbar
+    fig.colorbar(
+        im,
+        label='Accuracy score',
+        ticks=plt.MultipleLocator(0.25),  # So 50% is shown!
+        format=PercentFormatter(xmax=1),
+    )
+
+    # Add text
+    for i in range(len(ALL_STATIONS)):
+        for j in range(len(ALL_DAYS)):
+            this_score = scores[i, j]
+            # Choose the best text color for contrast
+            if this_score >= 0.7 or this_score <= 0.3:
+                color = 'white'
+            else:
+                color = 'black'
+            ax.text(
+                j,  # column = x
+                i,  # row = y
+                s=f'{this_score * 100:.0f}',
+                ha='center',
+                va='center',
+                color=color,
+                fontsize=8,
+                alpha=0.5,
+            )
+
+    # Add title
+    ax.set_title(
+        f'$\mu$ = {scores.mean():.0%}\n$\sigma$ = {scores.std():.1%}', loc='left'
+    )
+
+    fig.tight_layout()
+    fig.show()
+
+
 #%% Run function
 
 # Define number of runs [= random calls to balance_classes()] to perform and average
 RUNS = 10
-
-ALL_STATIONS = [f'YIF{n}' for n in range(1, 6)]
-
-ALL_DAYS = [
-    UTCDateTime(2016, 7, 27),
-    UTCDateTime(2016, 7, 28),
-    UTCDateTime(2016, 7, 29),
-    UTCDateTime(2016, 7, 30),
-    UTCDateTime(2016, 7, 31),
-    UTCDateTime(2016, 8, 1),
-]
 
 # Preallocate scores matrix
 scores = np.empty((len(ALL_STATIONS), len(ALL_DAYS)))
@@ -100,47 +153,4 @@ for j, tmin in enumerate(ALL_DAYS):
     scores[:, j] = station_scores.mean(axis=1)  # Take mean of the RUNS runs
 
 # Make plot
-fig, ax = plt.subplots()
-im = ax.imshow(scores, cmap=cc.m_diverging_bwr_20_95_c54_r, vmin=0, vmax=1)
-ax.set_xticks(range(len(ALL_DAYS)))
-ax.set_yticks(range(len(ALL_STATIONS)))
-ax.set_xticklabels([d.strftime('%-d\n%B') for d in ALL_DAYS])
-ax.set_yticklabels(ALL_STATIONS)
-ax.set_xlabel('Test day', weight='bold', labelpad=10)
-ax.set_ylabel('Test station', weight='bold', labelpad=5)
-ax.xaxis.set_ticks_position('top')
-ax.xaxis.set_label_position('top')
-
-# Colorbar
-fig.colorbar(
-    im,
-    label='Accuracy score',
-    ticks=plt.MultipleLocator(0.25),  # So 50% is shown!
-    format=PercentFormatter(xmax=1),
-)
-
-# Add text
-for i in range(len(ALL_STATIONS)):
-    for j in range(len(ALL_DAYS)):
-        this_score = scores[i, j]
-        # Choose the best text color for contrast
-        if this_score >= 0.7 or this_score <= 0.3:
-            color = 'white'
-        else:
-            color = 'black'
-        ax.text(
-            j,  # column = x
-            i,  # row = y
-            s=f'{this_score * 100:.0f}',
-            ha='center',
-            va='center',
-            color=color,
-            fontsize=8,
-            alpha=0.5,
-        )
-
-# Add title
-ax.set_title(f'$\mu$ = {scores.mean():.0%}\n$\sigma$ = {scores.std():.1%}', loc='left')
-
-fig.tight_layout()
-fig.show()
+plot_generalization_matrix(scores)
