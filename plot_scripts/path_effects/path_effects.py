@@ -13,6 +13,8 @@ from matplotlib.ticker import MultipleLocator, PercentFormatter
 from obspy import UTCDateTime
 from obspy.clients.fdsn import Client
 
+from svm import ALL_STATIONS
+
 FONT_SIZE = 14  # [pt]
 plt.rcParams.update({'font.size': FONT_SIZE})
 
@@ -55,8 +57,6 @@ MINOR_INT = 50
 # Define new color cycle based on entries 3–7 in "New Tableau 10", see
 # https://www.tableau.com/about/blog/2016/7/colors-upgrade-tableau-10-56782
 COLOR_CYCLE = ['#e15759', '#76b7b2', '#59a14f', '#edc948', '#b07aa1']
-
-ALL_STATIONS = [f'YIF{n}' for n in range(1, 6)]
 
 # Load scores to plot for panel (a)
 SCORE_FILE = '2016-08-01.npy'

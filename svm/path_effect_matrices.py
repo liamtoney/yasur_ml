@@ -4,9 +4,9 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.ticker import PercentFormatter
-from obspy import UTCDateTime
 from sklearn import preprocessing, svm
 
+from svm import ALL_DAYS, ALL_STATIONS
 from svm.tools import balance_classes, format_scikit, read_and_preprocess, time_subset
 
 # Define project directory
@@ -48,16 +48,7 @@ DIAGONAL_METRICS = True
 # Toggle exporting 5 x 5 scores matrices for plotting outside this script
 EXPORT_SCORES = True
 
-ALL_STATIONS = [f'YIF{n}' for n in range(1, 6)]
-
-for tmin in [
-    UTCDateTime(2016, 7, 27),
-    UTCDateTime(2016, 7, 28),
-    UTCDateTime(2016, 7, 29),
-    UTCDateTime(2016, 7, 30),
-    UTCDateTime(2016, 7, 31),
-    UTCDateTime(2016, 8, 1),
-]:
+for tmin in ALL_DAYS:
 
     print(tmin.strftime('%-d %B'))
 

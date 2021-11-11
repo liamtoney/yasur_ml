@@ -2,9 +2,9 @@ import json
 from pathlib import Path
 
 import numpy as np
-from obspy import UTCDateTime
 from sklearn import preprocessing, svm
 
+from svm import ALL_DAYS, ALL_STATIONS
 from svm.plotting import plot_generalization_matrix
 from svm.tools import balance_classes, format_scikit, read_and_preprocess, time_subset
 
@@ -15,17 +15,6 @@ WORKING_DIR = Path.home() / 'work' / 'yasur_ml'
 features_all = read_and_preprocess(
     WORKING_DIR / 'features' / 'feather' / 'tsfresh_filter_roll.feather'
 )
-
-ALL_STATIONS = [f'YIF{n}' for n in range(1, 6)]
-
-ALL_DAYS = [
-    UTCDateTime(2016, 7, 27),
-    UTCDateTime(2016, 7, 28),
-    UTCDateTime(2016, 7, 29),
-    UTCDateTime(2016, 7, 30),
-    UTCDateTime(2016, 7, 31),
-    UTCDateTime(2016, 8, 1),
-]
 
 #%% Subset features (only applies for TSFRESH features)
 
