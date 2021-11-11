@@ -7,6 +7,17 @@ from svm import ALL_DAYS, ALL_STATIONS
 
 
 def plot_generalization_matrix(scores, fig, ax, colorbar=True, show_stats=True):
+    """Make a plot of a 5 x 6 generalization matrix.
+
+    Args:
+        scores (numpy.ndarray): Array (5 rows, 6 columns) of scores
+        fig (Figure): Existing Matplotlib figure to plot into
+        ax (Axes): Existing Matplotlib axes to plot into
+        colorbar (bool or Axes): True to automatically place colorbar, False for no
+            colorbar, or place into the provided Axes instance
+        show_stats (bool): Toggle showing score mean and standard deviation on the
+            figure vs. just printing the info
+    """
 
     im = ax.imshow(scores, cmap=cc.m_diverging_bwr_20_95_c54_r, vmin=0, vmax=1)
     ax.set_xticks(range(len(ALL_DAYS)))
@@ -19,12 +30,12 @@ def plot_generalization_matrix(scores, fig, ax, colorbar=True, show_stats=True):
     ax.xaxis.set_label_position('top')
 
     # Colorbar handling
+    im_ax = None
+    cax = None
     if isinstance(colorbar, Axes):
-        im_ax = None
         cax = colorbar
     elif colorbar is True:
         im_ax = ax
-        cax = None
     else:  # If colorbar is not an Axes instance or True, then no colorbar!
         cax = False
     if cax is not False:
