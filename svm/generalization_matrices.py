@@ -39,7 +39,7 @@ else:
 RUNS = 10
 
 # Toggle exporting 5 x 6 scores matrices for plotting outside this script
-EXPORT_SCORES = True
+EXPORT_SCORES = False
 
 # Preallocate scores matrix
 scores = np.empty((len(ALL_STATIONS), len(ALL_DAYS)))

@@ -42,7 +42,7 @@ RUNS = 5
 DIAGONAL_METRICS = True
 
 # Toggle exporting 5 x 5 scores matrices for plotting outside this script
-EXPORT_SCORES = True
+EXPORT_SCORES = False
 
 for tmin in ALL_DAYS:
 
