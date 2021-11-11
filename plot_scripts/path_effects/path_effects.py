@@ -41,10 +41,6 @@ sta_x, sta_y = np.array(list(STATION_COORDS.values())).T
 dem_xlim = np.array([sta_x.min() - 70, sta_x.max() + 30])
 dem_ylim = np.array([sta_y.min() - 30, sta_y.max() + 20])
 
-# Define new color cycle based on entries 3–7 in "New Tableau 10", see
-# https://www.tableau.com/about/blog/2016/7/colors-upgrade-tableau-10-56782
-COLOR_CYCLE = ['#e15759', '#76b7b2', '#59a14f', '#edc948', '#b07aa1']
-
 # gdalwarp -t_srs EPSG:32759 -r cubicspline DEM_WGS84.tif DEM_WGS84_UTM.tif
 DEM_FILE = WORKING_DIR / 'data' / 'DEM_WGS84_UTM.tif'  # ~15 cm res
 # DEM_FILE = WORKING_DIR / 'data' / 'DEM_Union_UAV_161116_sm101_UTM.tif'  # ~2 m res
