@@ -1,6 +1,7 @@
 import json
 from pathlib import Path
 
+import matplotlib.pyplot as plt
 import numpy as np
 from sklearn import preprocessing, svm
 
@@ -96,4 +97,7 @@ if EXPORT_SCORES:
     )
 
 # Make plot
-plot_generalization_matrix(scores)
+fig, ax = plt.subplots()
+plot_generalization_matrix(scores, fig, ax)
+fig.tight_layout()
+fig.show()

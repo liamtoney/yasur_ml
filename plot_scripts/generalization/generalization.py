@@ -26,4 +26,7 @@ tsfresh_scores = np.load(
 #%% Plot
 
 for scores in manual_scores, tsfresh_scores:
-    plot_generalization_matrix(scores)
+    fig, ax = plt.subplots()
+    plot_generalization_matrix(scores, fig, ax)
+    fig.tight_layout()
+    fig.show()

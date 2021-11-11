@@ -5,9 +5,8 @@ from matplotlib.ticker import PercentFormatter
 from svm import ALL_DAYS, ALL_STATIONS
 
 
-def plot_generalization_matrix(scores):
+def plot_generalization_matrix(scores, fig, ax):
 
-    fig, ax = plt.subplots()
     im = ax.imshow(scores, cmap=cc.m_diverging_bwr_20_95_c54_r, vmin=0, vmax=1)
     ax.set_xticks(range(len(ALL_DAYS)))
     ax.set_yticks(range(len(ALL_STATIONS)))
@@ -21,6 +20,7 @@ def plot_generalization_matrix(scores):
     # Colorbar
     fig.colorbar(
         im,
+        ax=ax,
         label='Accuracy score',
         ticks=plt.MultipleLocator(0.25),  # So 50% is shown!
         format=PercentFormatter(xmax=1),
@@ -50,6 +50,3 @@ def plot_generalization_matrix(scores):
     ax.set_title(
         f'$\mu$ = {scores.mean():.0%}\n$\sigma$ = {scores.std():.1%}', loc='left'
     )
-
-    fig.tight_layout()
-    fig.show()
