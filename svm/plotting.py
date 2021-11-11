@@ -2,7 +2,7 @@ import colorcet as cc
 import matplotlib.pyplot as plt
 from matplotlib.ticker import PercentFormatter
 
-from . import ALL_DAYS, ALL_STATIONS
+from svm import ALL_DAYS, ALL_STATIONS
 
 
 def plot_generalization_matrix(scores):
