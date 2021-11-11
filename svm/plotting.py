@@ -13,8 +13,8 @@ def plot_generalization_matrix(scores, fig, ax, colorbar=True):
     ax.set_yticks(range(len(ALL_STATIONS)))
     ax.set_xticklabels([d.strftime('%-d\n%B') for d in ALL_DAYS])
     ax.set_yticklabels(ALL_STATIONS)
-    ax.set_xlabel('Test day', weight='bold', labelpad=10)
-    ax.set_ylabel('Test station', weight='bold', labelpad=5)
+    ax.set_xlabel('Test day', labelpad=10)
+    ax.set_ylabel('Test station', labelpad=7)
     ax.xaxis.set_ticks_position('top')
     ax.xaxis.set_label_position('top')
 
