@@ -30,7 +30,7 @@ tsfresh_scores = np.load(
 fig = plt.figure(figsize=(14, 10))
 gs = fig.add_gridspec(ncols=3, width_ratios=[3, 3, 0.1])  # Ratios set colorbar width
 ax1 = fig.add_subplot(gs[0])
-ax2 = fig.add_subplot(gs[1], sharex=ax1, sharey=ax1)
+ax2 = fig.add_subplot(gs[1], sharex=ax1)
 cax = fig.add_subplot(gs[2])
 
 # Call function

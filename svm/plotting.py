@@ -18,7 +18,16 @@ def plot_generalization_matrix(scores, fig, ax, colorbar=True, show_stats=True):
             figure vs. just printing the info
     """
 
-    im = ax.imshow(scores, cmap='BrBG', vmin=0, vmax=1)
+    im = ax.pcolormesh(
+        *[range(r) for r in scores.shape[::-1]],
+        scores,
+        shading='nearest',
+        cmap='BrBG',
+        vmin=0,
+        vmax=1,
+    )
+    ax.set_aspect('equal')
+    ax.invert_yaxis()
     ax.set_xticks(range(len(ALL_DAYS)))
     ax.set_yticks(range(len(ALL_STATIONS)))
     ax.set_xticklabels([d.strftime('%-d\n%B') for d in ALL_DAYS])
@@ -96,7 +105,16 @@ def plot_path_effect_matrix(
             otherwise, plot for entire 5 x 5 matrix
     """
 
-    im = ax.imshow(scores, cmap='Greys', vmin=0, vmax=1)
+    im = ax.pcolormesh(
+        *[range(r) for r in scores.shape[::-1]],
+        scores,
+        shading='nearest',
+        cmap='Greys',
+        vmin=0,
+        vmax=1,
+    )
+    ax.set_aspect('equal')
+    ax.invert_yaxis()
     ax.set_xticks(range(len(ALL_STATIONS)))
     ax.set_yticks(range(len(ALL_STATIONS)))
     ax.set_xticklabels(ALL_STATIONS)
