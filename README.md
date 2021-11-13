@@ -15,7 +15,7 @@ conda env create
 ```
 from the repository root.
 
-The code requires the [UAF Geophysics Tools](https://github.com/uafgeotools) package
+This code requires the [UAF Geophysics Tools](https://github.com/uafgeotools) package
 [*rtm*](https://github.com/uafgeotools/rtm) for generation of the labeled
 catalog. You can find installation instructions for *rtm*
 [here](https://uaf-rtm.readthedocs.io/en/master/README.html#installation).
