@@ -4,7 +4,7 @@ This repository contains the code accompanying the forthcoming manuscript "Influ
 Waveform Feature Extraction on Machine Learning Classifier Performance for a Large,
 Labeled Volcano Infrasound Dataset" [draft title] by
 [Liam Toney](mailto:ldtoney@alaska.edu), [David Fee](mailto:dfee1@alaska.edu),
-[Alex Witsil](mailto:ajwitsil@alaska.edu), and [Robin Matoza](mailto:rmatoza@ucsb.edu).
+[Alex Witsil](mailto:ajwitsil@alaska.edu), and [Robin S. Matoza](mailto:rmatoza@ucsb.edu).
 
 ## Installing
 
