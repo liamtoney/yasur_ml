@@ -100,7 +100,7 @@ for station_coord in STATION_COORDS.values():
 
 #%% Plot
 
-fig = plt.figure(figsize=(10.5, 13.5))
+fig = plt.figure(figsize=(15, 15))
 gs = fig.add_gridspec(nrows=3, ncols=2, height_ratios=[3, 0.1, 3])
 
 # --------------------------------------------------------------------------------------
@@ -140,7 +140,7 @@ ax2.axis('off')
 # Add north arrow
 x = 0.15
 y = 0.9
-arrow_length = 0.1
+arrow_length = 0.07
 ax2.annotate(
     'N',
     xy=(x, y),
@@ -158,13 +158,13 @@ ax2.annotate(
 # Hard-coded numbers controlling where along profile the distance text is placed,
 # ranging from 0 (at subcrater) to 1 (at station)
 PROF_FRAC = dict(
-    YIF1=dict(A=0.13, C=0.18),
+    YIF1=dict(A=0.13, C=0.15),
     YIF2=dict(A=0.75, C=0.5),
     YIF3=dict(A=0.5, C=0.73),
     YIF4=dict(A=0.5, C=0.5),
     YIF5=dict(A=0.5, C=0.5),
 )
-GAP_HALF_WIDTH = 30  # [m] Half of the width of the gap in the line (where text goes)
+GAP_HALF_WIDTH = 23  # [m] Half of the width of the gap in the line (where text goes)
 
 # Plot horizontal profiles on DEM, adding text denoting distances
 for pA, pC, prof_frac, color in zip(
@@ -265,31 +265,43 @@ ax4.tick_params(which='both', labelleft=False)
 # Adjust cax
 pos1 = ax1.get_position()
 cbar = cax.get_position()
-cax.set_position([pos1.x0, pos1.y0 - (2.5 * cbar.height), cbar.width, cbar.height])
+cax.set_position([pos1.x0, pos1.y0 - (3 * cbar.height), pos1.width, cbar.height])
 
 # Adjust ax2
 pos2 = ax2.get_position()
-ax2.set_position([pos2.x0, pos1.ymax - pos2.height, pos2.width, pos2.height])
+scale = 1.2
+ax2.set_position(
+    [
+        pos2.x0 - 0.05,
+        pos1.ymax - (pos2.height * scale),
+        pos2.width * scale,
+        pos2.height * scale,
+    ]
+)
+pos2 = ax2.get_position()
 
 # Adjust ax3, ax4
 for ax in ax3, ax4:
-    pos = ax.get_position()
-    ax.set_position(pos)  # Lock
     ax.set_xlim(CD_XLIM)
-yoff = 0.12
+    scale = CD_XLIM[1] / np.diff(ax2.get_xlim())[0]
+    pos = ax.get_position()
+    ax.set_position([pos.x0, pos.y0, pos2.width * scale, pos.height])  # KEY SCALING
+yoff = 0.08
 pos3 = ax3.get_position()
 ax3.set_position([pos1.xmax - pos3.width, pos3.y0 + yoff, pos3.width, pos3.height])
 pos4 = ax4.get_position()
 ax4.set_position([pos2.x0, pos4.y0 + yoff, pos4.width, pos4.height])
 
 # Plot (a), (b), (c), (d) tags
-text_kwargs = dict(x=-0.075, y=1, ha='right', weight='bold', fontsize=18)
+text_kwargs = dict(y=1, ha='right', weight='bold', fontsize=18)
+x13 = -0.04
+x24 = -0.075
 t3_trans = transforms.blended_transform_factory(ax1.transAxes, ax3.transAxes)
 t4_trans = transforms.blended_transform_factory(ax2.transAxes, ax4.transAxes)
-ax1.text(s='A', va='bottom', transform=ax1.transAxes, **text_kwargs)
-ax2.text(s='B', va='bottom', transform=ax2.transAxes, **text_kwargs)
-ax3.text(s='C', va='top', transform=t3_trans, **text_kwargs)
-ax4.text(s='D', va='top', transform=t4_trans, **text_kwargs)
+ax1.text(s='A', x=x13, va='bottom', transform=ax1.transAxes, **text_kwargs)
+ax2.text(s='B', x=x24, va='bottom', transform=ax2.transAxes, **text_kwargs)
+ax3.text(s='C', x=x13, va='top', transform=t3_trans, **text_kwargs)
+ax4.text(s='D', x=x24, va='top', transform=t4_trans, **text_kwargs)
 
 fig.show()
 
