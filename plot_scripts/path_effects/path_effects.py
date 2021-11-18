@@ -158,13 +158,13 @@ ax2.annotate(
 # Hard-coded numbers controlling where along profile the distance text is placed,
 # ranging from 0 (at subcrater) to 1 (at station)
 PROF_FRAC = dict(
-    YIF1=dict(A=0.13, C=0.15),
+    YIF1=dict(A=0.13, C=0.17),
     YIF2=dict(A=0.75, C=0.5),
     YIF3=dict(A=0.5, C=0.73),
     YIF4=dict(A=0.5, C=0.5),
     YIF5=dict(A=0.5, C=0.5),
 )
-GAP_HALF_WIDTH = 23  # [m] Half of the width of the gap in the line (where text goes)
+GAP_HALF_WIDTH = 27  # [m] Half of the width of the gap in the line (where text goes)
 
 # Plot horizontal profiles on DEM, adding text denoting distances
 for pA, pC, prof_frac, color in zip(
@@ -203,7 +203,7 @@ for pA, pC, prof_frac, color in zip(
             ha='center',
             color=color,
             weight='bold',
-            fontsize='8',
+            fontsize=10,
         )
 
 vent_marker_kwargs = dict(s=80, color='white', edgecolor='black', zorder=5)

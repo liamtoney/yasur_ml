@@ -72,7 +72,7 @@ def plot_generalization_matrix(scores, fig, ax, colorbar=True, show_stats=True):
                 ha='center',
                 va='center',
                 color=color,
-                fontsize=8,
+                fontsize=10,
                 alpha=0.5,
             )
 
@@ -167,7 +167,7 @@ def plot_path_effect_matrix(
                 ha='center',
                 va='center',
                 color=color,
-                fontsize=8,
+                fontsize=10,
                 alpha=0.7,
             )
 
