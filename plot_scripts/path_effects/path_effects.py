@@ -292,16 +292,16 @@ ax3.set_position([pos1.xmax - pos3.width, pos3.y0 + yoff, pos3.width, pos3.heigh
 pos4 = ax4.get_position()
 ax4.set_position([pos2.x0, pos4.y0 + yoff, pos4.width, pos4.height])
 
-# Plot (a), (b), (c), (d) tags
+# Plot (a), (b), (c), and (d) tags
 text_kwargs = dict(y=1, ha='right', weight='bold', fontsize=18)
 x13 = -0.04
-x24 = -0.075
+x24 = -0.055
 t3_trans = transforms.blended_transform_factory(ax1.transAxes, ax3.transAxes)
 t4_trans = transforms.blended_transform_factory(ax2.transAxes, ax4.transAxes)
-ax1.text(s='A', x=x13, va='bottom', transform=ax1.transAxes, **text_kwargs)
-ax2.text(s='B', x=x24, va='bottom', transform=ax2.transAxes, **text_kwargs)
-ax3.text(s='C', x=x13, va='top', transform=t3_trans, **text_kwargs)
-ax4.text(s='D', x=x24, va='top', transform=t4_trans, **text_kwargs)
+ax1.text(s='(a)', x=x13, va='bottom', transform=ax1.transAxes, **text_kwargs)
+ax2.text(s='(b)', x=x24, va='bottom', transform=ax2.transAxes, **text_kwargs)
+ax3.text(s='(c)', x=x13, va='top', transform=t3_trans, **text_kwargs)
+ax4.text(s='(d)', x=x24, va='top', transform=t4_trans, **text_kwargs)
 
 fig.show()
 

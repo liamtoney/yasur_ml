@@ -48,9 +48,9 @@ posc = cax.get_position()
 cax.set_position([posc.x0, pos1.y0, posc.width, pos1.height])
 
 # Plot (a) and (b) tags
-for ax, label in zip([ax1, ax2], ['A', 'B']):
+for ax, label in zip([ax1, ax2], ['(a)', '(b)']):
     ax.text(
-        -0.04,
+        -0.02,
         1.03,
         label,
         ha='right',

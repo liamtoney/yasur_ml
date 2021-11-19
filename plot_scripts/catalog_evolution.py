@@ -115,7 +115,7 @@ grid_ax.tick_params(
 grid_ax.grid(which='both', axis='x', linestyle=':', alpha=0.5)
 
 # Plot (a) and (b) tags
-for ax, label in zip(axes, ['A', 'B']):
+for ax, label in zip(axes, ['(a)', '(b)']):
     ax.text(
         -0.07,
         1,

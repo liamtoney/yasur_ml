@@ -158,7 +158,7 @@ for i, (vent, axes_col) in enumerate(zip(traces.keys(), axes.T)):
     axes_col[-1].spines['bottom'].set_visible(True)
 
 # Plot (a) and (b) tags
-for ax, label in zip(axes[0, :], ['A', 'B']):
+for ax, label in zip(axes[0, :], ['(a)', '(b)']):
     ax.text(
         -0.01,
         1,
