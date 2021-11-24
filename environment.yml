@@ -6,7 +6,6 @@ dependencies:
   - black
   - cartopy
   - cffi=1.14.4  # So MacOSX backend works with hack
-  - colorcet
   - gdal
   - gmt
   - ipython
