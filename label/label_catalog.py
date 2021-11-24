@@ -10,7 +10,6 @@ import json
 import os
 from pathlib import Path
 
-import colorcet as cc
 import matplotlib.pyplot as plt
 import matplotlib.transforms as transforms
 import numpy as np
@@ -177,7 +176,7 @@ if PLOT:
 
     fig, ax = plt.subplots()
     dem.plot.contour(ax=ax, levels=20, colors='black', linewidths=0.5)
-    hist.plot.pcolormesh(ax=ax, cmap=cc.m_fire_r, cbar_kwargs=dict(label='# of events'))
+    hist.plot.pcolormesh(ax=ax, cmap='hot_r', cbar_kwargs=dict(label='# of events'))
     for mean, cov in zip(clf.means_, clf.covariances_):
         confidence_ellipse_from_mean_cov(mean, cov, ax, n_std=N_STD, edgecolor='black')
     ax.set_aspect('equal', adjustable='box')
