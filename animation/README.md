@@ -12,7 +12,7 @@ First, ensure you're in this directory (`animation/`) and clone _sonify_ via
 git clone https://github.com/liamtoney/sonify.git
 ```
 
-Then, apply [`yasur.patch`](`animation/yasur.patch`) to
+Then, apply [`yasur.patch`](yasur.patch) to
 [revision `f467ae1`](https://github.com/liamtoney/sonify/tree/f467ae1b3d2912fdfa2fdf395e050f0df7fc269c)
 of _sonify_ via
 ```xml
