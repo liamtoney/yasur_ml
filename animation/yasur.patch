@@ -17,6 +17,7 @@ index 3df424e..7213d68 100755
 -EXTENDFRAC = 0.04
 +EXTENDFRAC = 0.055
 
+
  def sonify(
 @@ -207,23 +208,51 @@ def sonify(
      times = timing_tr.times('UTCDateTime')[:-1]  # Remove extra frame
