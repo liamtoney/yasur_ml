@@ -1,5 +1,5 @@
 diff --git a/sonify/sonify.py b/sonify/sonify.py
-index 3df424e..7213d68 100755
+index 3df424e..6f3ebf8 100755
 --- a/sonify/sonify.py
 +++ b/sonify/sonify.py
 @@ -10,6 +10,7 @@ from types import MethodType
@@ -19,7 +19,7 @@ index 3df424e..7213d68 100755
 
 
  def sonify(
-@@ -207,23 +208,51 @@ def sonify(
+@@ -207,23 +208,53 @@ def sonify(
      times = timing_tr.times('UTCDateTime')[:-1]  # Remove extra frame
 
      # Define update function
@@ -62,7 +62,9 @@ index 3df424e..7213d68 100755
 +
 +    # Read in features file, process into a catalog by subsetting to just one
 +    # station and removing the unneeded features columns
-+    catalog = pd.read_feather('/Users/liam/Downloads/catalog/manual.feather')
++    catalog = pd.read_feather(
++        Path(__file__).resolve().parents[3] / 'features' / 'feather' / 'manual.feather'
++    )
 +    catalog = catalog[catalog.station == tr.stats.station][['time', 'label']]
 +    catalog.time = [UTCDateTime(t) for t in catalog.time]
 +
@@ -76,7 +78,7 @@ index 3df424e..7213d68 100755
          starttime,
          endtime,
          is_infrasound,
-@@ -264,7 +293,7 @@ def sonify(
+@@ -264,7 +295,7 @@ def sonify(
      # MAKE COMBINED FILE
 
      tr_id_str = '_'.join([code for code in tr.id.split('.') if code])
@@ -85,7 +87,7 @@ index 3df424e..7213d68 100755
      _ffmpeg_combine(audio_file, video_file, output_file, call_str)
 
      # Clean up temporary directory, just to be safe
-@@ -273,6 +302,7 @@ def sonify(
+@@ -273,6 +304,7 @@ def sonify(
 
  def _spectrogram(
      tr,
@@ -93,7 +95,7 @@ index 3df424e..7213d68 100755
      starttime,
      endtime,
      is_infrasound,
-@@ -306,7 +336,7 @@ def _spectrogram(
+@@ -306,7 +338,7 @@ def _spectrogram(
      """
 
      if is_infrasound:
@@ -102,7 +104,7 @@ index 3df424e..7213d68 100755
          clab = f'Power (dB rel. [{REFERENCE_PRESSURE * 1e6:g} µPa]$^2$ Hz$^{{-1}}$)'
          ref_val = REFERENCE_PRESSURE
      else:
-@@ -337,63 +367,172 @@ def _spectrogram(
+@@ -337,63 +369,174 @@ def _spectrogram(
      fig = Figure(figsize=np.array(RESOLUTION) / DPI)
 
      # width_ratios effectively controls the colorbar width
@@ -294,12 +296,14 @@ index 3df424e..7213d68 100755
 +        ymin=0.001,
 +        x=starttime.matplotlib_date,
 +        color=timing_color,
-+        linewidth=matplotlib.rcParams['axes.linewidth'],  # Start w/ axis width TODO DOES THIS MATTER?
++        linewidth=matplotlib.rcParams[
++            'axes.linewidth'
++        ],  # Start w/ axis width TODO DOES THIS MATTER?
 +    )
 
      # Pick smart limits rounded to nearest 10
      if db_lim == 'smart':
-@@ -423,10 +562,8 @@ def _spectrogram(
+@@ -423,10 +566,8 @@ def _spectrogram(
 
      fig.colorbar(im, cax, extend=extend, extendfrac=EXTENDFRAC, label=clab)
 
@@ -311,7 +315,7 @@ index 3df424e..7213d68 100755
 
      # Finnicky formatting to get extension triangles (if they exist) to extend
      # above and below the vertical extent of the spectrogram axes
-@@ -446,7 +583,7 @@ def _spectrogram(
+@@ -446,7 +587,7 @@ def _spectrogram(
          pass
      cax.set_position([pos.xmin, ymin, pos.width, height])
 
