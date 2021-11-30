@@ -4,6 +4,7 @@
 /label/catalogs/
 /features/feather/
 /features/selected_names/
+/animation/sonify/
 /sklearn_sandbox.ipynb
 /*.egg-info/
 *.nc
