@@ -18,7 +18,7 @@ of _sonify_ via
 ```xml
 cd sonify
 git checkout f467ae1
-git apply ../yasur.patch
+git apply --unidiff-zero ../yasur.patch
 ```
 
 Finally, install _sonify_ into the `yasur_ml` conda environment via
