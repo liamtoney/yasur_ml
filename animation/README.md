@@ -37,5 +37,5 @@ there are multiple files present, the code will use the alphabetically first one
 
 Here's an example call:
 ```xml
-sonify 3E YIF3 CDF 2016-07-31T19:00 2016-07-31T21:00 --freqmin 0.2 --freqmax 4 --speed_up_factor 400 --fps 60 --spec_win_dur 20 --db_lim 90 115
+sonify 3E YIF3 CDF 2016-07-31T19:00 2016-07-31T21:00 --freqmin 0.2 --freqmax 4 --speed_up_factor 400 --fps 30 --spec_win_dur 20 --db_lim 90 115
 ```
