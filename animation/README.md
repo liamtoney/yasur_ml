@@ -7,7 +7,7 @@ labeled events.
 
 ## Setup
 
-First, ensure you're in this directory (`animation/`) and clone _sonify_ via
+First, ensure you're in this directory (`/animation/`) and clone _sonify_ via
 ```xml
 git clone https://github.com/liamtoney/sonify.git
 ```
@@ -29,6 +29,11 @@ pip install --editable .
 (The `yasur_ml` environment already contains all of _sonify_'s dependencies.)
 
 ## Creating animations
+
+The patched code looks for a Feather file containing features in `/features/feather/`.
+It reads this file and extracts the labeled events (`time` and `label` columns). You
+must have already generated at least one of these files to run the code below! (If
+there are multiple files present, the code will use the alphabetically first one.)
 
 Here's an example call:
 ```xml
