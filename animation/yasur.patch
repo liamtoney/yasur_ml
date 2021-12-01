@@ -1,5 +1,5 @@
 diff --git a/sonify/sonify.py b/sonify/sonify.py
-index 3df424e..c77391d 100755
+index 3df424e..c1450e2 100755
 --- a/sonify/sonify.py
 +++ b/sonify/sonify.py
 @@ -12,0 +13 @@ import numpy as np
@@ -7,7 +7,7 @@ index 3df424e..c77391d 100755
 @@ -47 +48 @@ MS_PER_S = 1000  # [ms/s]
 -EXTENDFRAC = 0.04
 +EXTENDFRAC = 0.055
-@@ -99,0 +101,9 @@ def sonify(
+@@ -103,0 +105,9 @@ def sonify(
 +    # Right away, determine if there's a features file to use
 +    feather_dir = Path(__file__).resolve().parents[3] / 'features' / 'feather'
 +    feather_list = sorted(feather_dir.glob('*.feather'))
@@ -254,6 +254,3 @@ index 3df424e..c77391d 100755
 @@ -449 +599 @@ def _spectrogram(
 -    return fig, spec_line, wf_line, time_box, wf_progress
 +    return fig, progress_line, time_box, wf_progress, cat_ax
-@@ -484,0 +635,2 @@ def _ffmpeg_combine(audio_file, video_file, output_file, call_str):
-+        '-maxrate',
-+        '1.5M',
