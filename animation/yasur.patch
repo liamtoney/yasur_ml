@@ -2,27 +2,12 @@ diff --git a/sonify/sonify.py b/sonify/sonify.py
 index 3df424e..c77391d 100755
 --- a/sonify/sonify.py
 +++ b/sonify/sonify.py
-@@ -10,6 +10,7 @@ from types import MethodType
- import matplotlib
- import matplotlib.dates as mdates
- import numpy as np
+@@ -12,0 +13 @@ import numpy as np
 +import pandas as pd
- from matplotlib import font_manager
- from matplotlib.animation import FuncAnimation
- from matplotlib.figure import Figure
-@@ -44,7 +45,7 @@ REFERENCE_VELOCITY = 1  # [m/s]
- MS_PER_S = 1000  # [ms/s]
-
- # Colorbar extension triangle height as proportion of colorbar length
+@@ -47 +48 @@ MS_PER_S = 1000  # [ms/s]
 -EXTENDFRAC = 0.04
 +EXTENDFRAC = 0.055
-
-
- def sonify(
-@@ -97,6 +98,15 @@ def sonify(
-     .. _Nyquist frequency: https://en.wikipedia.org/wiki/Nyquist_frequency
-     """
-
+@@ -99,0 +101,9 @@ def sonify(
 +    # Right away, determine if there's a features file to use
 +    feather_dir = Path(__file__).resolve().parents[3] / 'features' / 'feather'
 +    feather_list = sorted(feather_dir.glob('*.feather'))
@@ -32,16 +17,10 @@ index 3df424e..c77391d 100755
 +    except IndexError:  # List is empty (i.e., no files were found!)
 +        raise FileNotFoundError('No feather files found!')
 +
-     # Capture args and format as string to store in movie metadata
-     key_value_pairs = [f'{k}={repr(v)}' for k, v in locals().items()]
-     call_str = 'sonify({})'.format(', '.join(key_value_pairs))
-@@ -207,23 +217,53 @@ def sonify(
-     times = timing_tr.times('UTCDateTime')[:-1]  # Remove extra frame
-
-     # Define update function
+@@ -210 +220 @@ def sonify(
 -    def _march_forward(frame, spec_line, wf_line, time_box, wf_progress):
 +    def _march_forward(frame, progress_line, time_box, wf_progress, cat_ax):
-
+@@ -212,4 +222,4 @@ def sonify(
 -        spec_line.set_xdata(times[frame].matplotlib_date)
 -        wf_line.set_xdata(times[frame].matplotlib_date)
 -        time_box.txt.set_text(times[frame].strftime('%H:%M:%S'))
@@ -50,8 +29,7 @@ index 3df424e..c77391d 100755
 +        progress_line.set_linewidth(1)
 +        time_box.txt.set_text(times[frame].strftime('%H:%M'))
 +        tr_progress = tr_trim.copy().trim(endtime=times[frame])
-         wf_progress.set_xdata(tr_progress.times('matplotlib'))
-         wf_progress.set_ydata(tr_progress.data * rescale)
+@@ -217,0 +228,16 @@ def sonify(
 +        cat_progress = catalog[catalog.time <= times[frame]]
 +        if not cat_progress.empty:
 +            a_cumsum = (cat_progress.label == 'A').cumsum().tolist()
@@ -68,12 +46,7 @@ index 3df424e..c77391d 100755
 +            color = '#4e79a7' if recent_label == 'A' else '#f28e2b'
 +            progress_line.set_color(color)
 +            time_box.txt._text.set_color(color)
-
-     # Store user's rc settings, then update font stuff
-     original_params = matplotlib.rcParams.copy()
-     matplotlib.rcParams.update(matplotlib.rcParamsDefault)
-     matplotlib.rcParams['font.sans-serif'] = 'Tex Gyre Heros'
-     matplotlib.rcParams['mathtext.fontset'] = 'custom'
+@@ -223,0 +250,13 @@ def sonify(
 +    matplotlib.rcParams['font.size'] = 9
 +
 +    # Read in the features file, process into a catalog by subsetting to just one
@@ -87,58 +60,30 @@ index 3df424e..c77391d 100755
 +    catalog.reset_index(inplace=True, drop=True)
 +    print('Catalog label totals for this time period:')
 +    print(catalog.label.value_counts())
-
-     fig, *fargs = _spectrogram(
-         tr,
+@@ -226,0 +266 @@ def sonify(
 +        catalog,
-         starttime,
-         endtime,
-         is_infrasound,
-@@ -264,7 +304,7 @@ def sonify(
-     # MAKE COMBINED FILE
-
-     tr_id_str = '_'.join([code for code in tr.id.split('.') if code])
+@@ -267 +307 @@ def sonify(
 -    output_file = output_dir / f'{tr_id_str}_{speed_up_factor}x.mp4'
 +    output_file = output_dir / f'{tr_id_str}_{speed_up_factor}x_catalog.mp4'
-     _ffmpeg_combine(audio_file, video_file, output_file, call_str)
-
-     # Clean up temporary directory, just to be safe
-@@ -273,6 +313,7 @@ def sonify(
-
- def _spectrogram(
-     tr,
+@@ -275,0 +316 @@ def _spectrogram(
 +    catalog,
-     starttime,
-     endtime,
-     is_infrasound,
-@@ -306,7 +347,7 @@ def _spectrogram(
-     """
-
-     if is_infrasound:
+@@ -309 +350 @@ def _spectrogram(
 -        ylab = 'Pressure (Pa)'
 +        ylab = 'Pressure\n(Pa)'
-         clab = f'Power (dB rel. [{REFERENCE_PRESSURE * 1e6:g} µPa]$^2$ Hz$^{{-1}}$)'
-         ref_val = REFERENCE_PRESSURE
-     else:
-@@ -337,63 +378,174 @@ def _spectrogram(
-     fig = Figure(figsize=np.array(RESOLUTION) / DPI)
-
-     # width_ratios effectively controls the colorbar width
+@@ -340 +381 @@ def _spectrogram(
 -    gs = GridSpec(2, 2, figure=fig, height_ratios=[2, 1], width_ratios=[40, 1])
 +    gs = GridSpec(3, 2, figure=fig, height_ratios=[3, 1, 2], width_ratios=[40, 1])
-
-     spec_ax = fig.add_subplot(gs[0, 0])
+@@ -343 +384,4 @@ def _spectrogram(
 -    wf_ax = fig.add_subplot(gs[1, 0], sharex=spec_ax)  # Share x-axis with spec
 +    wf_ax = fig.add_subplot(
 +        gs[1, 0], sharex=spec_ax, zorder=10
 +    )  # Share x-axis with spec
 +    wf_ax.patch.set_alpha(0)
-     cax = fig.add_subplot(gs[0, 1])
+@@ -344,0 +389,3 @@ def _spectrogram(
 +    cat_ax = fig.add_subplot(gs[2, 0], sharex=spec_ax)  # Share x-axis with spec
 +
 +    tr_trim = tr.copy().trim(starttime, endtime)
-
-     wf_lw = 0.5
+@@ -347,2 +394,18 @@ def _spectrogram(
 -    wf_ax.plot(tr.times('matplotlib'), tr.data * rescale, '#b0b0b0', linewidth=wf_lw)
 -    wf_progress = wf_ax.plot(np.nan, np.nan, 'black', linewidth=wf_lw)[0]
 +    wf_ax.plot(
@@ -159,23 +104,16 @@ index 3df424e..c77391d 100755
 +        solid_capstyle='round',
 +        zorder=21,
 +    )[0]
-     wf_ax.set_ylabel(ylab)
+@@ -350,2 +413 @@ def _spectrogram(
 -    wf_ax.grid(linestyle=':')
 -    max_value = np.abs(tr.copy().trim(starttime, endtime).data).max() * rescale
 +    max_value = np.abs(tr_trim.data).max() * rescale
-     wf_ax.set_ylim(-max_value, max_value)
-
-     im = spec_ax.pcolormesh(
+@@ -355 +417 @@ def _spectrogram(
 -        t_mpl, f, sxx_db, cmap='inferno', shading='nearest', rasterized=True
 +        t_mpl, f, sxx_db, cmap='summer', shading='nearest', rasterized=True
-     )
-
-     spec_ax.set_ylabel('Frequency (Hz)')
+@@ -359 +420,0 @@ def _spectrogram(
 -    spec_ax.grid(linestyle=':')
-     spec_ax.set_ylim(freq_lim)
-     if log:
-         spec_ax.set_yscale('log')
-
+@@ -363,0 +425,15 @@ def _spectrogram(
 +    # Set up catalog axis
 +    cat_ax.stackplot(
 +        np.nan,
@@ -191,41 +129,32 @@ index 3df424e..c77391d 100755
 +        loc='upper left', title='Subcrater', bbox_to_anchor=(1, 1.1), frameon=False
 +    )
 +
-     # Tick locating and formatting
-     locator = mdates.AutoDateLocator()
-     wf_ax.xaxis.set_major_locator(locator)
+@@ -367 +443,3 @@ def _spectrogram(
 -    wf_ax.xaxis.set_major_formatter(_UTCDateFormatter(locator, is_local_time))
 +    cat_ax.xaxis.set_major_formatter(_UTCDateFormatter(locator, is_local_time))
 +    for ax in spec_ax, wf_ax:
 +        ax.xaxis.offsetText.set_visible(False)
-     fig.autofmt_xdate()
-
-     # "Crop" x-axis!
-     wf_ax.set_xlim(starttime.matplotlib_date, endtime.matplotlib_date)
-
-     # Initialize animated stuff
+@@ -374,3 +452 @@ def _spectrogram(
 -    line_kwargs = dict(x=starttime.matplotlib_date, color='forestgreen', linewidth=1)
 -    spec_line = spec_ax.axvline(**line_kwargs)
 -    wf_line = wf_ax.axvline(ymin=0.01, clip_on=False, zorder=10, **line_kwargs)
 +    timing_color = 'black'
-     time_box = AnchoredText(
+@@ -378 +454 @@ def _spectrogram(
 -        s=starttime.strftime('%H:%M:%S'),
 +        s=starttime.strftime('%H:%M'),
-         pad=0.2,
-         loc='lower right',
+@@ -381,2 +457,2 @@ def _spectrogram(
 -        bbox_to_anchor=[1, 1],
 -        bbox_transform=wf_ax.transAxes,
 +        bbox_to_anchor=[1, 0],
 +        bbox_transform=spec_ax.transAxes,
-         borderpad=0,
+@@ -384 +460 @@ def _spectrogram(
 -        prop=dict(color='forestgreen'),
 +        prop=dict(color=timing_color),
-     )
-     time_box.txt._text.set_y(-5)  # [pixels] Shift text to vertically center it
+@@ -387 +462,0 @@ def _spectrogram(
 -    time_box.zorder = 12  # This should place it on the very top; see below
-     time_box.patch.set_linewidth(matplotlib.rcParams['axes.linewidth'])
+@@ -389 +463,0 @@ def _spectrogram(
 -    wf_ax.add_artist(time_box)
-
+@@ -391,6 +465,84 @@ def _spectrogram(
 -    # Adjustments to ensure time marker line is zordered properly
 -    # 9 is below marker; 11 is above marker
 -    spec_ax.spines['bottom'].set_zorder(9)
@@ -316,36 +245,15 @@ index 3df424e..c77391d 100755
 +            'axes.linewidth'
 +        ],  # Start w/ axis width TODO DOES THIS MATTER?
 +    )
-
-     # Pick smart limits rounded to nearest 10
-     if db_lim == 'smart':
-@@ -423,10 +575,8 @@ def _spectrogram(
-
-     fig.colorbar(im, cax, extend=extend, extendfrac=EXTENDFRAC, label=clab)
-
+@@ -426,2 +577,0 @@ def _spectrogram(
 -    spec_ax.set_title(tr.id)
 -
-     fig.tight_layout()
+@@ -429 +579 @@ def _spectrogram(
 -    fig.subplots_adjust(hspace=0, wspace=0.05)
 +    fig.subplots_adjust(hspace=0.25, wspace=0.05)
-
-     # Finnicky formatting to get extension triangles (if they exist) to extend
-     # above and below the vertical extent of the spectrogram axes
-@@ -446,7 +596,7 @@ def _spectrogram(
-         pass
-     cax.set_position([pos.xmin, ymin, pos.width, height])
-
+@@ -449 +599 @@ def _spectrogram(
 -    return fig, spec_line, wf_line, time_box, wf_progress
 +    return fig, progress_line, time_box, wf_progress, cat_ax
-
-
- def _ffmpeg_combine(audio_file, video_file, output_file, call_str):
-@@ -482,6 +632,8 @@ def _ffmpeg_combine(audio_file, video_file, output_file, call_str):
-         '320k',
-         '-ac',
-         '2',
+@@ -484,0 +635,2 @@ def _ffmpeg_combine(audio_file, video_file, output_file, call_str):
 +        '-maxrate',
 +        '1.5M',
-         '-metadata',
-         f'artist=sonify, rev. {__version__}',
-         '-metadata',
