@@ -24,6 +24,7 @@ git apply --unidiff-zero ../yasur.patch
 Finally, install _sonify_ into the `yasur_ml` conda environment via
 ```xml
 conda activate yasur_ml
+conda install -c conda-forge 'setuptools<58.4.0'  # To avoid a warning
 pip install --editable .
 ```
 (The `yasur_ml` environment already contains all of _sonify_'s dependencies.)
