@@ -13,11 +13,11 @@ git clone https://github.com/liamtoney/sonify.git
 ```
 
 Then, apply [`yasur.patch`](yasur.patch) to
-[revision `f467ae1`](https://github.com/liamtoney/sonify/tree/f467ae1b3d2912fdfa2fdf395e050f0df7fc269c)
+[revision `7999a7c`](https://github.com/liamtoney/sonify/tree/7999a7cf5abaf52e991286d91e869b5c85b55cbe)
 of _sonify_ via
 ```text
 cd sonify
-git checkout f467ae1
+git checkout 7999a7c
 git apply --unidiff-zero ../yasur.patch
 ```
 
@@ -38,5 +38,5 @@ there are multiple files present, the code will use the alphabetically first one
 
 Here's an example call:
 ```text
-sonify 3E YIF3 CDF 2016-07-31T19:00 2016-07-31T21:00 --freqmin 0.2 --freqmax 4 --speed_up_factor 400 --fps 60 --spec_win_dur 20 --db_lim 90 115
+sonify 3E YIF3 CDF 2016-07-31T19:00 2016-07-31T21:00 --freqmin 0.2 --freqmax 4 --speed_up_factor 400 --fps 60 --resolution 2K --spec_win_dur 20 --db_lim 90 115
 ```
