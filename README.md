@@ -19,3 +19,8 @@ This code requires the [UAF Geophysics Tools](https://github.com/uafgeotools) pa
 [*rtm*](https://github.com/uafgeotools/rtm) for generation of the labeled
 catalog. You can find installation instructions for *rtm*
 [here](https://uaf-rtm.readthedocs.io/en/master/README.html#installation).
+
+## Acknowledgements
+
+This work was supported by the Nuclear Arms Control Technology (NACT) program at the
+Defense Threat Reduction Agency (DTRA). Cleared for release.
