@@ -5,7 +5,6 @@ channels:
 dependencies:
   - black
   - cartopy
-  - cffi=1.14.4  # So MacOSX backend works with hack
   - gdal
   - gmt
   - ipython
