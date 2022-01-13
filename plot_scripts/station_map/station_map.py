@@ -81,7 +81,7 @@ fig.coast(
     projection='T{}/{}/3i'.format(
         np.mean(VANUATU_REGION[:2]), np.mean(VANUATU_REGION[2:])
     ),
-    land='lightgrey',
+    land='darkgrey',
     water='lightblue',
     shorelines=True,
     frame=['WESN', 'af'],
@@ -101,7 +101,7 @@ fig.coast(
     projection='G{}/{}/2i'.format(
         np.mean(VANUATU_REGION[:2]), np.mean(VANUATU_REGION[2:])
     ),
-    land='lightgrey',
+    land='darkgrey',
     water='lightblue',
     shorelines=True,
     frame='g',
