@@ -207,10 +207,20 @@ for pA, pC, prof_frac, color in zip(
         )
 
 vent_marker_kwargs = dict(s=80, color='white', edgecolor='black', zorder=5)
-station_marker_kwargs = dict(s=80, marker='v', edgecolor='black', zorder=5)
+station_marker_kwargs = dict(s=160, marker='v', edgecolor='black')
+station_text_kwargs = dict(ha='center', va='center', fontsize=8, weight='bold')
+yoff = 2  # [m] Offset for text
 
 for (name, station_coord), color in zip(STATION_COORDS.items(), COLOR_CYCLE):
-    ax2.scatter(*station_coord, color=color, **station_marker_kwargs)
+    ax2.scatter(*station_coord, color=color, zorder=5, **station_marker_kwargs)
+    ax2.text(
+        station_coord[0],
+        station_coord[1] + yoff,
+        name[-1],  # Just use station number
+        zorder=6,
+        color='black' if name in ['YIF2', 'YIF4'] else 'white',
+        **station_text_kwargs,
+    )
 ax2.scatter(x_A, y_A, **vent_marker_kwargs)
 ax2.scatter(x_C, y_C, **vent_marker_kwargs)
 
@@ -223,13 +233,29 @@ ax4 = fig.add_subplot(gs[2, 1], sharey=ax3)
 CD_XLIM = (0, 450)  # [m]
 
 for ax, profiles in zip([ax3, ax4], [profiles_A, profiles_C]):
+    zorder = 5
     for p, name, color in zip(profiles, STATION_COORDS.keys(), COLOR_CYCLE):
         h = np.hstack(
             [0, np.cumsum(np.linalg.norm([np.diff(p.x), np.diff(p.y)], axis=0))]
         )
         ax.plot(h, p, color=color, linewidth=PROFILE_LW)
-        ax.scatter(h[-1], p[-1], color=color, label=name, **station_marker_kwargs)
-    ax.scatter(0, p[0], label='Subcrater', clip_on=False, **vent_marker_kwargs)
+        ax.scatter(
+            h[-1],
+            p[-1],
+            color=color,
+            zorder=zorder,
+            **station_marker_kwargs,
+        )
+        ax.text(
+            h[-1],
+            p[-1] + yoff,
+            name[-1],
+            zorder=zorder + 1,
+            color='black' if name in ['YIF2', 'YIF4'] else 'white',
+            **station_text_kwargs,
+        )
+        zorder += 2  # Marker + text is grouped
+    ax.scatter(0, p[0], clip_on=False, **vent_marker_kwargs)
     ax.set_aspect('equal')
     ax.xaxis.set_major_locator(MultipleLocator(MAJOR_INT))
     ax.yaxis.set_major_locator(MultipleLocator(MAJOR_INT))
