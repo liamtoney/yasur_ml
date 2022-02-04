@@ -13,4 +13,5 @@
 *.gsheet
 *.gdoc
 *.npy
+*.pptx
 .DS_Store
