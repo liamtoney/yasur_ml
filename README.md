@@ -24,7 +24,7 @@ catalog. You can find installation instructions for *rtm*
 
 1. [`download_3E.py`](data/download_3E.py) — download the data
 2. [`build_catalog.py`](label/build_catalog.py) — run *rtm* to create a CSV catalog
-3. [`label_catalog`](label/label_catalog.py) — associate entries in catalog to a subcrater
+3. [`label_catalog.py`](label/label_catalog.py) — associate entries in catalog to a subcrater
 4. [`extract_features.py`](features/extract_features.py) — extract features from waveforms and store in Feather file
 5. Apply tools in [`svm/`](svm/)
 
