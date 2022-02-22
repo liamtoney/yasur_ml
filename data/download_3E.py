@@ -65,6 +65,7 @@ while True:
     starttime += chunk_duration_sec
 
 # Downsample, and then merge (opposite order hangs)
+st.filter('lowpass', freq=0.4 * SAMPLING_RATE, corners=10, zerophase=True)  # AA filter
 st.interpolate(sampling_rate=SAMPLING_RATE, method='lanczos', a=20)
 st.merge(method=1, fill_value='interpolate')  # Avoids creating a masked array
 
