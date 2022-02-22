@@ -34,18 +34,18 @@ index bb61914..e159ef0 100755
 @@ -230,0 +242,16 @@ def sonify(
 +        cat_progress = catalog[catalog.time <= times[frame]]
 +        if not cat_progress.empty:
-+            a_cumsum = (cat_progress.label == 'A').cumsum().tolist()
-+            c_cumsum = (cat_progress.label == 'C').cumsum().tolist()
++            s_cumsum = (cat_progress.label == 'S').cumsum().tolist()
++            n_cumsum = (cat_progress.label == 'N').cumsum().tolist()
 +            cat_ax.stackplot(
 +                [t.matplotlib_date for t in cat_progress.time]
 +                + [times[frame].matplotlib_date],
-+                a_cumsum + [a_cumsum[-1]],
-+                c_cumsum + [c_cumsum[-1]],
-+                colors=(os.environ['VENT_A'], os.environ['VENT_C']),
++                s_cumsum + [s_cumsum[-1]],
++                n_cumsum + [n_cumsum[-1]],
++                colors=(os.environ['SUBCRATER_S'], os.environ['SUBCRATER_N']),
 +                clip_on=False,
 +            )
 +            recent_label = cat_progress.label.tolist()[-1]
-+            color = os.environ[f'VENT_{recent_label}']
++            color = os.environ[f'SUBCRATER_{recent_label}']
 +            progress_line.set_color(color)
 +            time_box.txt._text.set_color(color)
 @@ -236,0 +264,13 @@ def sonify(
@@ -121,7 +121,7 @@ index bb61914..e159ef0 100755
 +        np.nan,
 +        np.nan,
 +        np.nan,
-+        colors=(os.environ['VENT_A'], os.environ['VENT_C']),
++        colors=(os.environ['SUBCRATER_S'], os.environ['SUBCRATER_N']),
 +        labels=('S', 'N'),
 +        clip_on=False,
 +    )

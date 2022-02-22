@@ -22,9 +22,9 @@ plt.rcParams.update({'font.size': FONT_SIZE})
 # Define project directory
 WORKING_DIR = Path.home() / 'work' / 'yasur_ml'
 
-# Load vent locs
-with open(WORKING_DIR / 'yasur_vent_locs.json') as f:
-    VENT_LOCS = json.load(f)
+# Load subcrater locs
+with open(WORKING_DIR / 'yasur_subcrater_locs.json') as f:
+    SUBCRATER_LOCS = json.load(f)
 
 # Load station locations in UTM
 net = Client('IRIS').get_stations(
@@ -76,27 +76,27 @@ hs.data = ls.hillshade(
     dem.data, dx=np.abs(np.diff(dem.x).mean()), dy=np.abs(np.diff(dem.y).mean())
 )
 
-# Vent locations in UTM
-x_A, y_A, *_ = utm.from_latlon(*VENT_LOCS['A'][::-1])
-x_C, y_C, *_ = utm.from_latlon(*VENT_LOCS['C'][::-1])
+# Subcrater locations in UTM
+x_S, y_S, *_ = utm.from_latlon(*SUBCRATER_LOCS['S'][::-1])
+x_N, y_N, *_ = utm.from_latlon(*SUBCRATER_LOCS['N'][::-1])
 
 # Calculate vertical profiles
-profiles_A = []
-profiles_C = []
+profiles_S = []
+profiles_N = []
 N = 500  # Number of points in profile (overkill!)
 for station_coord in STATION_COORDS.values():
-    profile_A = dem.interp(
-        x=xr.DataArray(np.linspace(x_A, station_coord[0], N)),
-        y=xr.DataArray(np.linspace(y_A, station_coord[1], N)),
+    profile_S = dem.interp(
+        x=xr.DataArray(np.linspace(x_S, station_coord[0], N)),
+        y=xr.DataArray(np.linspace(y_S, station_coord[1], N)),
         method='linear',
     )
-    profiles_A.append(profile_A)
-    profile_C = dem.interp(
-        x=xr.DataArray(np.linspace(x_C, station_coord[0], N)),
-        y=xr.DataArray(np.linspace(y_C, station_coord[1], N)),
+    profiles_S.append(profile_S)
+    profile_N = dem.interp(
+        x=xr.DataArray(np.linspace(x_N, station_coord[0], N)),
+        y=xr.DataArray(np.linspace(y_N, station_coord[1], N)),
         method='linear',
     )
-    profiles_C.append(profile_C)
+    profiles_N.append(profile_N)
 
 #%% Plot
 
@@ -158,20 +158,20 @@ ax2.annotate(
 # Hard-coded numbers controlling where along profile the distance text is placed,
 # ranging from 0 (at subcrater) to 1 (at station)
 PROF_FRAC = dict(
-    YIF1=dict(A=0.13, C=0.17),
-    YIF2=dict(A=0.75, C=0.5),
-    YIF3=dict(A=0.5, C=0.73),
-    YIF4=dict(A=0.5, C=0.5),
-    YIF5=dict(A=0.5, C=0.5),
+    YIF1=dict(S=0.13, N=0.17),
+    YIF2=dict(S=0.75, N=0.5),
+    YIF3=dict(S=0.5, N=0.73),
+    YIF4=dict(S=0.5, N=0.5),
+    YIF5=dict(S=0.5, N=0.5),
 )
 GAP_HALF_WIDTH = 27  # [m] Half of the width of the gap in the line (where text goes)
 
 # Plot horizontal profiles on DEM, adding text denoting distances
-for pA, pC, prof_frac, color in zip(
-    profiles_A, profiles_C, PROF_FRAC.values(), COLOR_CYCLE
+for pS, pN, prof_frac, color in zip(
+    profiles_S, profiles_N, PROF_FRAC.values(), COLOR_CYCLE
 ):
 
-    for profile, vent in zip([pA, pC], ['A', 'C']):
+    for profile, subcrater in zip([pS, pN], ['S', 'N']):
 
         # Convert profile x and y into masked arrays
         p_x = np.ma.array(profile.x.values)
@@ -182,7 +182,9 @@ for pA, pC, prof_frac, color in zip(
         ylen = p_y[-1] - p_y[0]
         length = np.linalg.norm([xlen, ylen])
 
-        center_ind = int(prof_frac[vent] * N)  # Convert fraction to index along profile
+        center_ind = int(
+            prof_frac[subcrater] * N
+        )  # Convert fraction to index along profile
         ext_ind = int(GAP_HALF_WIDTH * N / length)  # Convert gap length to index
 
         # Mask profile arrays - masked entries don't get plotted!
@@ -206,7 +208,7 @@ for pA, pC, prof_frac, color in zip(
             fontsize=10,
         )
 
-vent_marker_kwargs = dict(s=80, color='white', edgecolor='black', zorder=5)
+subcrater_marker_kwargs = dict(s=80, color='white', edgecolor='black', zorder=5)
 station_marker_kwargs = dict(s=160, marker='v', edgecolor='black')
 station_text_kwargs = dict(ha='center', va='center', fontsize=8, weight='bold')
 yoff = 2  # [m] Offset for text
@@ -221,8 +223,8 @@ for (name, station_coord), color in zip(STATION_COORDS.items(), COLOR_CYCLE):
         color='black' if name in ['YIF2', 'YIF4'] else 'white',
         **station_text_kwargs,
     )
-ax2.scatter(x_A, y_A, **vent_marker_kwargs)
-ax2.scatter(x_C, y_C, **vent_marker_kwargs)
+ax2.scatter(x_S, y_S, **subcrater_marker_kwargs)
+ax2.scatter(x_N, y_N, **subcrater_marker_kwargs)
 
 # --------------------------------------------------------------------------------------
 # Panels (c,d)
@@ -232,7 +234,7 @@ ax4 = fig.add_subplot(gs[2, 1], sharey=ax3)
 
 CD_XLIM = (0, 450)  # [m]
 
-for ax, profiles in zip([ax3, ax4], [profiles_A, profiles_C]):
+for ax, profiles in zip([ax3, ax4], [profiles_S, profiles_N]):
     zorder = 5
     for p, name, color in zip(profiles, STATION_COORDS.keys(), COLOR_CYCLE):
         h = np.hstack(
@@ -255,7 +257,7 @@ for ax, profiles in zip([ax3, ax4], [profiles_A, profiles_C]):
             **station_text_kwargs,
         )
         zorder += 2  # Marker + text is grouped
-    ax.scatter(0, p[0], clip_on=False, **vent_marker_kwargs)
+    ax.scatter(0, p[0], clip_on=False, **subcrater_marker_kwargs)
     ax.set_aspect('equal')
     ax.xaxis.set_major_locator(MultipleLocator(MAJOR_INT))
     ax.yaxis.set_major_locator(MultipleLocator(MAJOR_INT))

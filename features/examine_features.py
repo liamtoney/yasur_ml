@@ -23,7 +23,7 @@ features = balance_classes(features)
 X_AXIS_FEATURE = 'td_skewness'
 Y_AXIS_FEATURE = 'td_kurtosis'
 
-colors = [os.environ[f'VENT_{label}'] for label in features.label]
+colors = [os.environ[f'SUBCRATER_{label}'] for label in features.label]
 
 fig, ax = plt.subplots()
 ax.scatter(
@@ -37,8 +37,12 @@ ax.set_ylabel(Y_AXIS_FEATURE)
 ax.set_title(f'{features.shape[0]} waveforms')
 
 # Add legend
-ax.scatter([], [], edgecolors=os.environ['VENT_A'], facecolors='none', label='Vent A')
-ax.scatter([], [], edgecolors=os.environ['VENT_C'], facecolors='none', label='Vent C')
+ax.scatter(
+    [], [], edgecolors=os.environ['SUBCRATER_S'], facecolors='none', label='Subcrater S'
+)
+ax.scatter(
+    [], [], edgecolors=os.environ['SUBCRATER_N'], facecolors='none', label='Subcrater N'
+)
 ax.legend()
 
 fig.show()
@@ -74,19 +78,19 @@ for ax, feature in zip(axes.flatten(), feature_names):
         elif feature == 'td_skewness':
             bin_range = (-2, 5)
     ax.hist(
-        features[features.label == 'A'][feature],
+        features[features.label == 'S'][feature],
         bins=NBINS,
         range=bin_range,
-        color=os.environ['VENT_A'],
-        label='Vent A',
+        color=os.environ['SUBCRATER_S'],
+        label='Subcrater S',
         alpha=ALPHA,
     )
     ax.hist(
-        features[features.label == 'C'][feature],
+        features[features.label == 'N'][feature],
         range=bin_range,
         bins=NBINS,
-        color=os.environ['VENT_C'],
-        label='Vent C',
+        color=os.environ['SUBCRATER_N'],
+        label='Subcrater N',
         alpha=ALPHA,
     )
     ax.set_title(feature)

@@ -17,9 +17,9 @@ from rtm import define_grid
 # Define project directory
 WORKING_DIR = Path.home() / 'work' / 'yasur_ml'
 
-# Load vent locs
-with open(WORKING_DIR / 'yasur_vent_locs.json') as f:
-    VENT_LOCS = json.load(f)
+# Load subcrater locs
+with open(WORKING_DIR / 'yasur_subcrater_locs.json') as f:
+    SUBCRATER_LOCS = json.load(f)
 
 # Region is from running GMT with -RVU for Vanuatu
 PAD = 0.14
@@ -38,10 +38,12 @@ sta_lon = [sta.longitude for sta in net]
 sta_lat = [sta.latitude for sta in net]
 sta_code = [sta.code for sta in net]
 
-# Convert vent midpoint to UTM
-x_0, y_0, *_ = utm.from_latlon(VENT_LOCS['midpoint'][1], VENT_LOCS['midpoint'][0])
+# Convert subcrater midpoint to UTM
+x_0, y_0, *_ = utm.from_latlon(
+    SUBCRATER_LOCS['midpoint'][1], SUBCRATER_LOCS['midpoint'][0]
+)
 
-# Radius around vent midpoint to use for region [m]
+# Radius around subcrater midpoint to use for region [m]
 RADIUS = 800
 
 # Read in and process DEM to use, command to create was:
@@ -57,7 +59,7 @@ dem = dem.where(
 )
 
 
-# Define transform from (lat, lon) to (x, y) from vent midpoint
+# Define transform from (lat, lon) to (x, y) from subcrater midpoint
 def transform(longitude, latitude):
     lons = np.atleast_1d(longitude)
     lats = np.atleast_1d(latitude)
@@ -89,8 +91,8 @@ fig.coast(
 )
 inset_pen_color = '#e15759'
 fig.plot(
-    x=VENT_LOCS['midpoint'][0],
-    y=VENT_LOCS['midpoint'][1],
+    x=SUBCRATER_LOCS['midpoint'][0],
+    y=SUBCRATER_LOCS['midpoint'][1],
     style='t0.4c',
     color=inset_pen_color,
     pen=True,
@@ -143,8 +145,8 @@ df = pd.read_csv(catalog_csv)
 # Define grid (TODO: NEED TO UPDATE THIS IF build_catalog.py CHANGES!)
 RTM_RADIUS = 350
 grid = define_grid(
-    lon_0=VENT_LOCS['midpoint'][0],
-    lat_0=VENT_LOCS['midpoint'][1],
+    lon_0=SUBCRATER_LOCS['midpoint'][0],
+    lat_0=SUBCRATER_LOCS['midpoint'][1],
     x_radius=RTM_RADIUS,
     y_radius=RTM_RADIUS,
     spacing=10,
@@ -179,20 +181,22 @@ verts = [
 fig.plot(data=np.array(verts), straight_line='p', pen='0.75p,black,-')
 
 # Plot ellipses used for event labeling
-vent_pen = '2p'
-for vent in 'A', 'C':
+subcrater_pen = '2p'
+for subcrater in 'S', 'N':
     # Actual ellipses
     fig.plot(
-        data=str(WORKING_DIR / 'plot_scripts' / 'station_map' / f'{vent}_ellipse.xy'),
-        pen=vent_pen + ',' + os.environ[f'VENT_{vent}'],
+        data=str(
+            WORKING_DIR / 'plot_scripts' / 'station_map' / f'{subcrater}_ellipse.xy'
+        ),
+        pen=subcrater_pen + ',' + os.environ[f'SUBCRATER_{subcrater}'],
     )
     # Dummies for legend
     fig.plot(
         x=-4747,
         y=-4747,
         style='c0.3c',
-        pen=vent_pen + ',' + os.environ[f'VENT_{vent}'],
-        label='"Subcrater {}"'.format('S' if vent == 'A' else 'N'),
+        pen=subcrater_pen + ',' + os.environ[f'SUBCRATER_{subcrater}'],
+        label=f'"Subcrater {subcrater}"',
     )
 
 # Plot and label stations

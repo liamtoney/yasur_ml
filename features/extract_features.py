@@ -63,7 +63,7 @@ def manual_extractor(st):
             dict(
                 station=tr.stats.station,
                 time=tr.stats.event_info.origin_time,  # Origin time from catalog
-                label=tr.stats.vent,
+                label=tr.stats.subcrater,
                 td_std=np.std(tr.data),
                 td_skewness=stats.skew(tr.data),
                 td_kurtosis=stats.kurtosis(tr.data),
@@ -100,7 +100,7 @@ def tsfresh_extractor(st):
             [timeseries, pd.DataFrame(dict(id=id, time=time, x=value))],
             ignore_index=True,
         )
-        labels.append(tr.stats.vent)
+        labels.append(tr.stats.subcrater)
         otimes.append(tr.stats.event_info.origin_time)
         stations.append(tr.stats.station)
 

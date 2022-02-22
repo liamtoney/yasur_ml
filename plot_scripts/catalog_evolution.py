@@ -32,20 +32,20 @@ t_end = UTCDateTime('2016-08-01T22')
 # Form array of UTCDateTimes
 t_vec = [t_start + t for t in np.arange(0, (t_end - t_start), WINDOW)]
 
-# In moving windows, get counts of vent A and vent C
-fraction_A = []
-fraction_C = []
+# In moving windows, get counts of subcrater S and subcrater N
+fraction_S = []
+fraction_N = []
 for t in t_vec:
     catalog_hr = catalog[(catalog.time >= t) & (catalog.time < t + WINDOW)]
     vcounts = catalog_hr.label.value_counts()
-    if hasattr(vcounts, 'A'):
-        fraction_A.append(vcounts.A)
+    if hasattr(vcounts, 'S'):
+        fraction_S.append(vcounts.S)
     else:
-        fraction_A.append(0)
-    if hasattr(vcounts, 'C'):
-        fraction_C.append(vcounts.C)
+        fraction_S.append(0)
+    if hasattr(vcounts, 'N'):
+        fraction_N.append(vcounts.N)
     else:
-        fraction_C.append(0)
+        fraction_N.append(0)
 
 # Load in a single station's data and process (takes a while)
 tr = read(str(WORKING_DIR / 'data' / '3E_YIF1-5_50hz.pkl')).select(station='YIF3')[0]
@@ -74,9 +74,9 @@ axes[0].tick_params(axis='x', which='both', bottom=False)
 t_vec_mpl = [(t + (WINDOW / 2)).matplotlib_date for t in t_vec]  # Center in window!
 axes[1].stackplot(
     t_vec_mpl,
-    fraction_A,
-    fraction_C,
-    colors=(os.environ['VENT_A'], os.environ['VENT_C']),
+    fraction_S,
+    fraction_N,
+    colors=(os.environ['SUBCRATER_S'], os.environ['SUBCRATER_N']),
     labels=('Subcrater S', 'Subcrater N'),
     clip_on=False,
 )

@@ -59,7 +59,9 @@ def tsfresh_select(features, **selection_kwargs):
     """
 
     features_subset = features.iloc[:, 3:]  # Skipping first three (metadata) columns
-    y = (features['label'] == 'C').to_numpy(dtype=int)  # 0 = vent A; 1 = vent C
+    y = (features['label'] == 'N').to_numpy(
+        dtype=int
+    )  # 0 = subcrater S; 1 = subcrater N
 
     print('Applying TSFRESH feature selection...')
     features_filtered = select_features(features_subset, y, **selection_kwargs)
@@ -92,9 +94,9 @@ def balance_classes(features, random_state=None, verbose=True):
     class_counts_before = features.label.value_counts()
     if verbose:
         print('Before:\n' + class_counts_before.to_string())
-    dominant_vent = class_counts_before.index[class_counts_before.argmax()]
-    majority = features[features.label == dominant_vent]
-    minority = features[features.label != dominant_vent]
+    dominant_label = class_counts_before.index[class_counts_before.argmax()]
+    majority = features[features.label == dominant_label]
+    minority = features[features.label != dominant_label]
 
     # When resampling, use only the features associated with a single station - this
     # treats things on an event level
@@ -116,7 +118,7 @@ def balance_classes(features, random_state=None, verbose=True):
         )
     ]
 
-    # Check that each station has the same number of examples (for each vent)
+    # Check that each station has the same number of examples (for each subcrater)
     assert (
         len(
             set(
@@ -133,8 +135,8 @@ def balance_classes(features, random_state=None, verbose=True):
         # Print what action was taken
         class_counts_after = features_downsampled.label.value_counts()
         print('After:\n' + class_counts_after.to_string())
-        num_removed = (class_counts_before - class_counts_after)[dominant_vent]
-        print(f'({num_removed} vent {dominant_vent} examples removed)')
+        num_removed = (class_counts_before - class_counts_after)[dominant_label]
+        print(f'({num_removed} subcrater {dominant_label} examples removed)')
 
     return features_downsampled
 
@@ -151,7 +153,9 @@ def format_scikit(features):
     """
 
     X = features.iloc[:, 3:].to_numpy()  # Skipping first three (metadata) columns
-    y = (features['label'] == 'C').to_numpy(dtype=int)  # 0 = vent A; 1 = vent C
+    y = (features['label'] == 'N').to_numpy(
+        dtype=int
+    )  # 0 = subcrater S; 1 = subcrater N
 
     return X, y
 
@@ -165,7 +169,7 @@ def plot_confusion(clf, X_test, y_test, title=None):
     context.
 
     Warning:
-        Double-check that the colored "A" and "C" labels are set in boldface. The
+        Double-check that the colored "S" and "N" labels are set in boldface. The
         ~/.matplotlib/fontlist-v???.json font cache might need to be deleted and the
         code re-run to accomplish this.
 
@@ -181,7 +185,7 @@ def plot_confusion(clf, X_test, y_test, title=None):
         X_test,
         y_test,
         labels=[0, 1],  # Explicitly setting the order here
-        display_labels=['A', 'C'],  # Since 0 = vent A; 1 = vent C
+        display_labels=['S', 'N'],  # Since 0 = subcrater S; 1 = subcrater N
         cmap='Greys',
         normalize='true',  # 'true' means the diagonal contains the TPR and TNR
         values_format='.0%',  # Format as integer percent
@@ -190,11 +194,11 @@ def plot_confusion(clf, X_test, y_test, title=None):
     cm.im_.set_clim(0, 1)  # For easier comparison between plots
     fig = cm.figure_
     ax = fig.axes[0]
-    ax.set_xlabel(ax.get_xlabel().replace('label', 'vent'))
-    ax.set_ylabel(ax.get_ylabel().replace('label', 'vent'))
+    ax.set_xlabel(ax.get_xlabel().replace('label', 'subcrater'))
+    ax.set_ylabel(ax.get_ylabel().replace('label', 'subcrater'))
     for label in ax.get_xticklabels() + ax.get_yticklabels():
         label.set_weight('bold')
-        label.set_color(os.environ[f'VENT_{label.get_text()}'])
+        label.set_color(os.environ[f'SUBCRATER_{label.get_text()}'])
     if title is not None:
         ax.set_title(title, loc='left', fontsize='medium')
     fig.tight_layout()

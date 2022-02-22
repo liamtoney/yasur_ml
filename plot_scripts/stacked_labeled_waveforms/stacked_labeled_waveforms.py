@@ -42,12 +42,12 @@ pickle_filename = (
 # Only read in the files and stack if we NEED to, since this takes a while!
 if not pickle_filename.exists():
 
-    # Construct dictionary to hold traces for each vent and each station
+    # Construct dictionary to hold traces for each subcrater and each station
     station_dict = {}
     for station in STATIONS:
         # This initial NaN trace must be removed later
         station_dict[station] = np.full(NPTS, np.nan)
-    traces = dict(A=copy.deepcopy(station_dict), C=copy.deepcopy(station_dict))
+    traces = dict(S=copy.deepcopy(station_dict), N=copy.deepcopy(station_dict))
 
     # Iterate over all labeled waveform files
     for file in sorted(labeled_wf_dir.glob('label_???.pkl')):
@@ -67,10 +67,10 @@ if not pickle_filename.exists():
 
             # Add traces
             for tr in st.select(station=station):
-                if tr.stats.vent == 'A':
-                    traces['A'][station] = np.vstack((traces['A'][station], tr.data))
+                if tr.stats.subcrater == 'S':
+                    traces['S'][station] = np.vstack((traces['S'][station], tr.data))
                 else:
-                    traces['C'][station] = np.vstack((traces['C'][station], tr.data))
+                    traces['N'][station] = np.vstack((traces['N'][station], tr.data))
 
     # Write file
     with pickle_filename.open('wb') as f:
@@ -88,10 +88,12 @@ fig, axes = plt.subplots(
     nrows=len(STATIONS), ncols=2, sharex=True, sharey=False, figsize=(6.5, 6.5)
 )
 
-for i, (vent, axes_col) in enumerate(zip(traces.keys(), axes.T)):
-    color = os.environ[f'VENT_{vent}']
-    for station, ax in zip(traces[vent].keys(), axes_col):
-        vs_traces = traces[vent][station][1:, :]  # Removing the first row of NaNs here
+for i, (subcrater, axes_col) in enumerate(zip(traces.keys(), axes.T)):
+    color = os.environ[f'SUBCRATER_{subcrater}']
+    for station, ax in zip(traces[subcrater].keys(), axes_col):
+        vs_traces = traces[subcrater][station][
+            1:, :
+        ]  # Removing the first row of NaNs here
 
         med = np.percentile(vs_traces, 50, axis=0)
         ax.plot(
@@ -119,7 +121,7 @@ for i, (vent, axes_col) in enumerate(zip(traces.keys(), axes.T)):
         ax.set_yticks([])
 
         # Label stations (only need to do this for one column)
-        if vent == 'A':
+        if subcrater == 'S':
             trans = transforms.blended_transform_factory(fig.transFigure, ax.transAxes)
             X_LOC = 0.503  # TODO: MANUAL ADJUSTMENT TO TRULY CENTER
             ax.text(X_LOC, 0.49, station, va='center', ha='center', transform=trans)

@@ -29,24 +29,27 @@ WORKING_DIR = Path.home() / 'work' / 'yasur_ml'
 # Define which catalog to label
 catalog_csv = WORKING_DIR / 'label' / 'catalogs' / 'height_4_spacing_30_agc_60.csv'
 
-# Number of standard deviations from mean of distribution to allow for vent association
+# Number of standard deviations from mean of distribution to allow for subcrater
+# association
 N_STD = 2
 
 # Read in entire catalog to pandas DataFrame
 df = pd.read_csv(catalog_csv)
 df.t = [UTCDateTime(t) for t in df.t]
 
-# Load vent locs
-with open(WORKING_DIR / 'yasur_vent_locs.json') as f:
-    VENT_LOCS = json.load(f)
+# Load subcrater locs
+with open(WORKING_DIR / 'yasur_subcrater_locs.json') as f:
+    SUBCRATER_LOCS = json.load(f)
 
-# Convert vent midpoint to UTM
-x_0, y_0, *_ = utm.from_latlon(VENT_LOCS['midpoint'][1], VENT_LOCS['midpoint'][0])
+# Convert subcrater midpoint to UTM
+x_0, y_0, *_ = utm.from_latlon(
+    SUBCRATER_LOCS['midpoint'][1], SUBCRATER_LOCS['midpoint'][0]
+)
 
 # Need to define this for proper histogram binning (TODO: NEED TO UPDATE THIS IF build_catalog.py CHANGES!)
 grid = define_grid(
-    lon_0=VENT_LOCS['midpoint'][0],
-    lat_0=VENT_LOCS['midpoint'][1],
+    lon_0=SUBCRATER_LOCS['midpoint'][0],
+    lat_0=SUBCRATER_LOCS['midpoint'][1],
     x_radius=350,
     y_radius=350,
     spacing=10,
@@ -116,16 +119,18 @@ def confidence_ellipse_from_mean_cov(
 # Format for scikit-learn
 X_train = np.column_stack([df.x, df.y])
 
-# Get UTM locations of the vent DEM minima to initialize the GMM
-vent_utm = {}
-for vent in 'A', 'C':
-    vent_utm[vent] = utm.from_latlon(VENT_LOCS[vent][1], VENT_LOCS[vent][0])[:2]
+# Get UTM locations of the subcrater DEM minima to initialize the GMM
+subcrater_utm = {}
+for subcrater in 'S', 'N':
+    subcrater_utm[subcrater] = utm.from_latlon(
+        SUBCRATER_LOCS[subcrater][1], SUBCRATER_LOCS[subcrater][0]
+    )[:2]
 
-# Fit a GMM with two components (for the two vents)
+# Fit a GMM with two components (for the two subcraters)
 clf = mixture.GaussianMixture(
     n_components=2,
     covariance_type='full',
-    means_init=list(vent_utm.values()),
+    means_init=list(subcrater_utm.values()),
     random_state=47,  # We want reproducible results so the ellipses stay the same!
 )
 clf.fit(X_train)
@@ -133,30 +138,35 @@ clf.fit(X_train)
 # MUST plot since confidence ellipse function is designed to work in plotting context
 fig, ax = plt.subplots()
 ax.scatter(df.x, df.y, s=1, c='black')
-for mean, cov, vent in zip(clf.means_, clf.covariances_, vent_utm.keys()):
+for mean, cov, subcrater in zip(clf.means_, clf.covariances_, subcrater_utm.keys()):
     confidence_ellipse_from_mean_cov(
-        mean, cov, ax, n_std=N_STD, edgecolor=os.environ[f'VENT_{vent}']
+        mean, cov, ax, n_std=N_STD, edgecolor=os.environ[f'SUBCRATER_{subcrater}']
     )
-in_ell = {}  # KEY variable storing whether or not locs are within either vent ellipse
-for ell, vent in zip(ax.patches, vent_utm.keys()):
-    in_ell[vent] = ell.contains_points(
+in_ell = (
+    {}
+)  # KEY variable storing whether or not locs are within either subcrater ellipse
+for ell, subcrater in zip(ax.patches, subcrater_utm.keys()):
+    in_ell[subcrater] = ell.contains_points(
         ax.transData.transform(np.column_stack([df.x, df.y]))
     )
     ax.scatter(
-        df.x[in_ell[vent]], df.y[in_ell[vent]], s=1, c=os.environ[f'VENT_{vent}']
+        df.x[in_ell[subcrater]],
+        df.y[in_ell[subcrater]],
+        s=1,
+        c=os.environ[f'SUBCRATER_{subcrater}'],
     )
-    # Write out text file of verts (m from vent midpoint) for station map
+    # Write out text file of verts (m from subcrater midpoint) for station map
     verts = ax.transData.inverted().transform(ell.get_verts())
     verts[:, 0] -= x_0
     verts[:, 1] -= y_0
     np.savetxt(
-        WORKING_DIR / 'plot_scripts' / 'station_map' / f'{vent}_ellipse.xy',
+        WORKING_DIR / 'plot_scripts' / 'station_map' / f'{subcrater}_ellipse.xy',
         verts,
         fmt='%.4f',
     )
 
-    print(f'Vent {vent}: {in_ell[vent].sum()}')
-print('Total: {}'.format(in_ell['A'].sum() + in_ell['C'].sum()))
+    print(f'Subcrater {subcrater}: {in_ell[subcrater].sum()}')
+print('Total: {}'.format(in_ell['S'].sum() + in_ell['N'].sum()))
 ax.set_aspect('equal')
 fig.show()
 
@@ -198,16 +208,18 @@ if PLOT:
 
 #%% Label based upon whether location is inside / outside confidence ellipse
 
-# Array of vent labels for each entry in catalog
-vent_locs = np.empty(df.shape[0], dtype=str)
-for vent, in_ell_ind in in_ell.items():
-    vent_locs[in_ell_ind] = vent
-vent_locs[in_ell['A'] & in_ell['C']] = ''  # Doubly-located events should be discarded
+# Array of subcrater labels for each entry in catalog
+subcrater_locs = np.empty(df.shape[0], dtype=str)
+for subcrater, in_ell_ind in in_ell.items():
+    subcrater_locs[in_ell_ind] = subcrater
+subcrater_locs[
+    in_ell['S'] & in_ell['N']
+] = ''  # Doubly-located events should be discarded
 
-df['vent'] = vent_locs
+df['subcrater'] = subcrater_locs
 
 # Remove rows with no location
-df_locs = df[df.vent != '']
+df_locs = df[df.subcrater != '']
 df_locs.reset_index(inplace=True, drop=True)  # Important since iterrows() uses index!
 
 #%% Load in full dataset
@@ -229,7 +241,7 @@ for i, row in df_locs.iterrows():
 
     st = st_full.copy().trim(row.t, row.t + WAVEFORM_DUR)  # TODO: This line is slow!
     for tr in st:
-        tr.stats.vent = row.vent
+        tr.stats.subcrater = row.subcrater
         tr.stats.event_info = dict(utm_x=row.x, utm_y=row.y, origin_time=row.t)
         tr.data = tr.data[:length_samples]
 

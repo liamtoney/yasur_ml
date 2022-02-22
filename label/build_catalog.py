@@ -27,9 +27,9 @@ st_full = read(str(WORKING_DIR / 'data' / '3E_YIF1-5_50hz.pkl'))
 
 #%% Set parameters
 
-# Load vent locs
-with open(WORKING_DIR / 'yasur_vent_locs.json') as f:
-    VENT_LOCS = json.load(f)
+# Load subcrater locs
+with open(WORKING_DIR / 'yasur_subcrater_locs.json') as f:
+    SUBCRATER_LOCS = json.load(f)
 
 # [Hz] Bandpass corners (David's local RTM paper uses 0.2–4 Hz)
 FREQ_MIN = 0.2
@@ -49,8 +49,8 @@ CHUNK_DURATION = 3  # [h] Length of data chunk to run RTM on
 
 # Grid params
 GRID_SPACING = 10  # [m]
-SEARCH_LON_0 = VENT_LOCS['midpoint'][0]
-SEARCH_LAT_0 = VENT_LOCS['midpoint'][1]
+SEARCH_LON_0 = SUBCRATER_LOCS['midpoint'][0]
+SEARCH_LAT_0 = SUBCRATER_LOCS['midpoint'][1]
 SEARCH_X = 350
 SEARCH_Y = 350
 
@@ -130,7 +130,7 @@ while True:
         FDTD_DIR=str(FDTD_DIR) + '/',  # Hacky :(
     )
 
-    # Automatically determine vent locations
+    # Automatically determine subcrater locations
     time_max, y_max, x_max, *_ = get_peak_coordinates(
         S,
         global_max=False,
