@@ -41,7 +41,7 @@ SUBCRATER_N = dict(
 
 # Find minimum for each subcrater
 locations = {}
-for subcrater, label in zip([SUBCRATER_S, SUBCRATER_N], ['A', 'C']):
+for subcrater, label in zip([SUBCRATER_S, SUBCRATER_N], ['S', 'N']):
 
     # Crop to above limits
     mask_lon = (dem.x > subcrater['xlim'][0]) & (dem.x < subcrater['xlim'][1])
@@ -57,8 +57,8 @@ for subcrater, label in zip([SUBCRATER_S, SUBCRATER_N], ['A', 'C']):
     locations[label] = [x_min, y_min]
 
 # Calculate midpoint
-x_mid = np.mean([locations['A'][0], locations['C'][0]])
-y_mid = np.mean([locations['A'][1], locations['C'][1]])
+x_mid = np.mean([locations['S'][0], locations['N'][0]])
+y_mid = np.mean([locations['S'][1], locations['N'][1]])
 locations['midpoint'] = [x_mid, y_mid]
 
 # Plot points
