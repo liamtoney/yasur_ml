@@ -21,7 +21,9 @@ WINDOW = 60 * 60
 
 # Read in features file, process into a catalog by subsetting to just one station and
 # removing the unneeded features columns
-catalog = pd.read_feather(WORKING_DIR / 'features' / 'feather' / 'manual.feather')
+catalog = pd.read_feather(
+    WORKING_DIR / 'features' / 'feather' / 'manual_filter_roll.feather'
+)
 catalog = catalog[catalog.station == 'YIF1'][['time', 'label']]
 catalog.time = [UTCDateTime(t) for t in catalog.time]
 
