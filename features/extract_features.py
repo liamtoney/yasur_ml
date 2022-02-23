@@ -62,7 +62,7 @@ def manual_extractor(st):
         features_tr = pd.DataFrame(
             dict(
                 station=tr.stats.station,
-                time=tr.stats.event_info.origin_time,  # Origin time from catalog
+                time=str(tr.stats.event_info.origin_time),  # Origin time from catalog
                 label=tr.stats.subcrater,
                 td_std=np.std(tr.data),
                 td_skewness=stats.skew(tr.data),
@@ -101,7 +101,7 @@ def tsfresh_extractor(st):
             ignore_index=True,
         )
         labels.append(tr.stats.subcrater)
-        otimes.append(tr.stats.event_info.origin_time)
+        otimes.append(str(tr.stats.event_info.origin_time))
         stations.append(tr.stats.station)
 
     # Calculate features
@@ -159,4 +159,4 @@ if FILTER:
     filename = filename.replace('.feather', '_filter.feather')
 if ROLL:
     filename = filename.replace('.feather', '_roll.feather')
-features.to_feather(WORKING_DIR / 'features' / 'feather' / filename, index=False)
+features.to_feather(WORKING_DIR / 'features' / 'feather' / filename)
