@@ -126,7 +126,7 @@ HEIGHT = 5.7  # [in]
 shaded_relief = pygmt.grdgradient(dem, azimuth=-45.0, normalize='t1+a0')
 pygmt.makecpt(
     cmap='gray',
-    series=[-1.5, 0.4],  # Key! Controls darkness
+    series=[-2, 0.4],  # Key! Controls darkness
 )
 fig.grdimage(
     shaded_relief,
