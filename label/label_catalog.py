@@ -130,6 +130,7 @@ for subcrater in 'S', 'N':
 clf = mixture.GaussianMixture(
     n_components=2,
     covariance_type='full',
+    reg_covar=400,  # Regularization for GMM, chosen to make ellipse sizes more similar
     means_init=list(subcrater_utm.values()),
     random_state=47,  # We want reproducible results so the ellipses stay the same!
 )
