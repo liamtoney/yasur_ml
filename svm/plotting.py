@@ -82,8 +82,8 @@ def plot_generalization_matrix(scores, fig, ax, colorbar=True, show_stats=True):
     if show_stats:
         ax.set_title(f'$\mu$ = {mean:.0%}\n$\sigma$ = {std:.1%}', loc='left')
     else:
-        print(f'mean_diag = {mean:.0%}')
-        print(f'std_diag = {std:.1%}')
+        print(f'mean = {mean:.0%}')
+        print(f'std = {std:.1%}')
 
 
 def plot_path_effect_matrix(
