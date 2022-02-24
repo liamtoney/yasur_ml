@@ -196,7 +196,7 @@ for subcrater in 'S', 'N':
         y=-4747,
         style='c0.3c',
         pen=subcrater_pen + ',' + os.environ[f'SUBCRATER_{subcrater}'],
-        label=f'"Subcrater {subcrater}"',
+        label=f'"{subcrater} subcrater"',
     )
 
 # Plot and label stations

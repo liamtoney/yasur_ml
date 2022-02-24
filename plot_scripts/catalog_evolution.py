@@ -79,7 +79,7 @@ axes[1].stackplot(
     fraction_S,
     fraction_N,
     colors=(os.environ['SUBCRATER_S'], os.environ['SUBCRATER_N']),
-    labels=('Subcrater S', 'Subcrater N'),
+    labels=('S subcrater', 'N subcrater'),
     clip_on=False,
 )
 axes[1].set_ylabel('# of labeled events')

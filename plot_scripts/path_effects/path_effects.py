@@ -281,8 +281,8 @@ for ax, profiles in zip([ax3, ax4], [profiles_S, profiles_N]):
         ax.spines[side].set_visible(False)
 
 pad = 10
-ax3.set_xlabel('Distance from subcrater S (m)', labelpad=pad)
-ax4.set_xlabel('Distance from subcrater N (m)', labelpad=pad)
+ax3.set_xlabel('Distance from S subcrater (m)', labelpad=pad)
+ax4.set_xlabel('Distance from N subcrater (m)', labelpad=pad)
 ax3.set_ylabel('Elevation (m)', labelpad=15)
 ax4.tick_params(which='both', labelleft=False)
 
