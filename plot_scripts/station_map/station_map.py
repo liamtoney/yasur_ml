@@ -123,11 +123,15 @@ fig.plot(data=np.array(verts), straight_line='p', pen=f'1p,{inset_pen_color}')
 fig.shift_origin(xshift='3.5i', yshift='-4.11i')
 
 HEIGHT = 5.7  # [in]
+shaded_relief = pygmt.grdgradient(dem, azimuth=-45.0, normalize='t1+a0')
+pygmt.makecpt(
+    cmap='gray',
+    series=[-1.5, 0.4],  # Key! Controls darkness
+)
 fig.grdimage(
-    dem,
+    shaded_relief,
     region=(-RADIUS, RADIUS, -RADIUS, RADIUS),
-    cmap='white',
-    shading=True,
+    cmap=True,
     projection=f'X{HEIGHT}i',
     frame=[
         'a500f100',
