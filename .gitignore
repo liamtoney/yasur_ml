@@ -6,8 +6,9 @@
 /features/feather/
 /features/selected_names/
 /animation/sonify/
-/sklearn_sandbox.ipynb
 /*.egg-info/
+/sklearn_sandbox.ipynb
+/.set_up_env.bash
 *.nc
 *.pkl
 *.tif
