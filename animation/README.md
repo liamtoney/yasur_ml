@@ -24,10 +24,10 @@ git apply --unidiff-zero ../yasur.patch
 Finally, install _sonify_ into the `yasur_ml` conda environment via
 ```text
 conda activate yasur_ml
-conda install -c conda-forge 'setuptools<58.4.0'  # To avoid a warning
+conda install -c conda-forge ffmpeg 'setuptools<58.4.0'
 pip install --editable .
 ```
-(The `yasur_ml` environment already contains all of _sonify_'s dependencies.)
+(The `yasur_ml` environment already contains almost all of _sonify_'s dependencies.)
 
 ## Creating animations
 

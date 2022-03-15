@@ -2,7 +2,7 @@
 
 This repository contains the code accompanying the forthcoming manuscript "Influence of
 Waveform Feature Extraction on Machine Learning Classifier Performance for a Large,
-Labeled Volcano Infrasound Dataset" [draft title] by
+Labeled Volcanogenic Infrasound Dataset" [draft title] by
 [Liam Toney](mailto:ldtoney@alaska.edu), [David Fee](mailto:dfee1@alaska.edu),
 [Alex Witsil](mailto:ajwitsil@alaska.edu), and [Robin S. Matoza](mailto:rmatoza@ucsb.edu).
 
@@ -17,8 +17,8 @@ from the repository root.
 
 This code requires the [UAF Geophysics Tools](https://github.com/uafgeotools) package
 [*rtm*](https://github.com/uafgeotools/rtm) for generation of the labeled
-catalog. You can find installation instructions for *rtm*
-[here](https://uaf-rtm.readthedocs.io/en/master/README.html#installation).
+catalog. This package and its dependencies are installed when the above command
+is executed.
 
 ## Workflow overview
 
