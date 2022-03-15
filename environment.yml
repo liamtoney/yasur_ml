@@ -6,9 +6,9 @@ dependencies:
   - black
   - cartopy
   - gdal
-  - gmt
   - ipython
   - isort
+  - numpy<=1.21  # To fix "Numba needs NumPy 1.21 or less" TSFRESH ImportError
   - obspy
   - pip
   - pyarrow
@@ -19,10 +19,9 @@ dependencies:
   - utm
   - xarray
   - pip:
-      - --editable ${HOME}/work/python_util
-      - --editable ${HOME}/repos/waveform_collection
-      - --editable ${HOME}/repos/rtm
-      - --editable ${HOME}/work/yasur_ml
+      - git+https://github.com/uafgeotools/waveform_collection.git
+      - git+https://github.com/uafgeotools/rtm.git
+      - --editable .
 
 # Subcrater S and subcrater N colors, taken from first two entries in "New Tableau 10",
 # see https://www.tableau.com/about/blog/2016/7/colors-upgrade-tableau-10-56782
