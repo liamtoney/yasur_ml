@@ -10,6 +10,9 @@ import numpy as np
 from obspy import Stream, UTCDateTime
 from obspy.clients.fdsn import Client
 
+# Define project directory
+WORKING_DIR = Path.home() / 'work' / 'yasur_ml'
+
 # Stations of 3E to download data for
 STATION = 'YIF1,YIF2,YIF3,YIF4,YIF5'
 
@@ -78,4 +81,4 @@ for tr in st:
 
 # Save
 filename = f'3E_YIF1-5_{SAMPLING_RATE}hz.pkl'
-st.write(str(Path.home() / 'work' / 'yasur_ml' / 'data' / filename), format='PICKLE')
+st.write(str(WORKING_DIR / 'data' / filename), format='PICKLE')
