@@ -4,6 +4,7 @@
 Download 3E data, downsample, add coordinates, and save to a pickle file.
 """
 
+import os
 from pathlib import Path
 
 import numpy as np
@@ -11,7 +12,7 @@ from obspy import Stream, UTCDateTime
 from obspy.clients.fdsn import Client
 
 # Define project directory
-WORKING_DIR = Path.home() / 'work' / 'yasur_ml'
+WORKING_DIR = Path(os.environ['YASUR_WORKING_DIR']).expanduser().resolve()
 
 # Stations of 3E to download data for
 STATION = 'YIF1,YIF2,YIF3,YIF4,YIF5'

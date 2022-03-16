@@ -6,6 +6,7 @@ y are in meters in UTM zone 59S. t is in UTC.
 """
 
 import json
+import os
 from datetime import datetime
 from pathlib import Path
 
@@ -20,7 +21,7 @@ from rtm import (
 )
 
 # Define project directory
-WORKING_DIR = Path.home() / 'work' / 'yasur_ml'
+WORKING_DIR = Path(os.environ['YASUR_WORKING_DIR']).expanduser().resolve()
 
 # Load in full dataset
 st_full = read(str(WORKING_DIR / 'data' / '3E_YIF1-5_50hz.pkl'))

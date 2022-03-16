@@ -7,7 +7,7 @@ import numpy as np
 from svm.tools import balance_classes, read_and_preprocess
 
 # Define project directory
-WORKING_DIR = Path.home() / 'work' / 'yasur_ml'
+WORKING_DIR = Path(os.environ['YASUR_WORKING_DIR']).expanduser().resolve()
 
 # Filename of features to use
 FEATURES_FILE = 'manual_filter.feather'

@@ -1,4 +1,5 @@
 import json
+import os
 from pathlib import Path
 
 import matplotlib.pyplot as plt
@@ -10,7 +11,7 @@ from svm.plotting import plot_generalization_matrix
 from svm.tools import balance_classes, format_scikit, read_and_preprocess, time_subset
 
 # Define project directory
-WORKING_DIR = Path.home() / 'work' / 'yasur_ml'
+WORKING_DIR = Path(os.environ['YASUR_WORKING_DIR']).expanduser().resolve()
 
 # Read in features only once, since it's slow
 features_all = read_and_preprocess(

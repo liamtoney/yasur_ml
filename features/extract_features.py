@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import os
 from pathlib import Path
 
 import numpy as np
@@ -10,7 +11,7 @@ from scipy.signal import welch
 from tsfresh import extract_features
 
 # Define project directory
-WORKING_DIR = Path.home() / 'work' / 'yasur_ml'
+WORKING_DIR = Path(os.environ['YASUR_WORKING_DIR']).expanduser().resolve()
 
 # Directory containing labeled waveforms
 labeled_wf_dir = WORKING_DIR / 'data' / 'labeled'

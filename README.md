@@ -20,6 +20,10 @@ This code requires the [UAF Geophysics Tools](https://github.com/uafgeotools) pa
 catalog. This package and its dependencies are installed when the above command
 is executed.
 
+You must define two environment variables to use the code:
+- `YASUR_WORKING_DIR` — the path to this repository
+- `YASUR_FIGURE_DIR` — the directory where figure files should be saved
+
 ## Workflow overview
 
 1. [`download_3E.py`](data/download_3E.py) — download the data

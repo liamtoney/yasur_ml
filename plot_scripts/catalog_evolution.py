@@ -11,7 +11,7 @@ import pandas as pd
 from obspy import UTCDateTime, read
 
 # Define project directory
-WORKING_DIR = Path.home() / 'work' / 'yasur_ml'
+WORKING_DIR = Path(os.environ['YASUR_WORKING_DIR']).expanduser().resolve()
 
 FONT_SIZE = 14  # [pt]
 plt.rcParams.update({'font.size': FONT_SIZE})

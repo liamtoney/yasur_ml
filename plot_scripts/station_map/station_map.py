@@ -15,7 +15,7 @@ from obspy.clients.fdsn import Client
 from rtm import define_grid
 
 # Define project directory
-WORKING_DIR = Path.home() / 'work' / 'yasur_ml'
+WORKING_DIR = Path(os.environ['YASUR_WORKING_DIR']).expanduser().resolve()
 
 # Load subcrater locs
 with open(WORKING_DIR / 'yasur_subcrater_locs.json') as f:

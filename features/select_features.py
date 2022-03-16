@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import json
+import os
 from pathlib import Path
 from time import time
 
@@ -16,7 +17,7 @@ from svm.tools import (
 )
 
 # Define project directory
-WORKING_DIR = Path.home() / 'work' / 'yasur_ml'
+WORKING_DIR = Path(os.environ['YASUR_WORKING_DIR']).expanduser().resolve()
 
 # Read in features only once, since it's slow
 features_all = read_and_preprocess(
