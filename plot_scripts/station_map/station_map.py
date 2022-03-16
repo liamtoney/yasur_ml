@@ -230,4 +230,4 @@ fig.show(method='external')
 
 _ = subprocess.run(['open', os.environ['YASUR_FIGURE_DIR']])
 
-# fig.savefig(Path(os.environ['YASUR_FIGURE_DIR']) / 'station_map.png', dpi=400)
+# fig.savefig(Path(os.environ['YASUR_FIGURE_DIR']).expanduser().resolve() / 'station_map.png', dpi=400)

@@ -335,4 +335,4 @@ fig.show()
 
 _ = subprocess.run(['open', os.environ['YASUR_FIGURE_DIR']])
 
-# fig.savefig(Path(os.environ['YASUR_FIGURE_DIR']) / 'path_effects.png', bbox_inches='tight', dpi=300)
+# fig.savefig(Path(os.environ['YASUR_FIGURE_DIR']).expanduser().resolve() / 'path_effects.png', bbox_inches='tight', dpi=300)
