@@ -209,13 +209,14 @@ fig.plot(
     y=transform(sta_lon, sta_lat)[1],
     style='i0.45c',
     color='black',
+    pen='0.5p,white',
     label='Station',
 )
 fig.text(
     x=transform(sta_lon, sta_lat)[0],
     y=transform(sta_lon, sta_lat)[1],
     text=sta_code,
-    font='white=~1p',
+    font='black=~1p,white',
     justify='LM',
     offset='0.13i/-0.01i',
 )
