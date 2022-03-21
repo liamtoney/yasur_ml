@@ -200,6 +200,8 @@ else:
 
 #%% (c), (d)
 
+# Awful, but works
+
 ax11 = fig.add_subplot(gs[4, 0])
 ax21 = fig.add_subplot(gs[5, 0], sharex=ax11)
 ax31 = fig.add_subplot(gs[6, 0], sharex=ax11)
@@ -304,7 +306,7 @@ axes[0, 0].text(
 axes[0, 1].text(0.025, 1, s='(d)', transform=axes[0, 1].transAxes, **label_kwargs)
 
 fig.tight_layout()
-fig.subplots_adjust(hspace=0, wspace=0.3)
+fig.subplots_adjust(hspace=0, wspace=0.2)
 fig.show()
 
 _ = subprocess.run(['open', os.environ['YASUR_FIGURE_DIR']])
