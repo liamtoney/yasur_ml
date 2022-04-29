@@ -1,5 +1,7 @@
 # yasur_ml
 
+[![DOI](https://zenodo.org/badge/301802019.svg)](https://zenodo.org/badge/latestdoi/301802019)
+
 This repository contains the code accompanying the forthcoming manuscript "Waveform Features
 Strongly Control Subcrater Classification Performance for a Large, Labeled Volcano Infrasound
 Dataset" [draft title] by [Liam Toney](mailto:ldtoney@alaska.edu), [David Fee](mailto:dfee1@alaska.edu),
