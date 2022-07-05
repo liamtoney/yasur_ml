@@ -115,9 +115,14 @@ for file in sorted(labeled_wf_dir.glob('label_???.pkl')):
 
 #%% Print accuracies for each station (compare to diagonal of Fig. 4a)
 
+means = []
 for station, accuracies in accuracy_dict.items():
+    mean = np.mean(accuracies)
+    means.append(mean)
     print(station)
-    print(f'{np.mean(accuracies):.1%}\n')
+    print(f'{mean:.0%}\n')
+
+print(f'Overall mean\n{np.mean(means):.0%}')
 
 #%% Analyze correlation coefficients
 
@@ -127,6 +132,6 @@ n_coeffs = np.array(all_coeffs['N'])
 max_coeffs = np.max([s_coeffs, n_coeffs], axis=0)  # The higher value for each pair
 
 # Print stats for the "winning" coefficients
-print(f'Median: {np.median(max_coeffs)}:.2f')
+print(f'Median: {np.median(max_coeffs):.2f}')
 print(f'Minimum: {max_coeffs.min():.2f}')
 print(f'Maximum: {max_coeffs.max():.2f}')
