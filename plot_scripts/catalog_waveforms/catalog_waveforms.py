@@ -311,4 +311,4 @@ fig.show()
 
 _ = subprocess.run(['open', os.environ['YASUR_FIGURE_DIR']])
 
-# fig.savefig(Path(os.environ['YASUR_FIGURE_DIR']).expanduser().resolve() / 'catalog_waveforms.png', bbox_inches='tight', dpi=300)
+# fig.savefig(Path(os.environ['YASUR_FIGURE_DIR']).expanduser().resolve() / 'catalog_waveforms.pdf', bbox_inches='tight')

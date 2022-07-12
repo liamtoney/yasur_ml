@@ -25,6 +25,7 @@ def plot_generalization_matrix(scores, fig, ax, colorbar=True, show_stats=True):
         cmap='BrBG',
         vmin=0,
         vmax=1,
+        rasterized=True,
     )
     ax.set_aspect('equal')
     ax.invert_yaxis()
@@ -112,6 +113,7 @@ def plot_path_effect_matrix(
         cmap='Greys',
         vmin=0,
         vmax=1,
+        rasterized=True,
     )
     ax.set_aspect('equal')
     ax.invert_yaxis()
