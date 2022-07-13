@@ -1,6 +1,6 @@
 # yasur_ml
 
-This repository contains the code accompanying the manuscript "Waveform features
+This repository contains the code accompanying the paper "Waveform features
 strongly control subcrater classification performance for a large, labeled volcano infrasound
 dataset" by [Liam Toney](mailto:ldtoney@alaska.edu), David Fee, Alex Witsil, and Robin S. Matoza.
 
@@ -32,7 +32,7 @@ You must define two environment variables to use the code:
 
 ## Citation
 
-If you use the tools contained in this repo, please cite our manuscript:
+If you use the tools contained in this repo, please cite our paper:
 
 > Toney, L., Fee, D., Witsil, A., & Matoza, R. S. (in press). Waveform features
 > strongly control subcrater classification performance for a large, labeled
