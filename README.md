@@ -30,6 +30,14 @@ You must define two environment variables to use the code:
 4. [`extract_features.py`](features/extract_features.py) — extract features from waveforms and store in Feather file
 5. Apply tools in [`svm/`](svm/)
 
+## Citation
+
+If you use the tools contained in this repo, please cite our manuscript:
+
+> Toney, L., Fee, D., Witsil, A., & Matoza, R. S. (in press). Waveform features
+> strongly control subcrater classification performance for a large, labeled
+> volcano infrasound dataset. *The Seismic Record*.
+
 ## Acknowledgements
 
 This work was supported by the Nuclear Arms Control Technology (NACT) program at the
