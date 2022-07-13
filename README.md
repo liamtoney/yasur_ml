@@ -32,7 +32,7 @@ You must define two environment variables to use the code:
 
 ## Citation
 
-If you use the tools contained in this repo, please cite our paper:
+If you use the tools contained in this repository, please cite our paper:
 
 > Toney, L., Fee, D., Witsil, A., & Matoza, R. S. (in press). Waveform features
 > strongly control subcrater classification performance for a large, labeled
