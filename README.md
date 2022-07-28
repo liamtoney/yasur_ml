@@ -34,9 +34,10 @@ You must define two environment variables to use the code:
 
 If you use the tools contained in this repository, please cite our paper:
 
-> Toney, L., Fee, D., Witsil, A., & Matoza, R. S. (in press). Waveform features
+> Toney, L., Fee, D., Witsil, A., & Matoza, R. S. (2022). Waveform features
 > strongly control subcrater classification performance for a large, labeled
-> volcano infrasound dataset. *The Seismic Record*.
+> volcano infrasound dataset. *The Seismic Record*, *2*(3), 167–175.
+> https://doi.org/10.1785/0320220019
 
 ## Acknowledgements
 
