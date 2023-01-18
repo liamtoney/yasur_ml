@@ -60,7 +60,7 @@ SCORE_FILE = '2016-08-01.npy'
 scores = np.load(WORKING_DIR / 'plot_scripts' / 'path_effects' / SCORE_FILE)
 
 # Read in full-res DEM, clip to extent to reduce size
-dem = xr.open_rasterio(DEM_FILE).squeeze()
+dem = xr.open_rasterio(DEM_FILE).squeeze().astype('float64')
 dem = dem.where(dem != dem.nodatavals)  # Set no data values to NaN
 dem = dem.where(
     (dem.x >= dem_xlim[0])
