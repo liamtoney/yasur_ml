@@ -9,7 +9,7 @@ from obspy import UTCDateTime
 from scipy.cluster import hierarchy
 from scipy.spatial.distance import squareform
 from scipy.stats import spearmanr
-from sklearn.metrics import plot_confusion_matrix
+from sklearn.metrics import ConfusionMatrixDisplay
 from sklearn.utils import resample
 from tsfresh import select_features
 
@@ -161,10 +161,10 @@ def format_scikit(features):
 
 
 def plot_confusion(clf, X_test, y_test, title=None):
-    """Shallow wrapper around plot_confusion_matrix().
+    """Shallow wrapper around ConfusionMatrixDisplay().
 
     See
-    https://scikit-learn.org/stable/modules/generated/sklearn.metrics.plot_confusion_matrix.html
+    https://scikit-learn.org/stable/modules/generated/sklearn.metrics.ConfusionMatrixDisplay.html
     for more info. This function basically tweaks the standard plot for the Yasur
     context.
 
@@ -180,7 +180,7 @@ def plot_confusion(clf, X_test, y_test, title=None):
         title (str or None): Title for plot (no title if None)
     """
 
-    cm = plot_confusion_matrix(
+    cm = ConfusionMatrixDisplay.from_estimator(
         clf,
         X_test,
         y_test,
