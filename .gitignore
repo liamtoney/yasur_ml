@@ -1,4 +1,5 @@
 /.idea/
+/field_notes/
 /reviews/
 /figures/
 /videos/
@@ -10,6 +11,7 @@
 /*.egg-info/
 /sklearn_sandbox.ipynb
 /.set_up_env.bash
+/tsr_cover_letter.pdf
 *.nc
 *.pkl
 *.tif
